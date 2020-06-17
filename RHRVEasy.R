@@ -29,11 +29,6 @@ time_analysis<-function(files, class, rrs2, dataFrame3){
   }
   dataFrame3
 }
-# dataFrameMFreq = data.frame()
-# dataFrameMFreq = freq_analysis(files=list.files("rrs/normal/"), class = "normal", rrs2 = "rrs/normal/", dataFrameMFreq)
-# dataFrameMFreq2 = freq_analysis(files=list.files("rrs/chf/"), class = "chf", rrs2 = "rrs/chf/", dataFrameMFreq)
-# dataFrameMFreq=rbind(dataFrameMFreq, dataFrameMFreq2)
-
 
 
 freq_analysis<-function(files, class, rrs2, dataFrame2){
@@ -59,12 +54,9 @@ freq_analysis<-function(files, class, rrs2, dataFrame2){
     df = data.frame()
     df = rbind(df, as.data.frame(row_list))
     dataFrame2=rbind(dataFrame2, df)
-    dataFrame2 <- dataFrame2[!duplicated(dataFrame2), ]
   }
   dataFrame2
 }
-# dataFrameMWavelet = data.frame()
-# dataFrameMWavelet = wavelet_analysis(files=list.files("rrs/new/"), class = "chf", rrs2 = "rrs/new/", dataFrameMWavelet)
 #  WAVELET ANALYSIS
 wavelet_analysis<-function(files, class, rrs2, dataFrameMWavelet){
   for (file in files) {
@@ -97,8 +89,7 @@ wavelet_analysis<-function(files, class, rrs2, dataFrameMWavelet){
     clase = list ("clase" = class)
     row_list = c (name_file, x1, clase)
     dataFrameMWavelet = rbind(dataFrameMWavelet, as.data.frame(row_list))
-    # dataFrameMWavelet <- dataFrameMWavelet[!duplicated(dataFrameMWavelet), ]
-    
+
   }
   dataFrameMWavelet
 }
