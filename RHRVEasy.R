@@ -211,6 +211,7 @@ library(PMCMR)
 
 # POSTHOC DUNN
 dunnfreq<-function(dfM){
+  dfM$clase = factor(dfM$clase)  
   list (ULF = posthoc.kruskal.dunn.test(ULF ~ clase, data=dfM, p.adjust="bonf"),
         VLF = posthoc.kruskal.dunn.test(VLF ~ clase, data=dfM, p.adjust="bonf"),
         LF = posthoc.kruskal.dunn.test(LF ~ clase, data=dfM, p.adjust="bonf"),
@@ -218,6 +219,7 @@ dunnfreq<-function(dfM){
 }
 
 dunntime<-function(dfM){
+  dfM$clase = factor(dfM$clase)  
   list (SDNN= posthoc.kruskal.dunn.test(SDNN ~ clase, data = dfM, p.adjust="bonf"), 
         SDANN = posthoc.kruskal.dunn.test(SDANN ~ clase, data = dfM, p.adjust="bonf"), 
         SDNNIDX = posthoc.kruskal.dunn.test(SDNNIDX ~ clase, data = dfM, p.adjust="bonf"), 
@@ -229,6 +231,7 @@ dunntime<-function(dfM){
         TINN = posthoc.kruskal.dunn.test(TINN ~ clase, data = dfM, p.adjust="bonf"), 
         HRVi = posthoc.kruskal.dunn.test(HRVi ~ clase, data = dfM, p.adjust="bonf"))
 }
+posthoc.kruskal.dunn.test(SDNN ~ clase, data = listaResultadosSIN[[1]])
 
 
 
@@ -247,7 +250,7 @@ statistical_analysisFreq<-function(dfM, correctSigLevel){
   }
   if (any(pvaluesULF > 0.05)) {
     print("ULF Normal: Anova")
-    list$anova$ULF = aov(ULF ~ clase, data = dfM)
+    lista$anova$ULF = aov(ULF ~ clase, data = dfM)
   }else {
     print("ULF NOT normal: Kruskal")
     lista$kruskal$ULF = kruskalFreqULF(dfM)
@@ -261,7 +264,7 @@ statistical_analysisFreq<-function(dfM, correctSigLevel){
   if (any(pvaluesVLF > 0.05)) {
     print("VLF Normal: Anova")
     aov(VLF ~ clase, data = dfM)
-    list$anova$VLF = aov(VLF ~ clase, data = dfM)
+    lista$anova$VLF = aov(VLF ~ clase, data = dfM)
   } else {
     print("VLF NOT normal: Kruskal")
     lista$kruskal$VLF = kruskalFreqVLF(dfM)
@@ -274,7 +277,7 @@ statistical_analysisFreq<-function(dfM, correctSigLevel){
   }
   if (any(pvaluesLF > 0.05)) {
     print("LF Normal: Anova")
-    list$anova$LF = aov(LF ~ clase, data = dfM)  
+    lista$anova$LF = aov(LF ~ clase, data = dfM)  
   } else {
     print("LF NOT normal: Kruskal")
     lista$kruskal$LF = kruskalFreqLF(dfM)
@@ -287,7 +290,7 @@ statistical_analysisFreq<-function(dfM, correctSigLevel){
   }
   if (any(pvaluesHF > 0.05)) {
     print("HF Normal: Anova")
-    list$anova$HF = aov(HF ~ clase, data = dfM) 
+    lista$anova$HF = aov(HF ~ clase, data = dfM) 
   } else {
     print("HF NOT normal: Kruskal")
     lista$kruskal$HF = kruskalFreqHF(dfM)
@@ -497,5 +500,5 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE){
 # listaResultadosCON = list()
 # listaResultadosSIN = RHRVEasy("rrs/normal", "rrs/chf", FALSE, FALSE)
 # listaResultadosCON = RHRVEasy("rrs/normal", "rrs/chf", FALSE, TRUE)
-# RHRVEasy("rrs/normal", "rrs/chf", FALSE, FALSE)
+# # RHRVEasy("rrs/normal", "rrs/chf", FALSE, FALSE)
 
