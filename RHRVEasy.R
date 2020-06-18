@@ -17,7 +17,6 @@ preparing_analysis<-function(directory_files,file, rrs){
 }
 time_analysis<-function(files, class, rrs2, dataFrame3){
   for (file in files) {
-    # donde he puesto files ponia allfilesnormal
     hrv.data = preparing_analysis(directory_files = files, file = file, rrs = rrs2)
     hrv.data=CreateTimeAnalysis(hrv.data)
     results=hrv.data$TimeAnalysis[]
@@ -115,6 +114,7 @@ shapiroTimeSDNN<-function(directorio){
   shapiroTimeSDNN = shapiro.test(directorio$SDNN)
   shapiroTimeSDNN
 }
+
 shapiroTimeSDANN<-function(directorio){
   shapiroTimeSDANN = shapiro.test(directorio$SDANN)
   shapiroTimeSDANN
@@ -230,59 +230,81 @@ dunntime<-function(dfM){
 }
 
 
+# statistical_analysisFreq(dataFrameMFrec, "NORMAL", FALSE)
+# 
+# pre_statistical_analysisFreq<-function(dfM, control){
+#   if (dfM$clase == control){
+#     shapiroFreqULFControl = shapiroFreqULF(dfM)
+#     shapiroFreqVLFControl = shapiroFreqVLF(dfM)
+#     shapiroFreqLFControl = shapiroFreqLF(dfM)
+#     shapiroFreqHFControl = shapiroFreqHF(dfM)
+#   }else{
+#     shapiroFreqULFCase = shapiroFreqULF(dfM)
+#     shapiroFreqVLFCase = shapiroFreqVLF(dfM)
+#     shapiroFreqLFCase = shapiroFreqLF(dfM)
+#     shapiroFreqHFCase = shapiroFreqHF(dfM)
+#   }
+#   list(shapiroFreqULFControl, shapiroFreqVLFControl, shapiroFreqLFControl, shapiroFreqHFControl, 
+#        shapiroFreqULFCase, shapiroFreqVLFCase, shapiroFreqLFCase, shapiroFreqHFCase)
+# }
 
-statistical_analysisFreq<-function(dfst, dfM, correctSigLevel){
-  shapiroFreqULF = shapiroFreqULF(dfst)
-  shapiroFreqVLF = shapiroFreqVLF(dfst)
-  shapiroFreqLF = shapiroFreqLF(dfst)
-  shapiroFreqHF = shapiroFreqHF(dfst)
-  
+statistical_analysisFreq<-function(dfM, correctSigLevel){
   anova = list(ULF = 0, VLF = 0, LF = 0, HF = 0)
   kruskal = list(ULF = 0, VLF = 0, LF = 0, HF = 0)
   dunn = 0
   lista = list(anova = anova, kruskal = kruskal, dunn = dunn)
-
+  
+  listaDF = split(dfM, dfM$clase)
+  shapiroFreqULFCase = shapiroFreqULF(listaDF[[1]])
+  shapiroFreqULFControl = shapiroFreqULF(listaDF[[2]])
+  pvaluesULF = c(shapiroFreqULFCase$p.value,shapiroFreqULFControl$p.value)
   if (correctSigLevel == TRUE){
-    p.adjust(shapiroFreqULF$p.value)
+    pvaluesULF = p.adjust(pvaluesULF)
   }
-  if (shapiroFreqULF$p.value > 0.05) {
+  if (any(pvaluesULF > 0.05)) {
     print("ULF Normal: Anova")
     list$anova$ULF = aov(ULF ~ clase, data = dfM)
-  }
-  if (shapiroFreqULF$p.value < 0.05) {
+  }else {
     print("ULF NOT normal: Kruskal")
     lista$kruskal$ULF = kruskalFreqULF(dfM)
   }
+  shapiroFreqVLFCase = shapiroFreqVLF(listaDF[[1]])
+  shapiroFreqVLFControl = shapiroFreqVLF(listaDF[[2]])
+  pvaluesVLF = c(shapiroFreqVLFCase$p.value,shapiroFreqVLFControl$p.value)
   if (correctSigLevel == TRUE){
-    p.adjust(shapiroFreqVLF$p.value)
+    pvaluesVLF = p.adjust(pvaluesVLF)
   }
-  if (shapiroFreqVLF$p.value > 0.05) {
+  if (any(pvaluesVLF > 0.05)) {
     print("VLF Normal: Anova")
     aov(VLF ~ clase, data = dfM)
     list$anova$VLF = aov(VLF ~ clase, data = dfM)
-  }
-  if (shapiroFreqVLF$p.value < 0.05) {
+  } else {
     print("VLF NOT normal: Kruskal")
     lista$kruskal$VLF = kruskalFreqVLF(dfM)
   }
+  shapiroFreqLFCase = shapiroFreqLF(listaDF[[1]])
+  shapiroFreqLFControl = shapiroFreqLF(listaDF[[2]])
+  pvaluesLF = c(shapiroFreqLFCase$p.value,shapiroFreqLFControl$p.value)
   if (correctSigLevel == TRUE){
-    p.adjust(shapiroFreqLF$p.value)
+    pvaluesLF = p.adjust(pvaluesLF)
   }
-  if (shapiroFreqLF$p.value > 0.05) {
+  if (any(pvaluesLF > 0.05)) {
     print("LF Normal: Anova")
-    list$anova$LF = aov(LF ~ clase, data = dfM)  }
-  
-  if (shapiroFreqLF$p.value < 0.05) {
+    list$anova$LF = aov(LF ~ clase, data = dfM)  
+  } else {
     print("LF NOT normal: Kruskal")
     lista$kruskal$LF = kruskalFreqLF(dfM)
   }
+  shapiroFreqHFCase = shapiroFreqHF(listaDF[[1]])
+  shapiroFreqHFControl = shapiroFreqHF(listaDF[[2]])
+  pvaluesHF = c(shapiroFreqHFCase$p.value,shapiroFreqHFControl$p.value)
   if (correctSigLevel == TRUE){
-    p.adjust(shapiroFreqHF$p.value)
+    pvaluesHF = p.adjust(pvaluesHF)
   }
-  if (shapiroFreqHF$p.value > 0.05) {
+  if (any(pvaluesHF > 0.05)) {
     print("HF Normal: Anova")
-    list$anova$HF = aov(HF ~ clase, data = dfM)  }
-  if (shapiroFreqHF$p.value < 0.05) {
+    list$anova$HF = aov(HF ~ clase, data = dfM) 
+  } else {
     print("HF NOT normal: Kruskal")
     lista$kruskal$HF = kruskalFreqHF(dfM)
   }
@@ -315,8 +337,7 @@ statistical_analysisTime<-function(dfst, dfM, correctSigLevel){
   if (shapiroTimeSDNN$p.value > 0.05) { 
     print("SDNN Normal: Anova")
     lista$anova$SDNN = aov(SDNN ~ clase, data = dfM)
-  }
-  if (shapiroTimeSDNN$p.value < 0.05) {
+  }else {
     print("SDNN NOT normal: Kruskal")
     lista$kruskal$SDNN = kruskalTimeSDNN(dfM)
   }
@@ -326,8 +347,7 @@ statistical_analysisTime<-function(dfst, dfM, correctSigLevel){
   if (shapiroTimeSDANN$p.value > 0.05) { 
     print("SDANN Normal: Anova")
     lista$anova$SDANN = aov(SDANN ~ clase, data = dfM)
-  }
-  if (shapiroTimeSDANN$p.value < 0.05) {
+  } else {
     print("SDANN NOT normal: Kruskal")
     lista$kruskal$SDANN = kruskalTimeSDANN(dfM)
   }
@@ -338,8 +358,7 @@ statistical_analysisTime<-function(dfst, dfM, correctSigLevel){
   if (shapiroTimeSDNNIDX$p.value > 0.05) { 
     print("SDNNIDX Normal: Anova")
     lista$anova$SDNNIDX = aov(SDNNIDX ~ clase, data = dfM)
-  }
-  if (shapiroTimeSDNNIDX$p.value < 0.05) {
+  }else {
     print("SDNNIDX NOT normal: Kruskal")
     lista$kruskal$SDNNIDX = kruskalTimeSDNNIDX(dfM)
   }
@@ -350,8 +369,7 @@ statistical_analysisTime<-function(dfst, dfM, correctSigLevel){
   if (shapiroTimepNN50$p.value > 0.05) { 
     print("pNN50 Normal: Anova")
     lista$anova$pNN50 = aov(pNN50 ~ clase, data = dfM)
-  }
-  if (shapiroTimepNN50$p.value < 0.05) {
+  } else {
     print("pNN50 NOT normal: Kruskal")
     lista$kruskal$pNN50 = kruskalTimepNN50(dfM)
   }
@@ -362,8 +380,7 @@ statistical_analysisTime<-function(dfst, dfM, correctSigLevel){
   if (shapiroTimeSDSD$p.value > 0.05) { 
     print("SDSD Normal: Anova")
     lista$anova$SDSD = aov(SDSD ~ clase, data = dfM)
-  }
-  if (shapiroTimeSDSD$p.value < 0.05) {
+  } else {
     print("SDSD NOT normal: Kruskal")
     lista$kruskal$SDSD = kruskalTimeSDSD(dfM)
   }
@@ -375,8 +392,7 @@ statistical_analysisTime<-function(dfst, dfM, correctSigLevel){
   if (shapiroTimerMSSD$p.value > 0.05) { 
     print("MSSD Normal: Anova")
     lista$anova$MSSD = aov(MSSD ~ clase, data = dfM)
-  }
-  if (shapiroTimerMSSD$p.value < 0.05) {
+  } else {
     print("MSSD NOT normal: Kruskal")
     lista$kruskal$MSSD = kruskalTimerMSSD(dfM)
   }
@@ -388,8 +404,7 @@ statistical_analysisTime<-function(dfst, dfM, correctSigLevel){
   if (shapiroTimeIRRR$p.value > 0.05) { 
     print("IRRR Normal: Anova")
     lista$anova$IRRR = aov(IRRR ~ clase, data = dfM)
-  }
-  if (shapiroTimeIRRR$p.value < 0.05) {
+  } else {
     print("IRRR NOT normal: Kruskal")
     lista$kruskal$IRRR = kruskalTimeIRRR(dfM)
   }
@@ -401,8 +416,7 @@ statistical_analysisTime<-function(dfst, dfM, correctSigLevel){
   if (shapiroTimeMADRR$p.value > 0.05) { 
     print("MADRR Normal: Anova")
     lista$anova$MADRR = aov(MADRR ~ clase, data = dfM)
-  }
-  if (shapiroTimeMADRR$p.value < 0.05) {
+  } else {
     print("MADRR NOT normal: Kruskal")
     lista$kruskal$MADRR = kruskalTimeMADRR(dfM)
   }
@@ -413,8 +427,7 @@ statistical_analysisTime<-function(dfst, dfM, correctSigLevel){
   if (shapiroTimeTINN$p.value > 0.05) { 
     print("TINN Normal: Anova")
     lista$anova$TINN = aov(TINN ~ clase, data = dfM)
-  }
-  if (shapiroTimeTINN$p.value < 0.05) {
+  } else {
     print("TINN NOT normal: Kruskal")
     lista$kruskal$TINN = kruskalTimeTINN(dfM)
   }
@@ -425,8 +438,7 @@ statistical_analysisTime<-function(dfst, dfM, correctSigLevel){
   if (shapiroTimeHRVi$p.value > 0.05) { 
     print("HRVi Normal: Anova")
     lista$anova$HRVi = aov(HRVi ~ clase, data = dfM)
-  }
-  if (shapiroTimeHRVi$p.value < 0.05) {
+  } else {
     print("HRVi NOT normal: Kruskal")
     lista$kruskal$HRVi = kruskalTimeHRVi(dfM)
   }
@@ -441,41 +453,44 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE){
   dataFrame3 = data.frame()
   dataFrame2 = data.frame()
   dataFrameMWavelet = data.frame()
-  files1 = list.files(control)
-  class1 <- strsplit(control, .Platform$file.sep)[[1]][2]
-  files2 = list.files(case)
+  
+  filesControl = list.files(control)
+  classControl = strsplit(control, .Platform$file.sep)[[1]]
+  classControl = classControl[length(classControl)]
+  
+  filesCase = list.files(case)
+  classCase = strsplit(case, .Platform$file.sep)[[1]]
+  classCase = classCase[length(classCase)]
+  
   listaFreqControl = list()
   listaFreqCase = list()
   listaTimeControl = list()
   listaTimeCase = list()
-  class2 <- strsplit(case, .Platform$file.sep)[[1]][2]
-  dataFrameMTime1 = time_analysis(files1, class1, control, dataFrame3)
-  dataFrameMTime2 = time_analysis(files2, class2, case, dataFrame3)
-  # Creating a DF with both in Time
-  dataFrameMTime=rbind(dataFrameMTime1, dataFrameMTime2)
-  # Statistical analysis of both
-  listaTimeControl = statistical_analysisTime(dataFrameMTime1, dataFrameMTime, correctSigLevel)
-  listaTimeCase = statistical_analysisTime(dataFrameMTime2, dataFrameMTime, correctSigLevel)
+  
+  # dataFrameMTimeControl = time_analysis(filesControl, classControl, control, dataFrame3)
+  # dataFrameMTimeCase = time_analysis(filesCase, classCase, case, dataFrame3)
+  # # Creating a DF with both in Time
+  # dataFrameMTime=rbind(dataFrameMTimeControl, dataFrameMTimeCase)
+  # # Statistical analysis of both
+  # listaTimeControl = statistical_analysisTime(dataFrameMTimeControl, dataFrameMTime, correctSigLevel)
+  # listaTimeCase = statistical_analysisTime(dataFrameMTimeCase, dataFrameMTime, correctSigLevel)
   # FREQUENCY:
   if(useWavelet == FALSE){
-    dataFrameMFreq1 = freq_analysis(files1, class1, control, dataFrame2)
-    dataFrameMFreq2 = freq_analysis(files2, class2, case, dataFrame2)
-    dataFrameMFreq=rbind(dataFrameMFreq1, dataFrameMFreq2)
-    listaFreqControl = statistical_analysisFreq(dataFrameMFreq1, dataFrameMFreq, correctSigLevel)
-    listaFreqCase = statistical_analysisFreq(dataFrameMFreq2, dataFrameMFreq, correctSigLevel)
+    dataFrameMFreqControl = freq_analysis(filesControl, classControl, control, dataFrame2)
+    dataFrameMFreqCase = freq_analysis(filesCase, classCase, case, dataFrame2)
+    dataFrameMFreq=rbind(dataFrameMFreqControl, dataFrameMFreqCase)
+    listaFreqControl = statistical_analysisFreq(dataFrameMFreq, correctSigLevel)
+    #listaFreqCase = statistical_analysisFreq(dataFrameMFreq, classCase, correctSigLevel)
   }
   # WAVELET
   if(useWavelet == TRUE){
-    dataFrameMWavelet1 = wavelet_analysis(files1, class1, control, dataFrameMWavelet)
-    print("Done 1")
-    dataFrameMWavelet2 = wavelet_analysis(files2, class2, case, dataFrameMWavelet)
-    print("Done 2")
-    dataFrameMWavelet=rbind(dataFrameMWavelet1, dataFrameMWavelet2)
-    print("Done 3")
-    listaFreqControl = statistical_analysisFreq(dataFrameMWavelet1, dataFrameMWavelet, correctSigLevel)
-    listaFreqCase = statistical_analysisFreq(dataFrameMWavelet2, dataFrameMWavelet, correctSigLevel)
+    dataFrameMWaveletControl = wavelet_analysis(filesControl, classControl, control, dataFrameMWavelet)
+    dataFrameMWaveletCase = wavelet_analysis(filesCase, classCase, case, dataFrameMWavelet)
+    dataFrameMWavelet=rbind(dataFrameMWaveletControl, dataFrameMWaveletCase)
+    listaFreqControl = statistical_analysisFreq(dataFrameMWaveletControl, dataFrameMWavelet, correctSigLevel)
+    listaFreqCase = statistical_analysisFreq(dataFrameMWaveletCase, dataFrameMWavelet, correctSigLevel)
     dataFrameMFreq = dataFrameMWavelet
   }
-  list(dataFrameMTime, listaTimeControl, listaTimeCase, dataFrameMFreq, listaFreqControl, listaFreqCase)
+  list(dataFrameMFreq, listaFreqControl)
 }
-
+RHRVEasy("rrs/normal", "rrs/chf")
