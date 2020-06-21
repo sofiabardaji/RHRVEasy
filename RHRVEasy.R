@@ -29,7 +29,7 @@ time_analysis<-function(files, class, rrs2, dataFrame3){
   dataFrame3
 }
 
-
+# FREQUENCY ANALYSIS
 freq_analysis<-function(files, class, rrs2, dataFrame2){
   for (file in files) {
     hrv.data = preparing_analysis(directory_files = files, file = file, rrs = rrs2)
@@ -231,14 +231,11 @@ dunntime<-function(dfM){
         TINN = posthoc.kruskal.dunn.test(TINN ~ clase, data = dfM, p.adjust="bonf"), 
         HRVi = posthoc.kruskal.dunn.test(HRVi ~ clase, data = dfM, p.adjust="bonf"))
 }
-posthoc.kruskal.dunn.test(SDNN ~ clase, data = listaResultadosSIN[[1]])
-
-
 
 statistical_analysisFreq<-function(dfM, correctSigLevel){
-  anova = list(ULF = 0, VLF = 0, LF = 0, HF = 0)
-  kruskal = list(ULF = 0, VLF = 0, LF = 0, HF = 0)
-  dunn = 0
+  anova = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
+  kruskal = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
+  dunn = NA
   lista = list(anova = anova, kruskal = kruskal, dunn = dunn)
   
   listaDF = split(dfM, dfM$clase)
@@ -248,10 +245,14 @@ statistical_analysisFreq<-function(dfM, correctSigLevel){
   if (correctSigLevel == TRUE){
     pvaluesULF = p.adjust(pvaluesULF)
   }
-  if (any(pvaluesULF > 0.05)) {
+  if (all(pvaluesULF > 0.05)) {
     print("ULF Normal: Anova")
+    print("P-values = ")
+    print(pvaluesULF)
     lista$anova$ULF = aov(ULF ~ clase, data = dfM)
   }else {
+    print("P-values = ")
+    print(pvaluesULF)
     print("ULF NOT normal: Kruskal")
     lista$kruskal$ULF = kruskalFreqULF(dfM)
   }
@@ -261,11 +262,15 @@ statistical_analysisFreq<-function(dfM, correctSigLevel){
   if (correctSigLevel == TRUE){
     pvaluesVLF = p.adjust(pvaluesVLF)
   }
-  if (any(pvaluesVLF > 0.05)) {
+  if (all(pvaluesVLF > 0.05)) {
+    print("P-values = ")
+    print (pvaluesVLF)
     print("VLF Normal: Anova")
     aov(VLF ~ clase, data = dfM)
     lista$anova$VLF = aov(VLF ~ clase, data = dfM)
   } else {
+    print("P-values = ")
+    print (pvaluesVLF)
     print("VLF NOT normal: Kruskal")
     lista$kruskal$VLF = kruskalFreqVLF(dfM)
   }
@@ -275,10 +280,14 @@ statistical_analysisFreq<-function(dfM, correctSigLevel){
   if (correctSigLevel == TRUE){
     pvaluesLF = p.adjust(pvaluesLF)
   }
-  if (any(pvaluesLF > 0.05)) {
+  if (all(pvaluesLF > 0.05)) {
+    print("P-values = ")
+    print (pvaluesLF)
     print("LF Normal: Anova")
     lista$anova$LF = aov(LF ~ clase, data = dfM)  
   } else {
+    print("P-values = ")
+    print (pvaluesLF)
     print("LF NOT normal: Kruskal")
     lista$kruskal$LF = kruskalFreqLF(dfM)
   }
@@ -288,10 +297,14 @@ statistical_analysisFreq<-function(dfM, correctSigLevel){
   if (correctSigLevel == TRUE){
     pvaluesHF = p.adjust(pvaluesHF)
   }
-  if (any(pvaluesHF > 0.05)) {
+  if (all(pvaluesHF > 0.05)) {
+    print("P-values = ")
+    print (pvaluesHF)
     print("HF Normal: Anova")
     lista$anova$HF = aov(HF ~ clase, data = dfM) 
   } else {
+    print("P-values = ")
+    print (pvaluesHF)
     print("HF NOT normal: Kruskal")
     lista$kruskal$HF = kruskalFreqHF(dfM)
   }
@@ -301,11 +314,11 @@ statistical_analysisFreq<-function(dfM, correctSigLevel){
 }
 statistical_analysisTime<-function(dfM, correctSigLevel){
   
-  anova = list(SDNN = 0, SDANN = 0, SDNNIDX = 0, pNN50 = 0, SDSD = 0, rSSD = 0, IRRR = 0,
-               MADRR = 0, TINN = 0, HRVi = 0)
-  kruskal = list(SDNN = 0, SDANN = 0, SDNNIDX = 0, pNN50 = 0, SDSD = 0, rMSSD = 0, IRRR = 0,
-                 MADRR = 0, TINN = 0, HRVi = 0)
-  dunn = 0
+  anova = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rSSD = NA, IRRR = NA,
+               MADRR = NA, TINN = NA, HRVi = NA)
+  kruskal = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
+                 MADRR = NA, TINN = NA, HRVi = NA)
+  dunn = NA
   lista = list(anova = anova, kruskal = kruskal, dunn = dunn)
   
   listaDF = split(dfM, dfM$clase)
@@ -316,11 +329,15 @@ statistical_analysisTime<-function(dfM, correctSigLevel){
   if (correctSigLevel == TRUE){
     pvaluesSDNN = p.adjust(pvaluesSDNN)
   }
-  if (any(pvaluesSDNN > 0.05)) { 
+  if (all(pvaluesSDNN > 0.05)) { 
     print("SDNN Normal: Anova")
+    print("P-values = ")
+    print (pvaluesSDNN)
     lista$anova$SDNN = aov(SDNN ~ clase, data = dfM)
   }else {
     print("SDNN NOT normal: Kruskal")
+    print("P-values = ")
+    print (pvaluesSDNN)
     lista$kruskal$SDNN = kruskalTimeSDNN(dfM)
   }
   shapiroTimeSDANNCase = shapiroTimeSDANN(listaDF[[1]])
@@ -329,11 +346,15 @@ statistical_analysisTime<-function(dfM, correctSigLevel){
   if (correctSigLevel == TRUE){
     pvaluesSDANN = p.adjust(pvaluesSDANN)
   }
-  if (any(pvaluesSDANN > 0.05)) { 
+  if (all(pvaluesSDANN > 0.05)) { 
     print("SDANN Normal: Anova")
+    print("P-values = ")
+    print (pvaluesSDANN)
     lista$anova$SDANN = aov(SDANN ~ clase, data = dfM)
   } else {
     print("SDANN NOT normal: Kruskal")
+    print("P-values = ")
+    print (pvaluesSDANN)
     lista$kruskal$SDANN = kruskalTimeSDANN(dfM)
   }
   
@@ -343,25 +364,33 @@ statistical_analysisTime<-function(dfM, correctSigLevel){
   if (correctSigLevel == TRUE){
     pvaluesSDNNIDX = p.adjust(pvaluesSDNNIDX)
   }
-  if (any(pvaluesSDNNIDX > 0.05)) { 
+  if (all(pvaluesSDNNIDX > 0.05)) { 
     print("SDNNIDX Normal: Anova")
+    print("P-values = ")
+    print (pvaluesSDNNIDX)
     lista$anova$SDNNIDX = aov(SDNNIDX ~ clase, data = dfM)
   }else {
     print("SDNNIDX NOT normal: Kruskal")
+    print("P-values = ")
+    print (pvaluesSDNNIDX)
     lista$kruskal$SDNNIDX = kruskalTimeSDNNIDX(dfM)
   }
   
   shapiroTimepNN50Case = shapiroTimepNN50(listaDF[[1]])
   shapiroTimepNN50Control = shapiroTimepNN50(listaDF[[2]])
-  pvaluespNN50 = c(shapiroTimepNN50Case$p.value,shapiroTimepNN50Control$p.value)
+  pvaluespNN50 = c(shapiroTimepNN50Case$p.values,shapiroTimepNN50Control$p.value)
   if (correctSigLevel == TRUE){
     pvaluespNN50 = p.adjust(pvaluespNN50)
   }
-  if (any(pvaluespNN50 > 0.05)) { 
+  if (all(pvaluespNN50 > 0.05)) { 
     print("pNN50 Normal: Anova")
+    print("P-values = ")
+    print (pvaluespNN50)
     lista$anova$pNN50 = aov(pNN50 ~ clase, data = dfM)
   } else {
     print("pNN50 NOT normal: Kruskal")
+    print("P-values = ")
+    print (pvaluespNN50)
     lista$kruskal$pNN50 = kruskalTimepNN50(dfM)
   }
   
@@ -371,11 +400,15 @@ statistical_analysisTime<-function(dfM, correctSigLevel){
   if (correctSigLevel == TRUE){
     pvaluesSDSD = p.adjust(pvaluesSDSD)
   }
-  if (any(pvaluesSDSD > 0.05)) { 
+  if (all(pvaluesSDSD > 0.05)) {
     print("SDSD Normal: Anova")
+    print("P-values = ")
+    print (pvaluesSDSD)
     lista$anova$SDSD = aov(SDSD ~ clase, data = dfM)
   } else {
     print("SDSD NOT normal: Kruskal")
+    print("P-values = ")
+    print (pvaluesSDSD)
     lista$kruskal$SDSD = kruskalTimeSDSD(dfM)
   }
   
@@ -386,11 +419,15 @@ statistical_analysisTime<-function(dfM, correctSigLevel){
   if (correctSigLevel == TRUE){
     pvaluesrMSSD = p.adjust(pvaluesrMSSD)
   }
-  if (any(pvaluesrMSSD > 0.05)) { 
+  if (all(pvaluesrMSSD > 0.05)) { 
     print("rMSSD Normal: Anova")
+    print("P-values = ")
+    print (pvaluesrMSSD)
     lista$anova$rMSSD = aov(rMSSD ~ clase, data = dfM)
   } else {
     print("rMSSD NOT normal: Kruskal")
+    print("P-values = ")
+    print (pvaluesrMSSD)
     lista$kruskal$rMSSD = kruskalTimerMSSD(dfM)
   }
   
@@ -400,14 +437,17 @@ statistical_analysisTime<-function(dfM, correctSigLevel){
   if (correctSigLevel == TRUE){
     pvaluesIRRR = p.adjust(pvaluesIRRR)
   }
-  if (any(pvaluesIRRR > 0.05)){ 
+  if (all(pvaluesIRRR > 0.05)){
     print("IRRR Normal: Anova")
+    print("P-values = ")
+    print (pvaluesIRRR)
     lista$anova$IRRR = aov(IRRR ~ clase, data = dfM)
   } else {
     print("IRRR NOT normal: Kruskal")
+    print("P-values = ")
+    print (pvaluesIRRR)
     lista$kruskal$IRRR = kruskalTimeIRRR(dfM)
   }
-  
   
   shapiroTimeMADRRCase = shapiroTimeMADRR(listaDF[[1]])
   shapiroTimeMADRRControl = shapiroTimeMADRR(listaDF[[2]])
@@ -415,11 +455,15 @@ statistical_analysisTime<-function(dfM, correctSigLevel){
   if (correctSigLevel == TRUE){
     pvaluesMADRR = p.adjust(pvaluesMADRR)
   }
-  if (any(pvaluesMADRR > 0.05)){ 
+  if (all(pvaluesMADRR > 0.05)){ 
     print("MADRR Normal: Anova")
+    print("P-values = ")
+    print (pvaluesMADRR)
     lista$anova$MADRR = aov(MADRR ~ clase, data = dfM)
   } else {
     print("MADRR NOT normal: Kruskal")
+    print("P-values = ")
+    print (pvaluesMADRR)
     lista$kruskal$MADRR = kruskalTimeMADRR(dfM)
   }
   
@@ -429,11 +473,15 @@ statistical_analysisTime<-function(dfM, correctSigLevel){
   if (correctSigLevel == TRUE){
     pvaluesTINN = p.adjust(pvaluesTINN)
   }
-  if (any(pvaluesTINN > 0.05)){ 
+  if (all(pvaluesTINN > 0.05)){ 
     print("TINN Normal: Anova")
+    print("P-values = ")
+    print (pvaluesTINN)
     lista$anova$TINN = aov(TINN ~ clase, data = dfM)
   } else {
     print("TINN NOT normal: Kruskal")
+    print("P-values = ")
+    print (pvaluesTINN)
     lista$kruskal$TINN = kruskalTimeTINN(dfM)
   }
   
@@ -443,17 +491,26 @@ statistical_analysisTime<-function(dfM, correctSigLevel){
   if (correctSigLevel == TRUE){
     pvaluesHRVi = p.adjust(pvaluesHRVi)
   }
-  if (any(pvaluesHRVi > 0.05)){ 
+  if (all(pvaluesHRVi > 0.05)){ 
     print("HRVi Normal: Anova")
+    print("P-values = ")
+    print (pvaluesHRVi)
     lista$anova$HRVi = aov(HRVi ~ clase, data = dfM)
   } else {
     print("HRVi NOT normal: Kruskal")
+    print("P-values = ")
+    print (pvaluesHRVi)
     lista$kruskal$HRVi = kruskalTimeHRVi(dfM)
   }
   
   lista$dunn = dunntime(dfM)
   lista
   
+}
+
+split_path <- function(path) {
+  if (dirname(path) %in% c(".", path)) return(basename(path))
+  return(c(basename(path), split_path(dirname(path))))
 }
 
 
@@ -463,12 +520,10 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE){
   dataFrameMWavelet = data.frame()
   
   filesControl = list.files(control)
-  classControl = strsplit(control, .Platform$file.sep)[[1]]
-  classControl = classControl[length(classControl)]
+  classControl = split_path(control)[1]
   
   filesCase = list.files(case)
-  classCase = strsplit(case, .Platform$file.sep)[[1]]
-  classCase = classCase[length(classCase)]
+  classCase = split_path(case)[1]
   
   listFreqStatysticalAnalysis = list()
   listTimeStatysticalAnalysis = list()
@@ -496,9 +551,3 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE){
   }
   list(dataFrameMTime, listTimeStatysticalAnalysis, dataFrameMFreq, listFreqStatysticalAnalysis)
 }
-# listaResultadosSIN = list()
-# listaResultadosCON = list()
-# listaResultadosSIN = RHRVEasy("rrs/normal", "rrs/chf", FALSE, FALSE)
-# listaResultadosCON = RHRVEasy("rrs/normal", "rrs/chf", FALSE, TRUE)
-# # RHRVEasy("rrs/normal", "rrs/chf", FALSE, FALSE)
-
