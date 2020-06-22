@@ -232,7 +232,7 @@ dunntime<-function(dfM){
         HRVi = posthoc.kruskal.dunn.test(HRVi ~ clase, data = dfM, p.adjust="bonf"))
 }
 
-statistical_analysisFreqTRUE<-function(dfM, correctSigLevel){
+statistical_analysisFreqVerboseTRUE<-function(dfM, correctSigLevel){
   anova = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
   kruskal = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
   dunn = NA
@@ -296,7 +296,7 @@ statistical_analysisFreqTRUE<-function(dfM, correctSigLevel){
   lista
   
 }
-statistical_analysisFreqFALSE<-function(dfM, correctSigLevel){
+statistical_analysisFreqVerboseFALSE<-function(dfM, correctSigLevel){
   anova = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
   kruskal = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
   dunn = NA
@@ -352,7 +352,7 @@ statistical_analysisFreqFALSE<-function(dfM, correctSigLevel){
   lista
   
 }
-statistical_analysisTimeTRUE<-function(dfM, correctSigLevel){
+statistical_analysisTimeVerboseTRUE<-function(dfM, correctSigLevel){
   
   anova = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
                MADRR = NA, TINN = NA, HRVi = NA)
@@ -507,7 +507,7 @@ statistical_analysisTimeTRUE<-function(dfM, correctSigLevel){
   lista
   
 }
-statistical_analysisTimeFALSE<-function(dfM, correctSigLevel){
+statistical_analysisTimeVerboseFALSE<-function(dfM, correctSigLevel){
   
   anova = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
                MADRR = NA, TINN = NA, HRVi = NA)
@@ -846,9 +846,9 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
   dataFrameMTime=rbind(dataFrameMTimeControl, dataFrameMTimeCase)
   # Statistical analysis of both
   if(verbose == TRUE){
-    listTimeStatysticalAnalysis = statistical_analysisTimeTRUE(dataFrameMTime, correctSigLevel)
+    listTimeStatysticalAnalysis = statistical_analysisTimeVerboseTRUE(dataFrameMTime, correctSigLevel)
   }else{
-    listTimeStatysticalAnalysis = statistical_analysisTimeFALSE(dataFrameMTime, correctSigLevel)
+    listTimeStatysticalAnalysis = statistical_analysisTimeVerboseFALSE(dataFrameMTime, correctSigLevel)
   }
   # FREQUENCY:
   if(useWavelet == FALSE){
@@ -856,9 +856,9 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
     dataFrameMFreqCase = freq_analysis(filesCase, classCase, case, dataFrame2)
     dataFrameMFreq=rbind(dataFrameMFreqControl, dataFrameMFreqCase)
     if(verbose == TRUE){
-      listFreqStatysticalAnalysis = statistical_analysisFreqTRUE(dataFrameMFreq, correctSigLevel)
+      listFreqStatysticalAnalysis = statistical_analysisFreqVerboseTRUE(dataFrameMFreq, correctSigLevel)
     }else{
-      listFreqStatysticalAnalysis = statistical_analysisFreqFALSE(dataFrameMFreq, correctSigLevel)
+      listFreqStatysticalAnalysis = statistical_analysisFreqVerboseFALSE(dataFrameMFreq, correctSigLevel)
     }
     
   }
@@ -868,9 +868,9 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
     dataFrameMWaveletCase = wavelet_analysis(filesCase, classCase, case, dataFrameMWavelet)
     dataFrameMWavelet=rbind(dataFrameMWaveletControl, dataFrameMWaveletCase)
     if(verbose == TRUE){
-      listFreqStatysticalAnalysis = statistical_analysisFreqTRUE(dataFrameMFreq, correctSigLevel)
+      listFreqStatysticalAnalysis = statistical_analysisFreqVerboseTRUE(dataFrameMFreq, correctSigLevel)
     }else{
-      listFreqStatysticalAnalysis = statistical_analysisFreqFALSE(dataFrameMFreq, correctSigLevel)
+      listFreqStatysticalAnalysis = statistical_analysisFreqVerboseFALSE(dataFrameMFreq, correctSigLevel)
     }    
     dataFrameMFreq = dataFrameMWavelet
   }
