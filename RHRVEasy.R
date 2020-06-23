@@ -184,7 +184,6 @@ kruskalTimepNN50<-function(dfM){
 kruskalTimeSDSD<-function(dfM){
   kruskal.test(SDSD ~ clase, data = dfM)
 }  
-
 kruskalTimerMSSD<-function(dfM){
   kruskal.test(rMSSD ~ clase, data = dfM)
 }  
@@ -217,7 +216,6 @@ dunnfreq<-function(dfM){
         LF = posthoc.kruskal.dunn.test(LF ~ clase, data=dfM, p.adjust="bonf"),
         HF = posthoc.kruskal.dunn.test(HF ~ clase, data=dfM, p.adjust="bonf") )
 }
-
 dunntime<-function(dfM){
   dfM$clase = factor(dfM$clase)  
   list (SDNN= posthoc.kruskal.dunn.test(SDNN ~ clase, data = dfM, p.adjust="bonf"), 
@@ -648,179 +646,326 @@ split_path <- function(path) {
   return(c(basename(path), split_path(dirname(path))))
 }
 
-
 print.RHRVEasyResult <- function(result){
+  listaDF = split(result[[1]], result[[1]]$clase)
+  
   cat("Result of the analysis of the variability of the heart rate of the group",
       levels(result[[1]]$clase)[1], "versus the group", levels(result[[1]]$clase)[2], "\n\n")
   if(is.na(result[[2]]$anova$SDNN)){
     #report krustal
     if(result[[2]]$kruskal$SDNN$p.value<0.05){
       cat("There is a statistically significant difference in SDNN; pvalue: ", result[[2]]$kruskal$SDNN$p.value, "\n")
+      
+      cat("SDNN for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$SDNN), "+-", sd(listaDF[[1]]$SDNN))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$SDNN), "+-", sd(listaDF[[2]]$SDNN), "\n\n")
     }
   }
   #report anova
   else{
     if(result[[2]]$anova$SDNN$p.value<0.05){
       cat("There is a statistically significant difference in SDNN; pvalue: ", result[[2]]$anova$SDNN$p.value, "ºn")
+      
+      cat("SDNN for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$SDNN), "+-", sd(listaDF[[1]]$SDNN))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$SDNN), "+-", sd(listaDF[[2]]$SDNN), "\n\n")
     }
   }
+
 
   if(is.na(result[[2]]$anova$SDANN)){
     #report krustal
     if(result[[2]]$kruskal$SDANN$p.value<0.05){
       cat("There is a statistically significant difference in SDANN; pvalue: ", result[[2]]$kruskal$SDANN$p.value, "\n")
+      cat("SDANN for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$SDANN), "+-", sd(listaDF[[1]]$SDANN))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$SDANN), "+-", sd(listaDF[[2]]$SDANN), "\n\n")
     }
   }
   #report anova
   else{
     if(result[[2]]$anova$SDANN$p.value<0.05){
       cat("There is a statistically significant difference in SDANN; pvalue: ", result[[2]]$anova$SDANN$p.value, "ºn")
+      cat("SDANN for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$SDANN), "+-", sd(listaDF[[1]]$SDANN))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$SDANN), "+-", sd(listaDF[[2]]$SDANN), "\n\n")
     }
   }
+  
+  
 
   if(is.na(result[[2]]$anova$SDNNIDX)){
     #report krustal
     if(result[[2]]$kruskal$SDNNIDX$p.value<0.05){
       cat("There is a statistically significant difference in SDNNIDX; pvalue: ", result[[2]]$kruskal$SDNNIDX$p.value, "\n")
+      cat("SDNNIDX for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$SDNNIDX), "+-", sd(listaDF[[1]]$SDNNIDX))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$SDNNIDX), "+-", sd(listaDF[[2]]$SDNNIDX), "\n\n")
     }
   }
   #report anova
   else{
     if(result[[2]]$anova$SDNNIDX$p.value<0.05){
       cat("There is a statistically significant difference in SDNNIDX; pvalue: ", result[[2]]$anova$SDNNIDX$p.value, "ºn")
+      cat("SDNNIDX for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$SDNNIDX), "+-", sd(listaDF[[1]]$SDNNIDX))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$SDNNIDX), "+-", sd(listaDF[[2]]$SDNNIDX), "\n\n")
     }
   }
-
+ 
+  
   if(is.na(result[[2]]$anova$pNN50)){
     #report krustal
     if(result[[2]]$kruskal$pNN50$p.value<0.05){
       cat("There is a statistically significant difference in pNN50; pvalue: ", result[[2]]$kruskal$pNN50$p.value, "\n")
+      cat("pNN50 for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$pNN50), "+-", sd(listaDF[[1]]$pNN50))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$pNN50), "+-", sd(listaDF[[2]]$pNN50), "\n\n")
     }
   }
   #report anova
   else{
     if(result[[2]]$anova$pNN50$p.value>0.05){
       cat("There is a statistically significant difference in pNN50; pvalue: ", result[[2]]$anova$pNN50$p.value, "ºn")
+      cat("pNN50 for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$pNN50), "+-", sd(listaDF[[1]]$pNN50))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$pNN50), "+-", sd(listaDF[[2]]$pNN50), "\n\n")
     }
   }
+  
+  
+  
   if(is.na(result[[2]]$anova$SDSD)){
     #report krustal
     if(result[[2]]$kruskal$SDSD$p.value<0.05){
       cat("There is a statistically significant difference in SDSD; pvalue: ", result[[2]]$kruskal$SDSD$p.value, "\n")
+      cat("SDSD for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$SDSD), "+-", sd(listaDF[[1]]$SDSD))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$SDSD), "+-", sd(listaDF[[2]]$SDSD), "\n\n")
     }
   }
   #report anova
   else{
     if(result[[2]]$anova$SDSD$p.value<0.05){
       cat("There is a statistically significant difference in SDSD; pvalue: ", result[[2]]$anova$SDSD$p.value, "ºn")
+      cat("SDSD for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$SDSD), "+-", sd(listaDF[[1]]$SDSD))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$SDSD), "+-", sd(listaDF[[2]]$SDSD), "\n\n")
     }
   }
+  
+ 
+  
   if(is.na(result[[2]]$anova$rMSSD)){
     #report krustal
     if(result[[2]]$kruskal$rMSSD$p.value<0.05){
       cat("There is a statistically significant difference in rMSSD; pvalue: ", result[[2]]$kruskal$rMSSD$p.value, "\n")
+      cat("rMSSD for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$rMSSD), "+-", sd(listaDF[[1]]$rMSSD))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$rMSSD), "+-", sd(listaDF[[2]]$rMSSD), "\n\n")
     }
   }
   #report anova
   else{
     if(result[[2]]$anova$rMSSD$p.value<0.05){
       cat("There is a statistically significant difference in rMSSD; pvalue: ", result[[2]]$anova$rMSSD$p.value, "ºn")
+      cat("rMSSD for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$rMSSD), "+-", sd(listaDF[[1]]$rMSSD))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$rMSSD), "+-", sd(listaDF[[2]]$rMSSD), "\n\n")
     }
   }
+  
+  
+  
   if(is.na(result[[2]]$anova$IRRR)){
     #report krustal
     if(result[[2]]$kruskal$IRRR$p.value<0.05){
       cat("There is a statistically significant difference in IRRR; pvalue: ", result[[2]]$kruskal$IRRR$p.value, "\n")
+      cat("IRRR for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$IRRR), "+-", sd(listaDF[[1]]$IRRR))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$IRRR), "+-", sd(listaDF[[2]]$IRRR), "\n\n")
     }
   }
   #report anova
   else{
     if(result[[2]]$anova$IRRR$p.value<0.05){
       cat("There is a statistically significant difference in IRRR; pvalue: ", result[[2]]$anova$IRRR$p.value, "ºn")
+      cat("IRRR for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$IRRR), "+-", sd(listaDF[[1]]$IRRR))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$IRRR), "+-", sd(listaDF[[2]]$IRRR), "\n\n")
     }
   }
+  
+ 
+  
   if(is.na(result[[2]]$anova$MADRR)){
     #report krustal
     if(result[[2]]$kruskal$MADRR$p.value<0.05){
       cat("There is a statistically significant difference in MADRR; pvalue: ", result[[2]]$kruskal$MADRR$p.value, "\n")
+      cat("MADRR for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$MADRR), "+-", sd(listaDF[[1]]$MADRR))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$MADRR), "+-", sd(listaDF[[2]]$MADRR), "\n\n")
     }
   }
   #report anova
   else{
     if(result[[2]]$anova$MADRR$p.value<0.05){
       cat("There is a statistically significant difference in MADRR; pvalue: ", result[[2]]$anova$MADRR$p.value, "ºn")
+      cat("MADRR for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$MADRR), "+-", sd(listaDF[[1]]$MADRR))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$MADRR), "+-", sd(listaDF[[2]]$MADRR), "\n\n")
     }
   }
+  
+ 
+  
   if(is.na(result[[2]]$anova$TINN)){
     #report krustal
     if(result[[2]]$kruskal$TINN$p.value<0.05){
       cat("There is a statistically significant difference in TINN; pvalue: ", result[[2]]$kruskal$TINN$p.value, "\n")
+      cat("TINN for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$TINN), "+-", sd(listaDF[[1]]$TINN))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$TINN), "+-", sd(listaDF[[2]]$TINN), "\n\n")
+      
     }
   }
   #report anova
   else{
     if(result[[2]]$anova$TINN$p.value<0.05){
       cat("There is a statistically significant difference in TINN; pvalue: ", result[[2]]$anova$TINN$p.value, "ºn")
+      cat("TINN for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$TINN), "+-", sd(listaDF[[1]]$TINN))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$TINN), "+-", sd(listaDF[[2]]$TINN), "\n\n")
+      
     }
   }
+  
+  
   if(is.na(result[[2]]$anova$HRVi)){
     #report krustal
     if(result[[2]]$kruskal$HRVi$p.value<0.05){
       cat("There is a statistically significant difference in HRVi; pvalue: ", result[[2]]$kruskal$HRVi$p.value, "\n")
+      cat("HRVi for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$HRVi), "+-", sd(listaDF[[1]]$HRVi))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$HRVi), "+-", sd(listaDF[[2]]$HRVi), "\n\n")
     }
   }
   #report anova
   else{
     if(result[[2]]$anova$HRVi$p.value<0.05){
       cat("There is a statistically significant difference in HRVi; pvalue: ", result[[2]]$anova$HRVi$p.value, "ºn")
+      cat("HRVi for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF[[1]]$HRVi), "+-", sd(listaDF[[1]]$HRVi))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF[[2]]$HRVi), "+-", sd(listaDF[[2]]$HRVi), "\n\n")
     }
   }
+  
+  
+  
+  listaDF1 = split(result[[3]], result[[3]]$clase)
+  
+  
   if(is.na(result[[4]]$anova$ULF)){
     #report krustal
     if(result[[4]]$kruskal$ULF$p.value<0.05){
       cat("There is a statistically significant difference in ULF; pvalue: ", result[[4]]$kruskal$ULF$p.value, "\n")
+      cat("ULF for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF1[[1]]$ULF), "+-", sd(listaDF1[[1]]$ULF))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF1[[2]]$ULF), "+-", sd(listaDF1[[2]]$ULF), "\n\n")
     }
   }
   #report anova
   else{
     if(result[[4]]$anova$ULF$p.value<0.05){
       cat("There is a statistically significant difference in ULF; pvalue: ", result[[4]]$anova$ULF$p.value, "ºn")
+      cat("ULF for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF1[[1]]$ULF), "+-", sd(listaDF1[[1]]$ULF))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF1[[2]]$ULF), "+-", sd(listaDF1[[2]]$ULF), "\n\n")
     }
   }
+  
+ 
+  
   if(is.na(result[[4]]$anova$VLF)){
     #report krustal
     if(result[[4]]$kruskal$VLF$p.value<0.05){
       cat("There is a statistically significant difference in VLF; pvalue: ", result[[4]]$kruskal$VLF$p.value, "\n")
+      cat("VLF for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF1[[1]]$VLF), "+-", sd(listaDF1[[1]]$VLF))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF1[[2]]$VLF), "+-", sd(listaDF1[[2]]$VLF), "\n\n")
     }
   }
   #report anova
   else{
     if(result[[4]]$anova$VLF$p.value<0.05){
       cat("There is a statistically significant difference in VLF; pvalue: ", result[[4]]$anova$VLF$p.value, "ºn")
+      cat("VLF for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF1[[1]]$VLF), "+-", sd(listaDF1[[1]]$VLF))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF1[[2]]$VLF), "+-", sd(listaDF1[[2]]$VLF), "\n\n")
     }
   }
   if(is.na(result[[4]]$anova$LF)){
     #report krustal
     if(result[[4]]$kruskal$LF$p.value<0.05){
       cat("There is a statistically significant difference in LF; pvalue: ", result[[4]]$kruskal$LF$p.value, "\n")
+      cat("LF for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF1[[1]]$LF), "+-", sd(listaDF1[[1]]$LF))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF1[[2]]$LF), "+-", sd(listaDF1[[2]]$LF), "\n\n")
     }
   }
   #report anova
   else{
     if(result[[4]]$anova$LF$p.value<0.05){
       cat("There is a statistically significant difference in LF; pvalue: ", result[[4]]$anova$LF$p.value, "ºn")
+      cat("LF for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF1[[1]]$LF), "+-", sd(listaDF1[[1]]$LF))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF1[[2]]$LF), "+-", sd(listaDF1[[2]]$LF), "\n\n")
     }
   }
   if(is.na(result[[4]]$anova$HF)){
     #report krustal
     if(result[[4]]$kruskal$HF$p.value<0.05){
-    cat("There is a statistically significant difference in HF; pvalue: ", result[[4]]$kruskal$HF$p.value, "\n")
+      cat("There is a statistically significant difference in HF; pvalue: ", result[[4]]$kruskal$HF$p.value, "\n")
+      cat("HF for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF1[[1]]$HF), "+-", sd(listaDF1[[1]]$HF))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF1[[2]]$HF), "+-", sd(listaDF1[[2]]$HF), "\n\n")
     }
   }
   #report anova
   else{
     if(result[[4]]$anova$HF$p.value<0.05){
       cat("There is a statistically significant difference in HF; pvalue: ", result[[4]]$anova$HF$p.value, "ºn")
+      cat("HF for the group ", levels(result[[1]]$clase)[1], "is", 
+          mean(listaDF1[[1]]$HF), "+-", sd(listaDF1[[1]]$HF))
+      cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
+          mean(listaDF1[[2]]$HF), "+-", sd(listaDF1[[2]]$HF), "\n\n")
     }
   }
 }
