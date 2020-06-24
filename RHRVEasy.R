@@ -230,7 +230,7 @@ dunntime<-function(dfM){
         HRVi = posthoc.kruskal.dunn.test(HRVi ~ clase, data = dfM, p.adjust="bonf"))
 }
 
-statistical_analysisFreqVerboseTRUE<-function(dfM, correctSigLevel){
+statistical_analysisFreq<-function(dfM, correctSigLevel, verbose){
   anova = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
   kruskal = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
   dunn = NA
@@ -244,10 +244,14 @@ statistical_analysisFreqVerboseTRUE<-function(dfM, correctSigLevel){
     pvaluesULF = p.adjust(pvaluesULF)
   }
   if (all(pvaluesULF > 0.05)) {
-    cat("ULF Normal: Anova. P-values = ", pvaluesULF, "\n")
+    if (verbose == TRUE){
+      cat("ULF Normal: Anova. P-values = ", pvaluesULF, "\n")
+    }
     lista$anova$ULF = aov(ULF ~ clase, data = dfM)
   }else {
-    cat("ULF NOT normal: Kruskal. P-values = ", pvaluesULF, "\n")
+    if (verbose == TRUE){
+      cat("ULF NOT normal: Kruskal. P-values = ", pvaluesULF, "\n")
+    }
     lista$kruskal$ULF = kruskalFreqULF(dfM)
   }
   shapiroFreqVLFCase = shapiroFreqVLF(listaDF[[1]])
@@ -257,11 +261,15 @@ statistical_analysisFreqVerboseTRUE<-function(dfM, correctSigLevel){
     pvaluesVLF = p.adjust(pvaluesVLF)
   }
   if (all(pvaluesVLF > 0.05)) {
-    cat("VLF Normal: Anova. P-values = ", pvaluesVLF, "\n")
+    if (verbose == TRUE){
+      cat("VLF Normal: Anova. P-values = ", pvaluesVLF, "\n")
+    }
     aov(VLF ~ clase, data = dfM)
     lista$anova$VLF = aov(VLF ~ clase, data = dfM)
   } else {
-    cat("VLF NOT normal: Kruskal. P-values = ", pvaluesVLF, "\n")
+    if (verbose == TRUE){
+      cat("VLF NOT normal: Kruskal. P-values = ", pvaluesVLF, "\n")
+    }
     lista$kruskal$VLF = kruskalFreqVLF(dfM)
   }
   shapiroFreqLFCase = shapiroFreqLF(listaDF[[1]])
@@ -271,10 +279,14 @@ statistical_analysisFreqVerboseTRUE<-function(dfM, correctSigLevel){
     pvaluesLF = p.adjust(pvaluesLF)
   }
   if (all(pvaluesLF > 0.05)) {
-    cat("LF Normal: Anova. P-values = ", pvaluesLF, "\n")
+    if (verbose == TRUE){
+      cat("LF Normal: Anova. P-values = ", pvaluesLF, "\n")
+    }
     lista$anova$LF = aov(LF ~ clase, data = dfM)  
   } else {
-    cat("LF NOT normal: Kruskal. P-values = ", pvaluesLF, "\n")
+    if (verbose == TRUE){
+      cat("LF NOT normal: Kruskal. P-values = ", pvaluesLF, "\n")
+    }
     lista$kruskal$LF = kruskalFreqLF(dfM)
   }
   shapiroFreqHFCase = shapiroFreqHF(listaDF[[1]])
@@ -284,73 +296,21 @@ statistical_analysisFreqVerboseTRUE<-function(dfM, correctSigLevel){
     pvaluesHF = p.adjust(pvaluesHF)
   }
   if (all(pvaluesHF > 0.05)) {
-    cat("HF Normal: Anova. P-values = ", pvaluesHF, "\n")
+    if (verbose == TRUE){
+      cat("HF Normal: Anova. P-values = ", pvaluesHF, "\n")
+    }
     lista$anova$HF = aov(HF ~ clase, data = dfM) 
   } else {
-    cat("HF NOT normal: Kruskal. P-values = ", pvaluesHF, "\n")
+    if (verbose == TRUE){
+      cat("HF NOT normal: Kruskal. P-values = ", pvaluesHF, "\n")
+    }
     lista$kruskal$HF = kruskalFreqHF(dfM)
   }
   lista$dunn = dunnfreq(dfM)
   lista
   
 }
-statistical_analysisFreqVerboseFALSE<-function(dfM, correctSigLevel){
-  anova = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
-  kruskal = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
-  dunn = NA
-  lista = list(anova = anova, kruskal = kruskal, dunn = dunn)
-  
-  listaDF = split(dfM, dfM$clase)
-  shapiroFreqULFCase = shapiroFreqULF(listaDF[[1]])
-  shapiroFreqULFControl = shapiroFreqULF(listaDF[[2]])
-  pvaluesULF = c(shapiroFreqULFCase$p.value,shapiroFreqULFControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesULF = p.adjust(pvaluesULF)
-  }
-  if (all(pvaluesULF > 0.05)) {
-    lista$anova$ULF = aov(ULF ~ clase, data = dfM)
-  }else {
-    lista$kruskal$ULF = kruskalFreqULF(dfM)
-  }
-  shapiroFreqVLFCase = shapiroFreqVLF(listaDF[[1]])
-  shapiroFreqVLFControl = shapiroFreqVLF(listaDF[[2]])
-  pvaluesVLF = c(shapiroFreqVLFCase$p.value,shapiroFreqVLFControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesVLF = p.adjust(pvaluesVLF)
-  }
-  if (all(pvaluesVLF > 0.05)) {
-    aov(VLF ~ clase, data = dfM)
-    lista$anova$VLF = aov(VLF ~ clase, data = dfM)
-  } else {
-    lista$kruskal$VLF = kruskalFreqVLF(dfM)
-  }
-  shapiroFreqLFCase = shapiroFreqLF(listaDF[[1]])
-  shapiroFreqLFControl = shapiroFreqLF(listaDF[[2]])
-  pvaluesLF = c(shapiroFreqLFCase$p.value,shapiroFreqLFControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesLF = p.adjust(pvaluesLF)
-  }
-  if (all(pvaluesLF > 0.05)) {
-    lista$anova$LF = aov(LF ~ clase, data = dfM)  
-  } else {
-    lista$kruskal$LF = kruskalFreqLF(dfM)
-  }
-  shapiroFreqHFCase = shapiroFreqHF(listaDF[[1]])
-  shapiroFreqHFControl = shapiroFreqHF(listaDF[[2]])
-  pvaluesHF = c(shapiroFreqHFCase$p.value,shapiroFreqHFControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesHF = p.adjust(pvaluesHF)
-  }
-  if (all(pvaluesHF > 0.05)) {
-    lista$anova$HF = aov(HF ~ clase, data = dfM) 
-  } else {
-    lista$kruskal$HF = kruskalFreqHF(dfM)
-  }
-  lista$dunn = dunnfreq(dfM)
-  lista
-  
-}
-statistical_analysisTimeVerboseTRUE<-function(dfM, correctSigLevel){
+statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   
   anova = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
                MADRR = NA, TINN = NA, HRVi = NA)
@@ -368,10 +328,14 @@ statistical_analysisTimeVerboseTRUE<-function(dfM, correctSigLevel){
     pvaluesSDNN = p.adjust(pvaluesSDNN)
   }
   if (all(pvaluesSDNN > 0.05)) { 
-    cat("SDNN Normal: Anova. P-values = ", pvaluesSDNN, "\n")
+    if (verbose == TRUE){
+      cat("SDNN Normal: Anova. P-values = ", pvaluesSDNN, "\n")
+    }
     lista$anova$SDNN = aov(SDNN ~ clase, data = dfM)
   }else {
-    cat("SDNN NOT normal: Kruskal. P-values = ", pvaluesSDNN, "\n")
+    if (verbose == TRUE){
+      cat("SDNN NOT normal: Kruskal. P-values = ", pvaluesSDNN, "\n")
+    }
     lista$kruskal$SDNN = kruskalTimeSDNN(dfM)
   }
   shapiroTimeSDANNCase = shapiroTimeSDANN(listaDF[[1]])
@@ -381,10 +345,14 @@ statistical_analysisTimeVerboseTRUE<-function(dfM, correctSigLevel){
     pvaluesSDANN = p.adjust(pvaluesSDANN)
   }
   if (all(pvaluesSDANN > 0.05)) { 
-    cat("SDANN Normal: Anova. P-values = ", pvaluesSDANN, "\n")
+    if (verbose == TRUE){
+      cat("SDANN Normal: Anova. P-values = ", pvaluesSDANN, "\n")
+    }
     lista$anova$SDANN = aov(SDANN ~ clase, data = dfM)
   } else {
-    cat("SDANN NOT normal: Kruskal. P-values = ", pvaluesSDANN, "\n")
+    if (verbose == TRUE){
+      cat("SDANN NOT normal: Kruskal. P-values = ", pvaluesSDANN, "\n")
+    }
     lista$kruskal$SDANN = kruskalTimeSDANN(dfM)
   }
   
@@ -395,10 +363,14 @@ statistical_analysisTimeVerboseTRUE<-function(dfM, correctSigLevel){
     pvaluesSDNNIDX = p.adjust(pvaluesSDNNIDX)
   }
   if (all(pvaluesSDNNIDX > 0.05)) { 
-    cat("SDNNIDX Normal: Anova. P-values = ", pvaluesSDNNIDX, "\n")
+    if (verbose == TRUE){
+      cat("SDNNIDX Normal: Anova. P-values = ", pvaluesSDNNIDX, "\n")
+    }
     lista$anova$SDNNIDX = aov(SDNNIDX ~ clase, data = dfM)
   }else {
-    cat("SDNNIDX NOT normal: Kruskal. P-values = ", pvaluesSDNNIDX, "\n")
+    if (verbose == TRUE){
+      cat("SDNNIDX NOT normal: Kruskal. P-values = ", pvaluesSDNNIDX, "\n")
+    }
     lista$kruskal$SDNNIDX = kruskalTimeSDNNIDX(dfM)
   }
   
@@ -409,10 +381,14 @@ statistical_analysisTimeVerboseTRUE<-function(dfM, correctSigLevel){
     pvaluespNN50 = p.adjust(pvaluespNN50)
   }
   if (all(pvaluespNN50 > 0.05)) { 
-    cat("pNN50 Normal: Anova. P-values = ", pvaluespNN50, "\n")
+    if (verbose == TRUE){
+      cat("pNN50 Normal: Anova. P-values = ", pvaluespNN50, "\n")
+    }
     lista$anova$pNN50 = aov(pNN50 ~ clase, data = dfM)
   } else {
-    cat("pNN50 NOT normal: Kruskal. P-values = ", pvaluespNN50, "\n")
+    if (verbose == TRUE){
+      cat("pNN50 NOT normal: Kruskal. P-values = ", pvaluespNN50, "\n")
+    }
     lista$kruskal$pNN50 = kruskalTimepNN50(dfM)
   }
   
@@ -423,10 +399,14 @@ statistical_analysisTimeVerboseTRUE<-function(dfM, correctSigLevel){
     pvaluesSDSD = p.adjust(pvaluesSDSD)
   }
   if (all(pvaluesSDSD > 0.05)) {
-    cat("SDSD Normal: Anova. P-values = ", pvaluesSDSD, "\n")
+    if (verbose == TRUE){
+      cat("SDSD Normal: Anova. P-values = ", pvaluesSDSD, "\n")
+    }
     lista$anova$SDSD = aov(SDSD ~ clase, data = dfM)
   } else {
-    cat("SDSD NOT normal: Kruskal. P-values = ", pvaluesSDSD, "\n")
+    if (verbose == TRUE){
+      cat("SDSD NOT normal: Kruskal. P-values = ", pvaluesSDSD, "\n")
+    }
     lista$kruskal$SDSD = kruskalTimeSDSD(dfM)
   }
   
@@ -438,10 +418,14 @@ statistical_analysisTimeVerboseTRUE<-function(dfM, correctSigLevel){
     pvaluesrMSSD = p.adjust(pvaluesrMSSD)
   }
   if (all(pvaluesrMSSD > 0.05)) { 
-    cat("rMSSD Normal: Anova. P-values = ", pvaluesrMSSD, "\n")
+    if (verbose == TRUE){
+      cat("rMSSD Normal: Anova. P-values = ", pvaluesrMSSD, "\n")
+    }
     lista$anova$rMSSD = aov(rMSSD ~ clase, data = dfM)
   } else {
-    cat("rMSSD NOT normal: Kruskal. P-values = ", pvaluesrMSSD, "\n")
+    if (verbose == TRUE){
+      cat("rMSSD NOT normal: Kruskal. P-values = ", pvaluesrMSSD, "\n")
+    }
     lista$kruskal$rMSSD = kruskalTimerMSSD(dfM)
   }
   
@@ -452,10 +436,14 @@ statistical_analysisTimeVerboseTRUE<-function(dfM, correctSigLevel){
     pvaluesIRRR = p.adjust(pvaluesIRRR)
   }
   if (all(pvaluesIRRR > 0.05)){
-    cat("IRRR Normal: Anova. P-values = ", pvaluesIRRR, "\n")
+    if (verbose == TRUE){
+      cat("IRRR Normal: Anova. P-values = ", pvaluesIRRR, "\n")
+    }
     lista$anova$IRRR = aov(IRRR ~ clase, data = dfM)
   } else {
-    cat("IRRR NOT normal: Kruskal. P-values = ", pvaluesIRRR, "\n")
+    if (verbose == TRUE){
+      cat("IRRR NOT normal: Kruskal. P-values = ", pvaluesIRRR, "\n")
+    }
     lista$kruskal$IRRR = kruskalTimeIRRR(dfM)
   }
   
@@ -466,10 +454,14 @@ statistical_analysisTimeVerboseTRUE<-function(dfM, correctSigLevel){
     pvaluesMADRR = p.adjust(pvaluesMADRR)
   }
   if (all(pvaluesMADRR > 0.05)){ 
-    cat("MADRR Normal: Anova. P-values = ", pvaluesMADRR, "\n")
+    if (verbose == TRUE){
+      cat("MADRR Normal: Anova. P-values = ", pvaluesMADRR, "\n")
+    }
     lista$anova$MADRR = aov(MADRR ~ clase, data = dfM)
   } else {
-    cat("IRRR NOT normal: Kruskal. P-values = ", pvaluesMADRR, "\n")
+    if (verbose == TRUE){
+      cat("IRRR NOT normal: Kruskal. P-values = ", pvaluesMADRR, "\n")
+    }
     lista$kruskal$MADRR = kruskalTimeMADRR(dfM)
   }
   
@@ -480,10 +472,14 @@ statistical_analysisTimeVerboseTRUE<-function(dfM, correctSigLevel){
     pvaluesTINN = p.adjust(pvaluesTINN)
   }
   if (all(pvaluesTINN > 0.05)){ 
-    cat("TINN NOT normal: Kruskal. P-values = ", pvaluesTINN, "\n")
+    if (verbose == TRUE){
+      cat("TINN NOT normal: Kruskal. P-values = ", pvaluesTINN, "\n")
+    }
     lista$anova$TINN = aov(TINN ~ clase, data = dfM)
   } else {
-    cat("TINN NOT normal: Kruskal. P-values = ", pvaluesTINN, "\n")
+    if (verbose == TRUE){
+      cat("TINN NOT normal: Kruskal. P-values = ", pvaluesTINN, "\n")
+    }
     lista$kruskal$TINN = kruskalTimeTINN(dfM)
   }
   
@@ -494,145 +490,14 @@ statistical_analysisTimeVerboseTRUE<-function(dfM, correctSigLevel){
     pvaluesHRVi = p.adjust(pvaluesHRVi)
   }
   if (all(pvaluesHRVi > 0.05)){ 
-    cat("HRVi NOT normal: Kruskal. P-values = ", pvaluesHRVi, "\n")
+    if (verbose == TRUE){
+      cat("HRVi NOT normal: Kruskal. P-values = ", pvaluesHRVi, "\n")
+    }
     lista$anova$HRVi = aov(HRVi ~ clase, data = dfM)
   } else {
-    cat("HRVi NOT normal: Kruskal. P-values = ", pvaluesHRVi, "\n")
-    lista$kruskal$HRVi = kruskalTimeHRVi(dfM)
-  }
-  
-  lista$dunn = dunntime(dfM)
-  lista
-  
-}
-statistical_analysisTimeVerboseFALSE<-function(dfM, correctSigLevel){
-  
-  anova = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
-               MADRR = NA, TINN = NA, HRVi = NA)
-  kruskal = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
-                 MADRR = NA, TINN = NA, HRVi = NA)
-  dunn = NA
-  lista = list(anova = anova, kruskal = kruskal, dunn = dunn)
-  
-  listaDF = split(dfM, dfM$clase)
-  
-  shapiroTimeSDNNCase = shapiroTimeSDNN(listaDF[[1]])
-  shapiroTimeSDNNControl = shapiroTimeSDNN(listaDF[[2]])
-  pvaluesSDNN = c(shapiroTimeSDNNCase$p.value,shapiroTimeSDNNControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesSDNN = p.adjust(pvaluesSDNN)
-  }
-  if (all(pvaluesSDNN > 0.05)) { 
-    lista$anova$SDNN = aov(SDNN ~ clase, data = dfM)
-  }else {
-    lista$kruskal$SDNN = kruskalTimeSDNN(dfM)
-  }
-  shapiroTimeSDANNCase = shapiroTimeSDANN(listaDF[[1]])
-  shapiroTimeSDANNControl = shapiroTimeSDANN(listaDF[[2]])
-  pvaluesSDANN = c(shapiroTimeSDANNCase$p.value,shapiroTimeSDANNControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesSDANN = p.adjust(pvaluesSDANN)
-  }
-  if (all(pvaluesSDANN > 0.05)) { 
-    lista$anova$SDANN = aov(SDANN ~ clase, data = dfM)
-  } else {
-    lista$kruskal$SDANN = kruskalTimeSDANN(dfM)
-  }
-  
-  shapiroTimeSDNNIDXCase = shapiroTimeSDNNIDX(listaDF[[1]])
-  shapiroTimeSDNNIDXControl = shapiroTimeSDNNIDX(listaDF[[2]])
-  pvaluesSDNNIDX = c(shapiroTimeSDNNIDXCase$p.value,shapiroTimeSDNNIDXControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesSDNNIDX = p.adjust(pvaluesSDNNIDX)
-  }
-  if (all(pvaluesSDNNIDX > 0.05)) { 
-    lista$anova$SDNNIDX = aov(SDNNIDX ~ clase, data = dfM)
-  }else {
-    lista$kruskal$SDNNIDX = kruskalTimeSDNNIDX(dfM)
-  }
-  
-  shapiroTimepNN50Case = shapiroTimepNN50(listaDF[[1]])
-  shapiroTimepNN50Control = shapiroTimepNN50(listaDF[[2]])
-  pvaluespNN50 = c(shapiroTimepNN50Case$p.values,shapiroTimepNN50Control$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluespNN50 = p.adjust(pvaluespNN50)
-  }
-  if (all(pvaluespNN50 > 0.05)) { 
-    lista$anova$pNN50 = aov(pNN50 ~ clase, data = dfM)
-  } else {
-    lista$kruskal$pNN50 = kruskalTimepNN50(dfM)
-  }
-  
-  shapiroTimeSDSDCase = shapiroTimeSDSD(listaDF[[1]])
-  shapiroTimeSDSDControl = shapiroTimeSDSD(listaDF[[2]])
-  pvaluesSDSD = c(shapiroTimeSDSDCase$p.value,shapiroTimeSDSDControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesSDSD = p.adjust(pvaluesSDSD)
-  }
-  if (all(pvaluesSDSD > 0.05)) {
-    lista$anova$SDSD = aov(SDSD ~ clase, data = dfM)
-  } else {
-    lista$kruskal$SDSD = kruskalTimeSDSD(dfM)
-  }
-  
-  
-  shapiroTimerMSSDCase = shapiroTimerMSSD(listaDF[[1]])
-  shapiroTimerMSSDControl = shapiroTimerMSSD(listaDF[[2]])
-  pvaluesrMSSD = c(shapiroTimerMSSDCase$p.value,shapiroTimerMSSDControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesrMSSD = p.adjust(pvaluesrMSSD)
-  }
-  if (all(pvaluesrMSSD > 0.05)) { 
-    lista$anova$rMSSD = aov(rMSSD ~ clase, data = dfM)
-  } else {
-    lista$kruskal$rMSSD = kruskalTimerMSSD(dfM)
-  }
-  
-  shapiroTimeIRRRCase = shapiroTimeIRRR(listaDF[[1]])
-  shapiroTimeIRRRControl = shapiroTimeIRRR(listaDF[[2]])
-  pvaluesIRRR = c(shapiroTimeIRRRCase$p.value,shapiroTimeIRRRControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesIRRR = p.adjust(pvaluesIRRR)
-  }
-  if (all(pvaluesIRRR > 0.05)){
-    lista$anova$IRRR = aov(IRRR ~ clase, data = dfM)
-  } else {
-    lista$kruskal$IRRR = kruskalTimeIRRR(dfM)
-  }
-  
-  shapiroTimeMADRRCase = shapiroTimeMADRR(listaDF[[1]])
-  shapiroTimeMADRRControl = shapiroTimeMADRR(listaDF[[2]])
-  pvaluesMADRR = c(shapiroTimeMADRRCase$p.value,shapiroTimeMADRRControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesMADRR = p.adjust(pvaluesMADRR)
-  }
-  if (all(pvaluesMADRR > 0.05)){ 
-    lista$anova$MADRR = aov(MADRR ~ clase, data = dfM)
-  } else {
-    lista$kruskal$MADRR = kruskalTimeMADRR(dfM)
-  }
-  
-  shapiroTimeTINNCase = shapiroTimeTINN(listaDF[[1]])
-  shapiroTimeTINNControl = shapiroTimeTINN(listaDF[[2]])
-  pvaluesTINN = c(shapiroTimeTINNCase$p.value,shapiroTimeTINNControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesTINN = p.adjust(pvaluesTINN)
-  }
-  if (all(pvaluesTINN > 0.05)){ 
-    lista$anova$TINN = aov(TINN ~ clase, data = dfM)
-  } else {
-    lista$kruskal$TINN = kruskalTimeTINN(dfM)
-  }
-  
-  shapiroTimeHRViCase = shapiroTimeHRVi(listaDF[[1]])
-  shapiroTimeHRViControl = shapiroTimeHRVi(listaDF[[2]])
-  pvaluesHRVi = c(shapiroTimeHRViCase$p.value,shapiroTimeHRViControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesHRVi = p.adjust(pvaluesHRVi)
-  }
-  if (all(pvaluesHRVi > 0.05)){ 
-    lista$anova$HRVi = aov(HRVi ~ clase, data = dfM)
-  } else {
+    if (verbose == TRUE){
+      cat("HRVi NOT normal: Kruskal. P-values = ", pvaluesHRVi, "\n")
+    }
     lista$kruskal$HRVi = kruskalTimeHRVi(dfM)
   }
   
@@ -664,8 +529,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(result[[2]]$anova$SDNN$p.value<0.05){
-      cat("There is a statistically significant difference in SDNN; pvalue: ", result[[2]]$anova$SDNN$p.value, "ºn")
+    if(summary(listaDF[[1]]$anova$SDNN)[[1]]["Pr(>F)"][1]<0.05){
+      cat("There is a statistically significant difference in SDNN; pvalue: ", summary(listaDF[[1]]$anova$SDNN)[[1]]["Pr(>F)"][1], "ºn")
       
       cat("SDNN for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$SDNN), "+-", sd(listaDF[[1]]$SDNN))
@@ -673,8 +538,8 @@ print.RHRVEasyResult <- function(result){
           mean(listaDF[[2]]$SDNN), "+-", sd(listaDF[[2]]$SDNN), "\n\n")
     }
   }
-
-
+  
+  
   if(is.na(result[[2]]$anova$SDANN)){
     #report krustal
     if(result[[2]]$kruskal$SDANN$p.value<0.05){
@@ -687,8 +552,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(result[[2]]$anova$SDANN$p.value<0.05){
-      cat("There is a statistically significant difference in SDANN; pvalue: ", result[[2]]$anova$SDANN$p.value, "ºn")
+    if(summary(listaDF[[1]]$anova$SDANN)[[1]]["Pr(>F)"][1]<0.05){
+      cat("There is a statistically significant difference in SDANN; pvalue: ", summary(listaDF[[1]]$anova$SDANN)[[1]]["Pr(>F)"][1], "ºn")
       cat("SDANN for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$SDANN), "+-", sd(listaDF[[1]]$SDANN))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -697,7 +562,7 @@ print.RHRVEasyResult <- function(result){
   }
   
   
-
+  
   if(is.na(result[[2]]$anova$SDNNIDX)){
     #report krustal
     if(result[[2]]$kruskal$SDNNIDX$p.value<0.05){
@@ -710,15 +575,15 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(result[[2]]$anova$SDNNIDX$p.value<0.05){
-      cat("There is a statistically significant difference in SDNNIDX; pvalue: ", result[[2]]$anova$SDNNIDX$p.value, "ºn")
+    if(summary(listaDF[[1]]$anova$SDNNIDX)[[1]]["Pr(>F)"][1]<0.05){
+      cat("There is a statistically significant difference in SDNNIDX; pvalue: ", summary(listaDF[[1]]$anova$SDNNIDX)[[1]]["Pr(>F)"][1], "ºn")
       cat("SDNNIDX for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$SDNNIDX), "+-", sd(listaDF[[1]]$SDNNIDX))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
           mean(listaDF[[2]]$SDNNIDX), "+-", sd(listaDF[[2]]$SDNNIDX), "\n\n")
     }
   }
- 
+  
   
   if(is.na(result[[2]]$anova$pNN50)){
     #report krustal
@@ -732,8 +597,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(result[[2]]$anova$pNN50$p.value>0.05){
-      cat("There is a statistically significant difference in pNN50; pvalue: ", result[[2]]$anova$pNN50$p.value, "ºn")
+    if(summary(listaDF[[1]]$anova$pNN50)[[1]]["Pr(>F)"][1]>0.05){
+      cat("There is a statistically significant difference in pNN50; pvalue: ", summary(listaDF[[1]]$anova$pNN50)[[1]]["Pr(>F)"][1], "ºn")
       cat("pNN50 for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$pNN50), "+-", sd(listaDF[[1]]$pNN50))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -755,8 +620,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(result[[2]]$anova$SDSD$p.value<0.05){
-      cat("There is a statistically significant difference in SDSD; pvalue: ", result[[2]]$anova$SDSD$p.value, "ºn")
+    if(summary(listaDF[[1]]$anova$SDSD)[[1]]["Pr(>F)"][1]<0.05){
+      cat("There is a statistically significant difference in SDSD; pvalue: ", summary(listaDF[[1]]$anova$SDSD)[[1]]["Pr(>F)"][1], "ºn")
       cat("SDSD for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$SDSD), "+-", sd(listaDF[[1]]$SDSD))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -764,7 +629,7 @@ print.RHRVEasyResult <- function(result){
     }
   }
   
- 
+  
   
   if(is.na(result[[2]]$anova$rMSSD)){
     #report krustal
@@ -778,8 +643,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(result[[2]]$anova$rMSSD$p.value<0.05){
-      cat("There is a statistically significant difference in rMSSD; pvalue: ", result[[2]]$anova$rMSSD$p.value, "ºn")
+    if(summary(listaDF[[1]]$anova$rMSSD)[[1]]["Pr(>F)"][1]<0.05){
+      cat("There is a statistically significant difference in rMSSD; pvalue: ", summary(listaDF[[1]]$anova$rMSSD)[[1]]["Pr(>F)"][1], "ºn")
       cat("rMSSD for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$rMSSD), "+-", sd(listaDF[[1]]$rMSSD))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -801,8 +666,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(result[[2]]$anova$IRRR$p.value<0.05){
-      cat("There is a statistically significant difference in IRRR; pvalue: ", result[[2]]$anova$IRRR$p.value, "ºn")
+    if(summary(listaDF[[1]]$anova$IRRR)[[1]]["Pr(>F)"][1]<0.05){
+      cat("There is a statistically significant difference in IRRR; pvalue: ", summary(listaDF[[1]]$anova$IRRR)[[1]]["Pr(>F)"][1], "ºn")
       cat("IRRR for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$IRRR), "+-", sd(listaDF[[1]]$IRRR))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -810,7 +675,7 @@ print.RHRVEasyResult <- function(result){
     }
   }
   
- 
+  
   
   if(is.na(result[[2]]$anova$MADRR)){
     #report krustal
@@ -824,8 +689,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(result[[2]]$anova$MADRR$p.value<0.05){
-      cat("There is a statistically significant difference in MADRR; pvalue: ", result[[2]]$anova$MADRR$p.value, "ºn")
+    if(summary(listaDF[[1]]$anova$MADRR)[[1]]["Pr(>F)"][1]<0.05){
+      cat("There is a statistically significant difference in MADRR; pvalue: ", summary(listaDF[[1]]$anova$MADRR)[[1]]["Pr(>F)"][1], "ºn")
       cat("MADRR for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$MADRR), "+-", sd(listaDF[[1]]$MADRR))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -833,7 +698,7 @@ print.RHRVEasyResult <- function(result){
     }
   }
   
- 
+  
   
   if(is.na(result[[2]]$anova$TINN)){
     #report krustal
@@ -848,8 +713,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(result[[2]]$anova$TINN$p.value<0.05){
-      cat("There is a statistically significant difference in TINN; pvalue: ", result[[2]]$anova$TINN$p.value, "ºn")
+    if(summary(listaDF[[1]]$anova$TINN)[[1]]["Pr(>F)"][1]<0.05){
+      cat("There is a statistically significant difference in TINN; pvalue: ", summary(listaDF[[1]]$anova$TINN)[[1]]["Pr(>F)"][1], "ºn")
       cat("TINN for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$TINN), "+-", sd(listaDF[[1]]$TINN))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -871,8 +736,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(result[[2]]$anova$HRVi$p.value<0.05){
-      cat("There is a statistically significant difference in HRVi; pvalue: ", result[[2]]$anova$HRVi$p.value, "ºn")
+    if(summary(listaDF[[1]]$anova$HRVi)[[1]]["Pr(>F)"][1]<0.05){
+      cat("There is a statistically significant difference in HRVi; pvalue: ", summary(listaDF[[1]]$anova$HRVi)[[1]]["Pr(>F)"][1], "ºn")
       cat("HRVi for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$HRVi), "+-", sd(listaDF[[1]]$HRVi))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -897,8 +762,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(result[[4]]$anova$ULF$p.value<0.05){
-      cat("There is a statistically significant difference in ULF; pvalue: ", result[[4]]$anova$ULF$p.value, "ºn")
+    if(summary(listaDF1[[1]]$anova$ULF)[[1]]["Pr(>F)"][1]<0.05){
+      cat("There is a statistically significant difference in ULF; pvalue: ", summary(listaDF1[[1]]$anova$ULF)[[1]]["Pr(>F)"][1], "ºn")
       cat("ULF for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF1[[1]]$ULF), "+-", sd(listaDF1[[1]]$ULF))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -906,7 +771,7 @@ print.RHRVEasyResult <- function(result){
     }
   }
   
- 
+  
   
   if(is.na(result[[4]]$anova$VLF)){
     #report krustal
@@ -920,8 +785,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(result[[4]]$anova$VLF$p.value<0.05){
-      cat("There is a statistically significant difference in VLF; pvalue: ", result[[4]]$anova$VLF$p.value, "ºn")
+    if(summary(listaDF1[[1]]$anova$VLF)[[1]]["Pr(>F)"][1]<0.05){
+      cat("There is a statistically significant difference in VLF; pvalue: ", summary(listaDF1[[1]]$anova$VLF)[[1]]["Pr(>F)"][1], "ºn")
       cat("VLF for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF1[[1]]$VLF), "+-", sd(listaDF1[[1]]$VLF))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -940,8 +805,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(result[[4]]$anova$LF$p.value<0.05){
-      cat("There is a statistically significant difference in LF; pvalue: ", result[[4]]$anova$LF$p.value, "ºn")
+    if(summary(listaDF1[[1]]$anova$LF)[[1]]["Pr(>F)"][1]<0.05){
+      cat("There is a statistically significant difference in LF; pvalue: ", summary(listaDF1[[1]]$anova$LF)[[1]]["Pr(>F)"][1], "ºn")
       cat("LF for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF1[[1]]$LF), "+-", sd(listaDF1[[1]]$LF))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -960,8 +825,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(result[[4]]$anova$HF$p.value<0.05){
-      cat("There is a statistically significant difference in HF; pvalue: ", result[[4]]$anova$HF$p.value, "ºn")
+    if(summary(listaDF1[[1]]$anova$HF)[[1]]["Pr(>F)"][1]<0.05){
+      cat("There is a statistically significant difference in HF; pvalue: ", summary(listaDF1[[1]]$anova$HF)[[1]]["Pr(>F)"][1], "ºn")
       cat("HF for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF1[[1]]$HF), "+-", sd(listaDF1[[1]]$HF))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -991,9 +856,9 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
   dataFrameMTime=rbind(dataFrameMTimeControl, dataFrameMTimeCase)
   # Statistical analysis of both
   if(verbose == TRUE){
-    listTimeStatysticalAnalysis = statistical_analysisTimeVerboseTRUE(dataFrameMTime, correctSigLevel)
+    listTimeStatysticalAnalysis = statistical_analysisTime(dataFrameMTime, correctSigLevel, verbose)
   }else{
-    listTimeStatysticalAnalysis = statistical_analysisTimeVerboseFALSE(dataFrameMTime, correctSigLevel)
+    listTimeStatysticalAnalysis = statistical_analysisTime(dataFrameMTime, correctSigLevel, verbose)
   }
   # FREQUENCY:
   if(useWavelet == FALSE){
@@ -1001,9 +866,9 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
     dataFrameMFreqCase = freq_analysis(filesCase, classCase, case, dataFrame2)
     dataFrameMFreq=rbind(dataFrameMFreqControl, dataFrameMFreqCase)
     if(verbose == TRUE){
-      listFreqStatysticalAnalysis = statistical_analysisFreqVerboseTRUE(dataFrameMFreq, correctSigLevel)
+      listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq, correctSigLevel, verbose)
     }else{
-      listFreqStatysticalAnalysis = statistical_analysisFreqVerboseFALSE(dataFrameMFreq, correctSigLevel)
+      listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq, correctSigLevel, verbose)
     }
     
   }
@@ -1013,9 +878,9 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
     dataFrameMWaveletCase = wavelet_analysis(filesCase, classCase, case, dataFrameMWavelet)
     dataFrameMWavelet=rbind(dataFrameMWaveletControl, dataFrameMWaveletCase)
     if(verbose == TRUE){
-      listFreqStatysticalAnalysis = statistical_analysisFreqVerboseTRUE(dataFrameMFreq, correctSigLevel)
+      listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq, correctSigLevel, verbose)
     }else{
-      listFreqStatysticalAnalysis = statistical_analysisFreqVerboseFALSE(dataFrameMFreq, correctSigLevel)
+      listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq, correctSigLevel, verbose)
     }    
     dataFrameMFreq = dataFrameMWavelet
   }
