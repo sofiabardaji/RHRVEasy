@@ -2,23 +2,21 @@
 library(RHRV)
 
 # CREATING TIME ANALYSIS DATA FRAMES
-preparing_analysis<-function(directory_files,file, rrs){
+preparing_analysis<-function(directory_files,file, rrs, format){
   hrv.data = CreateHRVData()
   hrv.data = SetVerbose(hrv.data, FALSE)
-  hrv.data = LoadBeatRR(hrv.data,
-                        RecordName = file,
-                        RecordPath = rrs,
-                        scale = 1
-  )
+  
+  hrv.data = LoadBeat(fileType = format, HRVData = hrv.data,  Recordname = file,RecordPath = rrs)
+  
   hrv.data=BuildNIHR(hrv.data)
   hrv.data=FilterNIHR(hrv.data)
   hrv.data$Beat = hrv.data$Beat[2: nrow(hrv.data$Beat),]
   hrv.data
 }
-time_analysis<-function(files, class, rrs2, dataFrame3){
+time_analysis<-function(format, files, class, rrs2, dataFrame3, sizeTime, numofbinsTime, intervalTime, verboseTime){
   for (file in files) {
-    hrv.data = preparing_analysis(directory_files = files, file = file, rrs = rrs2)
-    hrv.data=CreateTimeAnalysis(hrv.data)
+    hrv.data = preparing_analysis(format, directory_files = files, file = file, rrs = rrs2)
+    hrv.data=CreateTimeAnalysis(hrv.data, size=sizeTime, numofbins=numofbinsTime, interval=intervalTime, verbose=verboseTime)
     results=hrv.data$TimeAnalysis[]
     name_file = list ("filename" = file)
     clase = list ("clase" = class)
@@ -30,11 +28,12 @@ time_analysis<-function(files, class, rrs2, dataFrame3){
 }
 
 
-freq_analysis<-function(files, class, rrs2, dataFrame2){
+freq_analysis<-function(format, files, class, rrs2, dataFrame2, freqhrFreq, methodFreq, verboseFreq, indexFreqAnalysisPSD, methodFreqPSD, plotFreq,
+                        ULFminPSD, ULFmaxPSD, VLFminPSD, VLFmaxPSD, LFminPSD, LFmaxPSD, HFminPSD, HFmaxPSD){
   for (file in files) {
-    hrv.data = preparing_analysis(directory_files = files, file = file, rrs = rrs2)
+    hrv.data = preparing_analysis(format, directory_files = files, file = file, rrs = rrs2)
     # PlotNIHR(hrv.data)
-    hrv.data=InterpolateNIHR(hrv.data)
+    hrv.data=InterpolateNIHR(hrv.data, freqhr = freqhrFreq, method = methodFreq, verbose = verboseFreq)
     # Find the zeros in HR
     zero_indexes = which(hrv.data$HR == 0)
     # Compute the median of HR after removing 0s
@@ -42,14 +41,15 @@ freq_analysis<-function(files, class, rrs2, dataFrame2){
     # Substitute the 0s in HR by the median
     hrv.data$HR[zero_indexes] = hr_median
     hrv.data=CreateFreqAnalysis(hrv.data)
-    hrv.data=CalculatePSD(hrv.data,1,"pgram",doPlot = F)
-    #print(CalculateEnergyInPSDBands(hrv.data, 1)) # 
+    hrv.data=CalculatePSD(hrv.data, indexFreqAnalysis = indexFreqAnalysisPSD, method = methodFreqPSD, doPlot = plotFreq)
+    
     name_file = list ("filename" = file)
-    x1 = as.list(CalculateEnergyInPSDBands(hrv.data, 1))
+    x1 = as.list(CalculateEnergyInPSDBands(hrv.data,indexFreqAnalysis = indexFreqAnalysisPSD, ULFmin = ULFminPSD, ULFmax = ULFmaxPSD, VLFmin = VLFminPSD, 
+                                           VLFmax = VLFmaxPSD, LFmin = LFminPSD, LFmax = LFmaxPSD, HFmin = HFminPSD, HFmax = HFmaxPSD))
+    
     names(x1) = c("ULF", "VLF", "LF", "HF")
     clase = list ("clase" = class)
     row_list = c (name_file, x1, clase)
-    #unique(row_list)
     df = data.frame()
     df = rbind(df, as.data.frame(row_list))
     dataFrame2=rbind(dataFrame2, df)
@@ -57,11 +57,14 @@ freq_analysis<-function(files, class, rrs2, dataFrame2){
   dataFrame2
 }
 #  WAVELET ANALYSIS
-wavelet_analysis<-function(files, class, rrs2, dataFrameMWavelet){
+wavelet_analysis<-function(format, files, class, rrs2, dataFrameMWavelet, freqhrFreq, methodFreq, verboseFreq, indexFreqAnalysisWavelet,
+                           sizespWavelet, scaleWavelet, ULFminWavelet, ULFmaxWavelet, VLFminWavelet, VLFmaxWavelet, 
+                           LFminWavelet,LFmaxWavelet, HFminWavelet, HFmaxWavelet, 
+                           typeWavelet, motherWavelet, bandtoleranceWavelet, relativeWavelet, verboseWavelet){
   for (file in files) {
-    hrv.data = preparing_analysis(directory_files = files, file = file, rrs = rrs2)
+    hrv.data = preparing_analysis(format, directory_files = files, file = file, rrs = rrs2)
     # PlotNIHR(hrv.data)
-    hrv.data=InterpolateNIHR(hrv.data)
+    hrv.data=InterpolateNIHR(hrv.data, freqhr = freqhrFreq, method = methodFreq, verbose = verboseFreq)
     # Find the zeros in HR
     zero_indexes = which(hrv.data$HR == 0)
     # Compute the median of HR after removing 0s
@@ -70,8 +73,10 @@ wavelet_analysis<-function(files, class, rrs2, dataFrameMWavelet){
     hrv.data$HR[zero_indexes] = hr_median
     hrv.data=CreateFreqAnalysis(hrv.data)
     hrv.data=SetVerbose(hrv.data, FALSE)
-    hrv.data = CalculatePowerBand(hrv.data,indexFreqAnalysis = length(hrv.data$FreqAnalysis),
-                                  type = "wavelet", wavelet = "la8", bandtolerance = 0.01 )
+    hrv.data = CalculatePowerBand(hrv.data, indexFreqAnalysis = indexFreqAnalysisWavelet, 
+                                  sizesp = sizespWavelet, scale = scaleWavelet, ULFmin = ULFminWavelet, ULFmax = ULFmaxWavelet, VLFmin = VLFminWavelet, VLFmax = VLFmaxWavelet, 
+                                  LFmin = LFminWavelet, LFmax = LFmaxWavelet, HFmin = HFminWavelet, HFmax = HFmaxWavelet, 
+                                  type = typeWavelet, wavelet = motherWavelet, bandtolerance = bandtoleranceWavelet, relative = relativeWavelet, verbose = verboseWavelet)
     index = length (hrv.data$FreqAnalysis)
     resultsWavelet = hrv.data$FreqAnalysis[[index]]
     resultsWavelet$File = file
@@ -836,7 +841,25 @@ print.RHRVEasyResult <- function(result){
 }
 
 
-RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, verbose=FALSE){
+RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, verbose=FALSE, format = "RR",
+                   sizeTimeControl = 300, numofbinsTimeControl = NULL, intervalTimeControl = 7.8125, verboseTimeControl = NULL,
+                   sizeTimeCase = 300, numofbinsTimeCase = NULL, intervalTimeCase = 7.8125, verboseTimeCase = NULL,
+                   freqhrFreqControl = 4, methodFreqControl = c("linear", "spline"), verboseFreqControl = NULL,
+                   freqhrFreqCase = 4, methodFreqCase = c("linear", "spline"), verboseFreqCase = NULL,
+                   freqhrWaveControl = 4, methodWaveControl = c("linear", "spline"), verboseWaveControl = NULL,
+                   freqhrWaveCase = 4, methodWaveCase = c("linear", "spline"), verboseWaveCase = NULL,
+                   indexFreqAnalysisPSDControl = 1, methodFreqPSDControl = c("pgram", "ar", "lomb"), plotFreqControl = T,
+                   indexFreqAnalysisPSDCase = 1, methodFreqPSDCase = c("pgram", "ar", "lomb"), plotFreqCase = T,
+                   ULFminPSDControl = 0, ULFmaxPSDControl = 0.03, VLFminPSDControl = 0.03, VLFmaxPSDControl = 0.05,
+                   LFminPSDControl = 0.05, LFmaxPSDControl = 0.15, HFminPSDControl = 0.15, HFmaxPSDControl = 0.4,
+                   ULFminPSDCase = 0, ULFmaxPSDCase = 0.03, VLFminPSDCase = 0.03, VLFmaxPSDCase = 0.05,
+                   LFminPSDCase = 0.05, LFmaxPSDCase = 0.15, HFminPSDCase = 0.15, HFmaxPSDCase = 0.4,
+                   indexFreqAnalysisWaveletControl = 1, sizespWaveletControl = NULL, scaleWaveletControl = "linear", ULFminWaveletControl = 0, ULFmaxWaveletControl = 0.03, VLFminWaveletControl = 0.03, 
+                   VLFmaxWaveletControl = 0.05, LFminWaveletControl = 0.05, LFmaxWaveletControl = 0.15, HFminWaveletControl = 0.15, HFmaxWaveletControl = 0.4, 
+                   typeWaveletControl = "wavelet", motherWaveletControl = "d4", bandtoleranceWaveletControl = 0.01, relativeWaveletControl = FALSE, verboseWaveletControl = NULL,
+                   indexFreqAnalysisWaveletCase = 1, sizespWaveletCase = NULL, scaleWaveletCase = "linear", ULFminWaveletCase = 0, ULFmaxWaveletCase = 0.03, VLFminWaveletCase = 0.03, 
+                   VLFmaxWaveletCase = 0.05, LFminWaveletCase = 0.05, LFmaxWaveletCase = 0.15, HFminWaveletCase = 0.15, HFmaxWaveletCase = 0.4, 
+                   typeWaveletCase = "wavelet", motherWaveletCase = "d4", bandtoleranceWaveletCase = 0.01, relativeWaveletCase = FALSE, verboseWaveletCase = NULL) {
   dataFrame3 = data.frame()
   dataFrame2 = data.frame()
   dataFrameMWavelet = data.frame()
@@ -850,8 +873,8 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
   listFreqStatysticalAnalysis = list()
   listTimeStatysticalAnalysis = list()
 
-  dataFrameMTimeControl = time_analysis(filesControl, classControl, control, dataFrame3)
-  dataFrameMTimeCase = time_analysis(filesCase, classCase, case, dataFrame3)
+  dataFrameMTimeControl = time_analysis(format, filesControl, classControl, control, dataFrame3, sizeTimeControl, numofbinsTimeControl, intervalTimeControl, verboseTimeControl)
+  dataFrameMTimeCase = time_analysis(format, filesCase, classCase, case, dataFrame3, sizeTimeCase, numofbinsTimeCase, intervalTimeCase, verboseTimeCase)
   # Creating a DF with both in Time
   dataFrameMTime=rbind(dataFrameMTimeControl, dataFrameMTimeCase)
   # Statistical analysis of both
@@ -862,8 +885,13 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
   }
   # FREQUENCY:
   if(useWavelet == FALSE){
-    dataFrameMFreqControl = freq_analysis(filesControl, classControl, control, dataFrame2)
-    dataFrameMFreqCase = freq_analysis(filesCase, classCase, case, dataFrame2)
+    
+    dataFrameMFreqControl = freq_analysis(format, filesControl, classControl, control, dataFrame2, freqhrFreqControl, methodFreqControl, verboseFreqControl,
+                                          indexFreqAnalysisPSDControl, methodFreqPSDControl, plotFreqControl,
+                                          ULFminPSDControl, ULFmaxPSDControl, VLFminPSDControl, VLFmaxPSDControl, LFminPSDControl, LFmaxPSDControl, HFminPSDControl, HFmaxPSDControl)
+    dataFrameMFreqCase = freq_analysis(format, filesCase, classCase, case, dataFrame2, freqhrFreqCase, methodFreqCase, verboseFreqCase,
+                                       indexFreqAnalysisPSDCase, methodFreqPSDCase, plotFreqCase,
+                                       ULFminPSDCase, ULFmaxPSDCase, VLFminPSDCase, VLFmaxPSDCase, LFminPSDCase, LFmaxPSDCase, HFminPSDCase, HFmaxPSDCase)
     dataFrameMFreq=rbind(dataFrameMFreqControl, dataFrameMFreqCase)
     if(verbose == TRUE){
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq, correctSigLevel, verbose)
@@ -874,8 +902,14 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
   }
   # WAVELET
   if(useWavelet == TRUE){
-    dataFrameMWaveletControl = wavelet_analysis(filesControl, classControl, control, dataFrameMWavelet)
-    dataFrameMWaveletCase = wavelet_analysis(filesCase, classCase, case, dataFrameMWavelet)
+    dataFrameMWaveletControl = wavelet_analysis(format, filesControl, classControl, control, dataFrameMWavelet, freqhrWaveControl, methodWaveControl, verboseWaveControl,
+                                                indexFreqAnalysisWaveletControl, sizespWaveletControl, scaleWaveletControl, ULFminWaveletControl, ULFmaxWaveletControl, VLFminWaveletControl, VLFmaxWaveletControl, 
+                                                LFminWaveletControl,LFmaxWaveletControl, HFminWaveletControl, HFmaxWaveletControl, 
+                                                typeWaveletControl, motherWaveletControl, bandtoleranceWaveletControl, relativeWaveletControl, verboseWaveletControl)
+    dataFrameMWaveletCase = wavelet_analysis(format, filesCase, classCase, case, dataFrameMWavelet, freqhrWaveCase, methodWaveCase, verboseWaveCase, indexFreqAnalysisWaveletCase,
+                                             sizespWaveletCase, scaleWaveletCase, ULFminWaveletCase, ULFmaxWaveletCase, VLFminWaveletCase, VLFmaxWaveletCase, 
+                                             LFminWaveletCase,LFmaxWaveletCase, HFminWaveletCase, HFmaxWaveletCase, 
+                                             typeWaveletCase, motherWaveletCase, bandtoleranceWaveletCase, relativeWaveletCase, verboseWaveletCase)
     dataFrameMWavelet=rbind(dataFrameMWaveletControl, dataFrameMWaveletCase)
     if(verbose == TRUE){
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq, correctSigLevel, verbose)
