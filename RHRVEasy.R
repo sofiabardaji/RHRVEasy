@@ -153,9 +153,7 @@ statistical_analysisFreq<-function(dfM, correctSigLevel, verbose){
   kruskal = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
   dunn = NA
   lista = list(anova = anova, kruskal = kruskal, dunn = dunn)
-  
-  cat("entramos en stat freq")
-  
+    
   listaDF = split(dfM, dfM$clase)
   
   print(listaDF)
