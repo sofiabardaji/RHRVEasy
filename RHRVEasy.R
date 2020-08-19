@@ -121,116 +121,6 @@ wavelet_analysis<-function(format, files, class, rrs2, dataFrameMWavelet, freqhr
   dataFrameMWavelet
 }
 
-# ANALYZING NORMALITY
-shapiroFreqULF<-function(directorio){
-  shapiroFreqULF = shapiro.test(directorio$ULF)
-  shapiroFreqULF
-}
-shapiroFreqVLF<-function(directorio){
-  shapiroFreqVLF = shapiro.test(directorio$VLF)
-  shapiroFreqVLF
-}
-shapiroFreqLF<-function(directorio){
-  shapiroFreqLF = shapiro.test(directorio$LF)
-  shapiroFreqLF
-}
-shapiroFreqHF<-function(directorio){
-  shapiroFreqHF = shapiro.test(directorio$HF)
-  shapiroFreqHF
-}
-shapiroTimeSDNN<-function(directorio){
-  shapiroTimeSDNN = shapiro.test(directorio$SDNN)
-  shapiroTimeSDNN
-}
-
-shapiroTimeSDANN<-function(directorio){
-  shapiroTimeSDANN = shapiro.test(directorio$SDANN)
-  shapiroTimeSDANN
-}
-shapiroTimeSDNNIDX<-function(directorio){
-  shapiroTimeSDNNIDX = shapiro.test(directorio$SDNNIDX)
-  shapiroTimeSDNNIDX
-}
-shapiroTimepNN50<-function(directorio){
-  shapiroTimepNN50 = shapiro.test(directorio$pNN50)
-  shapiroTimepNN50
-}
-shapiroTimeSDSD<-function(directorio){
-  shapiroTimeSDSD = shapiro.test(directorio$SDSD)
-  shapiroTimeSDSD
-}
-shapiroTimerMSSD<-function(directorio){
-  shapiroTimerMSSD = shapiro.test(directorio$rMSSD)
-  shapiroTimerMSSD
-}
-shapiroTimeIRRR<-function(directorio){
-  shapiroTimeIRRR = shapiro.test(directorio$IRRR)
-  shapiroTimeIRRR
-}
-shapiroTimeMADRR<-function(directorio){
-  shapiroTimeMADRR = shapiro.test(directorio$MADRR)
-  shapiroTimeMADRR
-}
-shapiroTimeTINN<-function(directorio){
-  shapiroTimeTINN = shapiro.test(directorio$TINN)
-  shapiroTimeTINN
-}
-shapiroTimeHRVi<-function(directorio){
-  shapiroTimeHRVi = shapiro.test(directorio$HRVi)
-  shapiroTimeHRVi
-}
-
-
-# KRUSKAL WALLIS TEST
-kruskalFreqULF<-function(dfM){
-  kruskal.test(ULF ~ clase, data = dfM) 
-}
-kruskalFreqVLF<-function(dfM){
-  kruskal.test(VLF ~ clase, data = dfM) 
-}
-kruskalFreqLF<-function(dfM){
-  kruskal.test(LF ~ clase, data = dfM) 
-}
-kruskalFreqHF<-function(dfM){
-  kruskal.test(HF ~ clase, data = dfM) 
-}
-
-
-
-kruskalTimeSDNN<-function(dfM){
-  kruskal.test(SDNN ~ clase, data = dfM)
-}
-kruskalTimeSDANN<-function(dfM){
-  kruskal.test(SDANN ~ clase, data = dfM)
-} 
-kruskalTimeSDNNIDX<-function(dfM){
-  kruskal.test(SDNNIDX ~ clase, data = dfM)
-}  
-kruskalTimepNN50<-function(dfM){
-  kruskal.test(pNN50 ~ clase, data = dfM)
-}  
-kruskalTimeSDSD<-function(dfM){
-  kruskal.test(SDSD ~ clase, data = dfM)
-}  
-kruskalTimerMSSD<-function(dfM){
-  kruskal.test(rMSSD ~ clase, data = dfM)
-}  
-kruskalTimeIRRR<-function(dfM){
-  kruskal.test(IRRR ~ clase, data = dfM)
-} 
-kruskalTimeMADRR<-function(dfM){
-  kruskal.test(MADRR ~ clase, data = dfM)
-}  
-kruskalTimeTINN<-function(dfM){
-  kruskal.test(TINN ~ clase, data = dfM)
-}  
-kruskalTimeHRVi<-function(dfM){
-  kruskal.test(HRVi ~ clase, data = dfM)
-}  
-
-
-
-
 # POST HOC DUNN TEST
 library(dunn.test)
 library(FSA)
@@ -264,9 +154,14 @@ statistical_analysisFreq<-function(dfM, correctSigLevel, verbose){
   dunn = NA
   lista = list(anova = anova, kruskal = kruskal, dunn = dunn)
   
+  cat("entramos en stat freq")
+  
   listaDF = split(dfM, dfM$clase)
-  shapiroFreqULFCase = shapiroFreqULF(listaDF[[1]])
-  shapiroFreqULFControl = shapiroFreqULF(listaDF[[2]])
+  
+  print(listaDF)
+  
+  shapiroFreqULFCase = shapiro.test(listaDF[[1]]$ULF)
+  shapiroFreqULFControl = shapiro.test(listaDF[[2]]$ULF)
   pvaluesULF = c(shapiroFreqULFCase$p.value,shapiroFreqULFControl$p.value)
   if (correctSigLevel == TRUE){
     pvaluesULF = p.adjust(pvaluesULF)
@@ -280,10 +175,12 @@ statistical_analysisFreq<-function(dfM, correctSigLevel, verbose){
     if (verbose == TRUE){
       cat("ULF NOT normal: Kruskal. P-values = ", pvaluesULF, "\n")
     }
-    lista$kruskal$ULF = kruskalFreqULF(dfM)
+    lista$kruskal$ULF = kruskal.test(ULF ~ clase, data = dfM)
   }
-  shapiroFreqVLFCase = shapiroFreqVLF(listaDF[[1]])
-  shapiroFreqVLFControl = shapiroFreqVLF(listaDF[[2]])
+
+  
+  shapiroFreqVLFCase = shapiro.test(listaDF[[1]]$VLF)
+  shapiroFreqVLFControl = shapiro.test(listaDF[[2]]$VLF)
   pvaluesVLF = c(shapiroFreqVLFCase$p.value,shapiroFreqVLFControl$p.value)
   if (correctSigLevel == TRUE){
     pvaluesVLF = p.adjust(pvaluesVLF)
@@ -298,10 +195,10 @@ statistical_analysisFreq<-function(dfM, correctSigLevel, verbose){
     if (verbose == TRUE){
       cat("VLF NOT normal: Kruskal. P-values = ", pvaluesVLF, "\n")
     }
-    lista$kruskal$VLF = kruskalFreqVLF(dfM)
+    lista$kruskal$VLF = kruskal.test(VLF ~ clase, data = dfM)
   }
-  shapiroFreqLFCase = shapiroFreqLF(listaDF[[1]])
-  shapiroFreqLFControl = shapiroFreqLF(listaDF[[2]])
+  shapiroFreqLFCase = shapiro.test(listaDF[[1]]$LF)
+  shapiroFreqLFControl = shapiro.test(listaDF[[2]]$LF)
   pvaluesLF = c(shapiroFreqLFCase$p.value,shapiroFreqLFControl$p.value)
   if (correctSigLevel == TRUE){
     pvaluesLF = p.adjust(pvaluesLF)
@@ -315,10 +212,10 @@ statistical_analysisFreq<-function(dfM, correctSigLevel, verbose){
     if (verbose == TRUE){
       cat("LF NOT normal: Kruskal. P-values = ", pvaluesLF, "\n")
     }
-    lista$kruskal$LF = kruskalFreqLF(dfM)
+    lista$kruskal$LF = kruskal.test(LF ~ clase, data = dfM)
   }
-  shapiroFreqHFCase = shapiroFreqHF(listaDF[[1]])
-  shapiroFreqHFControl = shapiroFreqHF(listaDF[[2]])
+  shapiroFreqHFCase = shapiro.test(listaDF[[1]]$HF)
+  shapiroFreqHFControl = shapiro.test(listaDF[[2]]$HF)
   pvaluesHF = c(shapiroFreqHFCase$p.value,shapiroFreqHFControl$p.value)
   if (correctSigLevel == TRUE){
     pvaluesHF = p.adjust(pvaluesHF)
@@ -332,12 +229,13 @@ statistical_analysisFreq<-function(dfM, correctSigLevel, verbose){
     if (verbose == TRUE){
       cat("HF NOT normal: Kruskal. P-values = ", pvaluesHF, "\n")
     }
-    lista$kruskal$HF = kruskalFreqHF(dfM)
+    lista$kruskal$HF = kruskal.test(HF ~ clase, data = dfM)
   }
   lista$dunn = dunnfreq(dfM)
   lista
   
 }
+
 statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   
   anova = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
@@ -349,8 +247,8 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   
   listaDF = split(dfM, dfM$clase)
   
-  shapiroTimeSDNNCase = shapiroTimeSDNN(listaDF[[1]])
-  shapiroTimeSDNNControl = shapiroTimeSDNN(listaDF[[2]])
+  shapiroTimeSDNNCase = shapiro.test(listaDF[[1]]$SDNN)
+  shapiroTimeSDNNControl = shapiro.test(listaDF[[2]]$SDNN)
   pvaluesSDNN = c(shapiroTimeSDNNCase$p.value,shapiroTimeSDNNControl$p.value)
   if (correctSigLevel == TRUE){
     pvaluesSDNN = p.adjust(pvaluesSDNN)
@@ -364,10 +262,10 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
     if (verbose == TRUE){
       cat("SDNN NOT normal: Kruskal. P-values = ", pvaluesSDNN, "\n")
     }
-    lista$kruskal$SDNN = kruskalTimeSDNN(dfM)
+    lista$kruskal$SDNN = kruskal.test(SDNN ~ clase, data = dfM)
   }
-  shapiroTimeSDANNCase = shapiroTimeSDANN(listaDF[[1]])
-  shapiroTimeSDANNControl = shapiroTimeSDANN(listaDF[[2]])
+  shapiroTimeSDANNCase = shapiro.test(listaDF[[1]]$SDANN)
+  shapiroTimeSDANNControl = shapiro.test(listaDF[[2]]$SDANN)
   pvaluesSDANN = c(shapiroTimeSDANNCase$p.value,shapiroTimeSDANNControl$p.value)
   if (correctSigLevel == TRUE){
     pvaluesSDANN = p.adjust(pvaluesSDANN)
@@ -381,11 +279,11 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
     if (verbose == TRUE){
       cat("SDANN NOT normal: Kruskal. P-values = ", pvaluesSDANN, "\n")
     }
-    lista$kruskal$SDANN = kruskalTimeSDANN(dfM)
+    lista$kruskal$SDANN = kruskal.test(SDANN ~ clase, data = dfM)
   }
   
-  shapiroTimeSDNNIDXCase = shapiroTimeSDNNIDX(listaDF[[1]])
-  shapiroTimeSDNNIDXControl = shapiroTimeSDNNIDX(listaDF[[2]])
+  shapiroTimeSDNNIDXCase = shapiro.test(listaDF[[1]]$SDNNIDX)
+  shapiroTimeSDNNIDXControl = shapiro.test(listaDF[[2]]$SDNNIDX)
   pvaluesSDNNIDX = c(shapiroTimeSDNNIDXCase$p.value,shapiroTimeSDNNIDXControl$p.value)
   if (correctSigLevel == TRUE){
     pvaluesSDNNIDX = p.adjust(pvaluesSDNNIDX)
@@ -399,11 +297,11 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
     if (verbose == TRUE){
       cat("SDNNIDX NOT normal: Kruskal. P-values = ", pvaluesSDNNIDX, "\n")
     }
-    lista$kruskal$SDNNIDX = kruskalTimeSDNNIDX(dfM)
+    lista$kruskal$SDNNIDX = kruskal.test(SDNNIDX ~ clase, data = dfM)
   }
   
-  shapiroTimepNN50Case = shapiroTimepNN50(listaDF[[1]])
-  shapiroTimepNN50Control = shapiroTimepNN50(listaDF[[2]])
+  shapiroTimepNN50Case = shapiro.test(listaDF[[1]]$pNN50)
+  shapiroTimepNN50Control = shapiro.test(listaDF[[2]]$pNN50)
   pvaluespNN50 = c(shapiroTimepNN50Case$p.value, shapiroTimepNN50Control$p.value)
   if (correctSigLevel == TRUE){
     pvaluespNN50 = p.adjust(pvaluespNN50)
@@ -417,11 +315,11 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
     if (verbose == TRUE){
       cat("pNN50 NOT normal: Kruskal. P-values = ", pvaluespNN50, "\n")
     }
-    lista$kruskal$pNN50 = kruskalTimepNN50(dfM)
+    lista$kruskal$pNN50 = kruskal.test(pNN50 ~ clase, data = dfM)
   }
   
-  shapiroTimeSDSDCase = shapiroTimeSDSD(listaDF[[1]])
-  shapiroTimeSDSDControl = shapiroTimeSDSD(listaDF[[2]])
+  shapiroTimeSDSDCase = shapiro.test(listaDF[[1]]$SDSD)
+  shapiroTimeSDSDControl = shapiro.test(listaDF[[2]]$SDSD)
   pvaluesSDSD = c(shapiroTimeSDSDCase$p.value,shapiroTimeSDSDControl$p.value)
   if (correctSigLevel == TRUE){
     pvaluesSDSD = p.adjust(pvaluesSDSD)
@@ -435,12 +333,12 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
     if (verbose == TRUE){
       cat("SDSD NOT normal: Kruskal. P-values = ", pvaluesSDSD, "\n")
     }
-    lista$kruskal$SDSD = kruskalTimeSDSD(dfM)
+    lista$kruskal$SDSD = kruskal.test(SDSD ~ clase, data = dfM)
   }
   
   
-  shapiroTimerMSSDCase = shapiroTimerMSSD(listaDF[[1]])
-  shapiroTimerMSSDControl = shapiroTimerMSSD(listaDF[[2]])
+  shapiroTimerMSSDCase = shapiro.test(listaDF[[1]]$rMSSD)
+  shapiroTimerMSSDControl = shapiro.test(listaDF[[2]]$rMSSD)
   pvaluesrMSSD = c(shapiroTimerMSSDCase$p.value,shapiroTimerMSSDControl$p.value)
   if (correctSigLevel == TRUE){
     pvaluesrMSSD = p.adjust(pvaluesrMSSD)
@@ -454,11 +352,11 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
     if (verbose == TRUE){
       cat("rMSSD NOT normal: Kruskal. P-values = ", pvaluesrMSSD, "\n")
     }
-    lista$kruskal$rMSSD = kruskalTimerMSSD(dfM)
+    lista$kruskal$rMSSD = kruskal.test(rMSSD ~ clase, data = dfM)
   }
   
-  shapiroTimeIRRRCase = shapiroTimeIRRR(listaDF[[1]])
-  shapiroTimeIRRRControl = shapiroTimeIRRR(listaDF[[2]])
+  shapiroTimeIRRRCase = shapiro.test(listaDF[[1]]$IRRR)
+  shapiroTimeIRRRControl = shapiro.test(listaDF[[2]]$IRRR)
   pvaluesIRRR = c(shapiroTimeIRRRCase$p.value,shapiroTimeIRRRControl$p.value)
   if (correctSigLevel == TRUE){
     pvaluesIRRR = p.adjust(pvaluesIRRR)
@@ -472,11 +370,11 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
     if (verbose == TRUE){
       cat("IRRR NOT normal: Kruskal. P-values = ", pvaluesIRRR, "\n")
     }
-    lista$kruskal$IRRR = kruskalTimeIRRR(dfM)
+    lista$kruskal$IRRR = kruskal.test(IRRR ~ clase, data = dfM)
   }
   
-  shapiroTimeMADRRCase = shapiroTimeMADRR(listaDF[[1]])
-  shapiroTimeMADRRControl = shapiroTimeMADRR(listaDF[[2]])
+  shapiroTimeMADRRCase = shapiro.test(listaDF[[1]]$MADRR)
+  shapiroTimeMADRRControl = shapiro.test(listaDF[[2]]$MADRR)
   pvaluesMADRR = c(shapiroTimeMADRRCase$p.value,shapiroTimeMADRRControl$p.value)
   if (correctSigLevel == TRUE){
     pvaluesMADRR = p.adjust(pvaluesMADRR)
@@ -490,11 +388,11 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
     if (verbose == TRUE){
       cat("IRRR NOT normal: Kruskal. P-values = ", pvaluesMADRR, "\n")
     }
-    lista$kruskal$MADRR = kruskalTimeMADRR(dfM)
+    lista$kruskal$MADRR = kruskal.test(MADRR ~ clase, data = dfM)
   }
   
-  shapiroTimeTINNCase = shapiroTimeTINN(listaDF[[1]])
-  shapiroTimeTINNControl = shapiroTimeTINN(listaDF[[2]])
+  shapiroTimeTINNCase = shapiro.test(listaDF[[1]]$TINN)
+  shapiroTimeTINNControl = shapiro.test(listaDF[[2]]$TINN)
   pvaluesTINN = c(shapiroTimeTINNCase$p.value,shapiroTimeTINNControl$p.value)
   if (correctSigLevel == TRUE){
     pvaluesTINN = p.adjust(pvaluesTINN)
@@ -508,11 +406,11 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
     if (verbose == TRUE){
       cat("TINN NOT normal: Kruskal. P-values = ", pvaluesTINN, "\n")
     }
-    lista$kruskal$TINN = kruskalTimeTINN(dfM)
+    lista$kruskal$TINN = kruskal.test(TINN ~ clase, data = dfM)
   }
   
-  shapiroTimeHRViCase = shapiroTimeHRVi(listaDF[[1]])
-  shapiroTimeHRViControl = shapiroTimeHRVi(listaDF[[2]])
+  shapiroTimeHRViCase = shapiro.test(listaDF[[1]]$HRVi)
+  shapiroTimeHRViControl = shapiro.test(listaDF[[2]]$HRVi)
   pvaluesHRVi = c(shapiroTimeHRViCase$p.value,shapiroTimeHRViControl$p.value)
   if (correctSigLevel == TRUE){
     pvaluesHRVi = p.adjust(pvaluesHRVi)
@@ -526,7 +424,7 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
     if (verbose == TRUE){
       cat("HRVi NOT normal: Kruskal. P-values = ", pvaluesHRVi, "\n")
     }
-    lista$kruskal$HRVi = kruskalTimeHRVi(dfM)
+    lista$kruskal$HRVi = kruskal.test(HRVi ~ clase, data = dfM)
   }
   
   lista$dunn = dunntime(dfM)
@@ -948,11 +846,3 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
   class(results) = "RHRVEasyResult"
   results
 }
-
-
-
-
-
-
-
-
