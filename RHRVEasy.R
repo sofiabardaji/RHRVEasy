@@ -1,7 +1,6 @@
 #install.packages("RHRV")
 library(RHRV)
 
-# CREATING TIME ANALYSIS DATA FRAMES
 
 file_validation<-function(path){
   # 1. Check if path really exists
@@ -18,12 +17,10 @@ file_validation<-function(path){
     cat("There are files in the path", path, "\n")
   }
   
-  # 3. Check if they are loaded correctly
-  # files = list.files(path)
-  # files
+
 }
 
-preparing_analysis<-function(directory_files,file, rrs, format){
+preparing_analysis<-function(file, rrs, format){
   hrv.data = CreateHRVData()
   hrv.data = SetVerbose(hrv.data, FALSE)
   
@@ -34,10 +31,12 @@ preparing_analysis<-function(directory_files,file, rrs, format){
   hrv.data$Beat = hrv.data$Beat[2: nrow(hrv.data$Beat),]
   hrv.data
 }
-time_analysis<-function(format, files, class, rrs2, dataFrame3, sizeTime, numofbinsTime, intervalTime, verboseTime){
+
+# CREATING TIME ANALYSIS DATA FRAMES
+time_analysis<-function(format, files, class, rrs2, dataFrame3, size, numofbins, interval, verbose){
   for (file in files) {
-    hrv.data = preparing_analysis(format, directory_files = files, file = file, rrs = rrs2)
-    hrv.data=CreateTimeAnalysis(hrv.data, size=sizeTime, numofbins=numofbinsTime, interval=intervalTime, verbose=verboseTime)
+    hrv.data = preparing_analysis(format, file = file, rrs = rrs2)
+    hrv.data=CreateTimeAnalysis(hrv.data, size=size, numofbins=numofbins, interval=interval, verbose=verbose)
     results=hrv.data$TimeAnalysis[]
     name_file = list ("filename" = file)
     clase = list ("clase" = class)
@@ -48,13 +47,14 @@ time_analysis<-function(format, files, class, rrs2, dataFrame3, sizeTime, numofb
   dataFrame3
 }
 
-
-freq_analysis<-function(format, files, class, rrs2, dataFrame2, freqhrFreq, methodFreq, verboseFreq, indexFreqAnalysisPSD, methodFreqPSD, plotFreq,
-                        ULFminPSD, ULFmaxPSD, VLFminPSD, VLFmaxPSD, LFminPSD, LFmaxPSD, HFminPSD, HFmaxPSD){
+# FREQUENCY ANALYSIS
+freq_analysis<-function(format, files, class, rrs2, dataFrame2, freqhr, methodInterpolation, verbose, 
+                        indexFreqAnalysis, methodCalculationPSD, doPlot, ULFmin, ULFmax, VLFmin, VLFmax, 
+                        LFmin,LFmax, HFmin, HFmax){
   for (file in files) {
-    hrv.data = preparing_analysis(format, directory_files = files, file = file, rrs = rrs2)
+    hrv.data = preparing_analysis(format, file = file, rrs = rrs2)
     # PlotNIHR(hrv.data)
-    hrv.data=InterpolateNIHR(hrv.data, freqhr = freqhrFreq, method = methodFreq, verbose = verboseFreq)
+    hrv.data=InterpolateNIHR(hrv.data, freqhr = freqhr, method = methodInterpolation, verbose = verbose)
     # Find the zeros in HR
     zero_indexes = which(hrv.data$HR == 0)
     # Compute the median of HR after removing 0s
@@ -62,11 +62,11 @@ freq_analysis<-function(format, files, class, rrs2, dataFrame2, freqhrFreq, meth
     # Substitute the 0s in HR by the median
     hrv.data$HR[zero_indexes] = hr_median
     hrv.data=CreateFreqAnalysis(hrv.data)
-    hrv.data=CalculatePSD(hrv.data, indexFreqAnalysis = indexFreqAnalysisPSD, method = methodFreqPSD, doPlot = plotFreq)
+    hrv.data=CalculatePSD(hrv.data, indexFreqAnalysis = indexFreqAnalysis, method = methodCalculationPSD, doPlot = doPlot)
     
     name_file = list ("filename" = file)
-    x1 = as.list(CalculateEnergyInPSDBands(hrv.data,indexFreqAnalysis = indexFreqAnalysisPSD, ULFmin = ULFminPSD, ULFmax = ULFmaxPSD, VLFmin = VLFminPSD, 
-                                           VLFmax = VLFmaxPSD, LFmin = LFminPSD, LFmax = LFmaxPSD, HFmin = HFminPSD, HFmax = HFmaxPSD))
+    x1 = as.list(CalculateEnergyInPSDBands(hrv.data, indexFreqAnalysis = indexFreqAnalysis, ULFmin = ULFmin, ULFmax = ULFmax, VLFmin = VLFmin, VLFmax = VLFmax, 
+                                           LFmin = LFmin, LFmax = LFmax, HFmin = HFmin, HFmax = HFmax))
     
     names(x1) = c("ULF", "VLF", "LF", "HF")
     clase = list ("clase" = class)
@@ -77,15 +77,17 @@ freq_analysis<-function(format, files, class, rrs2, dataFrame2, freqhrFreq, meth
   }
   dataFrame2
 }
+
 #  WAVELET ANALYSIS
-wavelet_analysis<-function(format, files, class, rrs2, dataFrameMWavelet, freqhrFreq, methodFreq, verboseFreq, indexFreqAnalysisWavelet,
-                           sizespWavelet, scaleWavelet, ULFminWavelet, ULFmaxWavelet, VLFminWavelet, VLFmaxWavelet, 
-                           LFminWavelet,LFmaxWavelet, HFminWavelet, HFmaxWavelet, 
-                           typeWavelet, motherWavelet, bandtoleranceWavelet, relativeWavelet, verboseWavelet){
+wavelet_analysis<-function(format, files, class, rrs2, dataFrameMWavelet, freqhr, method, verbose, 
+                           indexFreqAnalysis,
+                           sizesp, scale, ULFmin, ULFmax, VLFmin, VLFmax, 
+                           LFmin,LFmax, HFmin, HFmax, 
+                           type, mother, bandtolerance, relative){
   for (file in files) {
-    hrv.data = preparing_analysis(format, directory_files = files, file = file, rrs = rrs2)
+    hrv.data = preparing_analysis(format, file = file, rrs = rrs2)
     # PlotNIHR(hrv.data)
-    hrv.data=InterpolateNIHR(hrv.data, freqhr = freqhrFreq, method = methodFreq, verbose = verboseFreq)
+    hrv.data=InterpolateNIHR(hrv.data, freqhr = freqhr, method = method, verbose = verbose)
     # Find the zeros in HR
     zero_indexes = which(hrv.data$HR == 0)
     # Compute the median of HR after removing 0s
@@ -94,10 +96,10 @@ wavelet_analysis<-function(format, files, class, rrs2, dataFrameMWavelet, freqhr
     hrv.data$HR[zero_indexes] = hr_median
     hrv.data=CreateFreqAnalysis(hrv.data)
     hrv.data=SetVerbose(hrv.data, FALSE)
-    hrv.data = CalculatePowerBand(hrv.data, indexFreqAnalysis = indexFreqAnalysisWavelet, 
-                                  sizesp = sizespWavelet, scale = scaleWavelet, ULFmin = ULFminWavelet, ULFmax = ULFmaxWavelet, VLFmin = VLFminWavelet, VLFmax = VLFmaxWavelet, 
-                                  LFmin = LFminWavelet, LFmax = LFmaxWavelet, HFmin = HFminWavelet, HFmax = HFmaxWavelet, 
-                                  type = typeWavelet, wavelet = motherWavelet, bandtolerance = bandtoleranceWavelet, relative = relativeWavelet, verbose = verboseWavelet)
+    hrv.data = CalculatePowerBand(hrv.data, indexFreqAnalysis = indexFreqAnalysis, 
+                                  sizesp = sizesp, scale = scale, ULFmin = ULFmin, ULFmax = ULFmax, VLFmin = VLFmin, VLFmax = VLFmax, 
+                                  LFmin = LFmin, LFmax = LFmax, HFmin = HFmin, HFmax = HFmax, 
+                                  type = type, wavelet = mother, bandtolerance = bandtolerance, relative = relative, verbose = verbose)
     index = length (hrv.data$FreqAnalysis)
     resultsWavelet = hrv.data$FreqAnalysis[[index]]
     resultsWavelet$File = file
@@ -402,7 +404,7 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   
   shapiroTimepNN50Case = shapiroTimepNN50(listaDF[[1]])
   shapiroTimepNN50Control = shapiroTimepNN50(listaDF[[2]])
-  pvaluespNN50 = c(shapiroTimepNN50Case$p.values,shapiroTimepNN50Control$p.value)
+  pvaluespNN50 = c(shapiroTimepNN50Case$p.value, shapiroTimepNN50Control$p.value)
   if (correctSigLevel == TRUE){
     pvaluespNN50 = p.adjust(pvaluespNN50)
   }
@@ -537,13 +539,21 @@ split_path <- function(path) {
   return(c(basename(path), split_path(dirname(path))))
 }
 
+extract_ANOVA_pvalue<-function(anovaObject){
+  pvalue = summary(anovaObject)[[1]][1, 5]
+  pvalue
+}
+
+
 print.RHRVEasyResult <- function(result){
+  
   listaDF = split(result[[1]], result[[1]]$clase)
   
   cat("Result of the analysis of the variability of the heart rate of the group",
-      levels(result[[1]]$clase)[1], "versus the group", levels(result[[1]]$clase)[2], "\n\n")
-  if(is.na(result[[2]]$anova$SDNN)){
-    #report krustal
+      levels(result[[1]]$clase)[1], "versus the group", levels(result[[1]]$clase)[2], " \n\n")
+ 
+   if(is.na(result[[2]]$anova$SDNN)){
+    #report kruskal
     if(result[[2]]$kruskal$SDNN$p.value<0.05){
       cat("There is a statistically significant difference in SDNN; pvalue: ", result[[2]]$kruskal$SDNN$p.value, "\n")
       
@@ -554,9 +564,10 @@ print.RHRVEasyResult <- function(result){
     }
   }
   #report anova
+  
   else{
-    if(summary(listaDF[[1]]$anova$SDNN)[[1]]["Pr(>F)"][1]<0.05){
-      cat("There is a statistically significant difference in SDNN; pvalue: ", summary(listaDF[[1]]$anova$SDNN)[[1]]["Pr(>F)"][1], "ºn")
+    if(extract_ANOVA_pvalue(listaDF[[1]]$anova$SDNN)<0.05){
+      cat("There is a statistically significant difference in SDNN; pvalue: ", extract_ANOVA_pvalue(listaDF[[1]]$anova$SDNN), "ºn")
       
       cat("SDNN for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$SDNN), "+-", sd(listaDF[[1]]$SDNN))
@@ -567,7 +578,7 @@ print.RHRVEasyResult <- function(result){
   
   
   if(is.na(result[[2]]$anova$SDANN)){
-    #report krustal
+    #report kruskal
     if(result[[2]]$kruskal$SDANN$p.value<0.05){
       cat("There is a statistically significant difference in SDANN; pvalue: ", result[[2]]$kruskal$SDANN$p.value, "\n")
       cat("SDANN for the group ", levels(result[[1]]$clase)[1], "is", 
@@ -578,8 +589,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(summary(listaDF[[1]]$anova$SDANN)[[1]]["Pr(>F)"][1]<0.05){
-      cat("There is a statistically significant difference in SDANN; pvalue: ", summary(listaDF[[1]]$anova$SDANN)[[1]]["Pr(>F)"][1], "ºn")
+    if(extract_ANOVA_pvalue(listaDF[[1]]$anova$SDANN)<0.05){
+      cat("There is a statistically significant difference in SDANN; pvalue: ", extract_ANOVA_pvalue(listaDF[[1]]$anova$SDANN), "ºn")
       cat("SDANN for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$SDANN), "+-", sd(listaDF[[1]]$SDANN))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -590,7 +601,7 @@ print.RHRVEasyResult <- function(result){
   
   
   if(is.na(result[[2]]$anova$SDNNIDX)){
-    #report krustal
+    #report kruskal
     if(result[[2]]$kruskal$SDNNIDX$p.value<0.05){
       cat("There is a statistically significant difference in SDNNIDX; pvalue: ", result[[2]]$kruskal$SDNNIDX$p.value, "\n")
       cat("SDNNIDX for the group ", levels(result[[1]]$clase)[1], "is", 
@@ -601,8 +612,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(summary(listaDF[[1]]$anova$SDNNIDX)[[1]]["Pr(>F)"][1]<0.05){
-      cat("There is a statistically significant difference in SDNNIDX; pvalue: ", summary(listaDF[[1]]$anova$SDNNIDX)[[1]]["Pr(>F)"][1], "ºn")
+    if(extract_ANOVA_pvalue(listaDF[[1]]$anova$SDNNIDX)<0.05){
+      cat("There is a statistically significant difference in SDNNIDX; pvalue: ", extract_ANOVA_pvalue(listaDF[[1]]$anova$SDNNIDX), "ºn")
       cat("SDNNIDX for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$SDNNIDX), "+-", sd(listaDF[[1]]$SDNNIDX))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -612,7 +623,7 @@ print.RHRVEasyResult <- function(result){
   
   
   if(is.na(result[[2]]$anova$pNN50)){
-    #report krustal
+    #report kruskal
     if(result[[2]]$kruskal$pNN50$p.value<0.05){
       cat("There is a statistically significant difference in pNN50; pvalue: ", result[[2]]$kruskal$pNN50$p.value, "\n")
       cat("pNN50 for the group ", levels(result[[1]]$clase)[1], "is", 
@@ -623,8 +634,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(summary(listaDF[[1]]$anova$pNN50)[[1]]["Pr(>F)"][1]>0.05){
-      cat("There is a statistically significant difference in pNN50; pvalue: ", summary(listaDF[[1]]$anova$pNN50)[[1]]["Pr(>F)"][1], "ºn")
+    if(extract_ANOVA_pvalue(listaDF[[1]]$anova$pNN50)>0.05){
+      cat("There is a statistically significant difference in pNN50; pvalue: ", extract_ANOVA_pvalue(listaDF[[1]]$anova$pNN50), "ºn")
       cat("pNN50 for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$pNN50), "+-", sd(listaDF[[1]]$pNN50))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -635,7 +646,7 @@ print.RHRVEasyResult <- function(result){
   
   
   if(is.na(result[[2]]$anova$SDSD)){
-    #report krustal
+    #report kruskal
     if(result[[2]]$kruskal$SDSD$p.value<0.05){
       cat("There is a statistically significant difference in SDSD; pvalue: ", result[[2]]$kruskal$SDSD$p.value, "\n")
       cat("SDSD for the group ", levels(result[[1]]$clase)[1], "is", 
@@ -646,8 +657,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(summary(listaDF[[1]]$anova$SDSD)[[1]]["Pr(>F)"][1]<0.05){
-      cat("There is a statistically significant difference in SDSD; pvalue: ", summary(listaDF[[1]]$anova$SDSD)[[1]]["Pr(>F)"][1], "ºn")
+    if(extract_ANOVA_pvalue(listaDF[[1]]$anova$SDSD)<0.05){
+      cat("There is a statistically significant difference in SDSD; pvalue: ", extract_ANOVA_pvalue(listaDF[[1]]$anova$SDSD), "ºn")
       cat("SDSD for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$SDSD), "+-", sd(listaDF[[1]]$SDSD))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -658,7 +669,7 @@ print.RHRVEasyResult <- function(result){
   
   
   if(is.na(result[[2]]$anova$rMSSD)){
-    #report krustal
+    #report kruskal
     if(result[[2]]$kruskal$rMSSD$p.value<0.05){
       cat("There is a statistically significant difference in rMSSD; pvalue: ", result[[2]]$kruskal$rMSSD$p.value, "\n")
       cat("rMSSD for the group ", levels(result[[1]]$clase)[1], "is", 
@@ -669,8 +680,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(summary(listaDF[[1]]$anova$rMSSD)[[1]]["Pr(>F)"][1]<0.05){
-      cat("There is a statistically significant difference in rMSSD; pvalue: ", summary(listaDF[[1]]$anova$rMSSD)[[1]]["Pr(>F)"][1], "ºn")
+    if(extract_ANOVA_pvalue(listaDF[[1]]$anova$rMSSD)<0.05){
+      cat("There is a statistically significant difference in rMSSD; pvalue: ", extract_ANOVA_pvalue(listaDF[[1]]$anova$rMSSD), "ºn")
       cat("rMSSD for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$rMSSD), "+-", sd(listaDF[[1]]$rMSSD))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -681,7 +692,7 @@ print.RHRVEasyResult <- function(result){
   
   
   if(is.na(result[[2]]$anova$IRRR)){
-    #report krustal
+    #report kruskal
     if(result[[2]]$kruskal$IRRR$p.value<0.05){
       cat("There is a statistically significant difference in IRRR; pvalue: ", result[[2]]$kruskal$IRRR$p.value, "\n")
       cat("IRRR for the group ", levels(result[[1]]$clase)[1], "is", 
@@ -692,8 +703,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(summary(listaDF[[1]]$anova$IRRR)[[1]]["Pr(>F)"][1]<0.05){
-      cat("There is a statistically significant difference in IRRR; pvalue: ", summary(listaDF[[1]]$anova$IRRR)[[1]]["Pr(>F)"][1], "ºn")
+    if(extract_ANOVA_pvalue(listaDF[[1]]$anova$IRRR)<0.05){
+      cat("There is a statistically significant difference in IRRR; pvalue: ", extract_ANOVA_pvalue(listaDF[[1]]$anova$IRRR), "ºn")
       cat("IRRR for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$IRRR), "+-", sd(listaDF[[1]]$IRRR))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -704,7 +715,7 @@ print.RHRVEasyResult <- function(result){
   
   
   if(is.na(result[[2]]$anova$MADRR)){
-    #report krustal
+    #report kruskal
     if(result[[2]]$kruskal$MADRR$p.value<0.05){
       cat("There is a statistically significant difference in MADRR; pvalue: ", result[[2]]$kruskal$MADRR$p.value, "\n")
       cat("MADRR for the group ", levels(result[[1]]$clase)[1], "is", 
@@ -715,8 +726,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(summary(listaDF[[1]]$anova$MADRR)[[1]]["Pr(>F)"][1]<0.05){
-      cat("There is a statistically significant difference in MADRR; pvalue: ", summary(listaDF[[1]]$anova$MADRR)[[1]]["Pr(>F)"][1], "ºn")
+    if(extract_ANOVA_pvalue(listaDF[[1]]$anova$MADRR)<0.05){
+      cat("There is a statistically significant difference in MADRR; pvalue: ", extract_ANOVA_pvalue(listaDF[[1]]$anova$MADRR), "ºn")
       cat("MADRR for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$MADRR), "+-", sd(listaDF[[1]]$MADRR))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -727,7 +738,7 @@ print.RHRVEasyResult <- function(result){
   
   
   if(is.na(result[[2]]$anova$TINN)){
-    #report krustal
+    #report kruskal
     if(result[[2]]$kruskal$TINN$p.value<0.05){
       cat("There is a statistically significant difference in TINN; pvalue: ", result[[2]]$kruskal$TINN$p.value, "\n")
       cat("TINN for the group ", levels(result[[1]]$clase)[1], "is", 
@@ -739,8 +750,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(summary(listaDF[[1]]$anova$TINN)[[1]]["Pr(>F)"][1]<0.05){
-      cat("There is a statistically significant difference in TINN; pvalue: ", summary(listaDF[[1]]$anova$TINN)[[1]]["Pr(>F)"][1], "ºn")
+    if(extract_ANOVA_pvalue(listaDF[[1]]$anova$TINN)<0.05){
+      cat("There is a statistically significant difference in TINN; pvalue: ", extract_ANOVA_pvalue(listaDF[[1]]$anova$TINN), "ºn")
       cat("TINN for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$TINN), "+-", sd(listaDF[[1]]$TINN))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -751,7 +762,7 @@ print.RHRVEasyResult <- function(result){
   
   
   if(is.na(result[[2]]$anova$HRVi)){
-    #report krustal
+    #report kruskal
     if(result[[2]]$kruskal$HRVi$p.value<0.05){
       cat("There is a statistically significant difference in HRVi; pvalue: ", result[[2]]$kruskal$HRVi$p.value, "\n")
       cat("HRVi for the group ", levels(result[[1]]$clase)[1], "is", 
@@ -762,8 +773,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(summary(listaDF[[1]]$anova$HRVi)[[1]]["Pr(>F)"][1]<0.05){
-      cat("There is a statistically significant difference in HRVi; pvalue: ", summary(listaDF[[1]]$anova$HRVi)[[1]]["Pr(>F)"][1], "ºn")
+    if(extract_ANOVA_pvalue(listaDF[[1]]$anova$HRVi)<0.05){
+      cat("There is a statistically significant difference in HRVi; pvalue: ", extract_ANOVA_pvalue(listaDF[[1]]$anova$HRVi), "ºn")
       cat("HRVi for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$HRVi), "+-", sd(listaDF[[1]]$HRVi))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -777,7 +788,7 @@ print.RHRVEasyResult <- function(result){
   
   
   if(is.na(result[[4]]$anova$ULF)){
-    #report krustal
+    #report kruskal
     if(result[[4]]$kruskal$ULF$p.value<0.05){
       cat("There is a statistically significant difference in ULF; pvalue: ", result[[4]]$kruskal$ULF$p.value, "\n")
       cat("ULF for the group ", levels(result[[1]]$clase)[1], "is", 
@@ -787,9 +798,10 @@ print.RHRVEasyResult <- function(result){
     }
   }
   #report anova
+
   else{
-    if(summary(listaDF1[[1]]$anova$ULF)[[1]]["Pr(>F)"][1]<0.05){
-      cat("There is a statistically significant difference in ULF; pvalue: ", summary(listaDF1[[1]]$anova$ULF)[[1]]["Pr(>F)"][1], "ºn")
+    if(extract_ANOVA_pvalue(listaDF1[[1]]$anova$ULF)<0.05){
+      cat("There is a statistically significant difference in ULF; pvalue: ", extract_ANOVA_pvalue(listaDF1[[1]]$anova$ULF), "ºn")
       cat("ULF for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF1[[1]]$ULF), "+-", sd(listaDF1[[1]]$ULF))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -800,7 +812,7 @@ print.RHRVEasyResult <- function(result){
   
   
   if(is.na(result[[4]]$anova$VLF)){
-    #report krustal
+    #report kruskal
     if(result[[4]]$kruskal$VLF$p.value<0.05){
       cat("There is a statistically significant difference in VLF; pvalue: ", result[[4]]$kruskal$VLF$p.value, "\n")
       cat("VLF for the group ", levels(result[[1]]$clase)[1], "is", 
@@ -811,8 +823,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(summary(listaDF1[[1]]$anova$VLF)[[1]]["Pr(>F)"][1]<0.05){
-      cat("There is a statistically significant difference in VLF; pvalue: ", summary(listaDF1[[1]]$anova$VLF)[[1]]["Pr(>F)"][1], "ºn")
+    if(extract_ANOVA_pvalue(listaDF1[[1]]$anova$VLF)<0.05){
+      cat("There is a statistically significant difference in VLF; pvalue: ", extract_ANOVA_pvalue(listaDF1[[1]]$anova$VLF), "ºn")
       cat("VLF for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF1[[1]]$VLF), "+-", sd(listaDF1[[1]]$VLF))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -820,7 +832,7 @@ print.RHRVEasyResult <- function(result){
     }
   }
   if(is.na(result[[4]]$anova$LF)){
-    #report krustal
+    #report kruskal
     if(result[[4]]$kruskal$LF$p.value<0.05){
       cat("There is a statistically significant difference in LF; pvalue: ", result[[4]]$kruskal$LF$p.value, "\n")
       cat("LF for the group ", levels(result[[1]]$clase)[1], "is", 
@@ -831,8 +843,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(summary(listaDF1[[1]]$anova$LF)[[1]]["Pr(>F)"][1]<0.05){
-      cat("There is a statistically significant difference in LF; pvalue: ", summary(listaDF1[[1]]$anova$LF)[[1]]["Pr(>F)"][1], "ºn")
+    if(extract_ANOVA_pvalue(listaDF1[[1]]$anova$LF)<0.05){
+      cat("There is a statistically significant difference in LF; pvalue: ", extract_ANOVA_pvalue(listaDF1[[1]]$anova$LF), "ºn")
       cat("LF for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF1[[1]]$LF), "+-", sd(listaDF1[[1]]$LF))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -840,7 +852,7 @@ print.RHRVEasyResult <- function(result){
     }
   }
   if(is.na(result[[4]]$anova$HF)){
-    #report krustal
+    #report kruskal
     if(result[[4]]$kruskal$HF$p.value<0.05){
       cat("There is a statistically significant difference in HF; pvalue: ", result[[4]]$kruskal$HF$p.value, "\n")
       cat("HF for the group ", levels(result[[1]]$clase)[1], "is", 
@@ -851,8 +863,8 @@ print.RHRVEasyResult <- function(result){
   }
   #report anova
   else{
-    if(summary(listaDF1[[1]]$anova$HF)[[1]]["Pr(>F)"][1]<0.05){
-      cat("There is a statistically significant difference in HF; pvalue: ", summary(listaDF1[[1]]$anova$HF)[[1]]["Pr(>F)"][1], "ºn")
+    if(extract_ANOVA_pvalue(listaDF1[[1]]$anova$HF)<0.05){
+      cat("There is a statistically significant difference in HF; pvalue: ", extract_ANOVA_pvalue(listaDF1[[1]]$anova$HF), "ºn")
       cat("HF for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF1[[1]]$HF), "+-", sd(listaDF1[[1]]$HF))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
@@ -863,13 +875,13 @@ print.RHRVEasyResult <- function(result){
 
 
 RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, verbose=FALSE, format = "RR",
-                   sizeTime = 300, numofbinsTime = NULL, intervalTime = 7.8125, verboseTime = NULL,
-                   freqhrFreq = 4, methodFreq = c("linear", "spline"), verboseFreq = NULL,
-                   indexFreqAnalysisPSD = 1, methodFreqPSD = c("pgram", "ar", "lomb"), plotFreq = T,
-                   ULFminPSD = 0, ULFmaxPSD = 0.03, VLFminPSD = 0.03, VLFmaxPSD = 0.05,
-                   LFminPSD = 0.05, LFmaxPSD = 0.15, HFminPSD = 0.15, HFmaxPSD = 0.4,
-                   indexFreqAnalysisWavelet = 1, sizespWavelet = NULL, scaleWavelet = "linear", 
-                   typeWavelet = "wavelet", motherWavelet = "d4", bandtoleranceWavelet = 0.01, relativeWavelet = FALSE, verboseWavelet = NULL) {
+                   size = 300, numofbins = NULL, interval = 7.8125, verboseTime = NULL,
+                   freqhr = 4, methodInterpolation = c("linear", "spline"), verboseFreq = NULL,
+                   indexFreqAnalysis = 1, methodCalculationPSD = c("pgram", "ar", "lomb"), doPlot = F,
+                   ULFmin = 0, ULFmax = 0.03, VLFmin = 0.03, VLFmax = 0.05,
+                   LFmin = 0.05, LFmax = 0.15, HFmin = 0.15, HFmax = 0.4,
+                   sizesp = NULL, scale = "linear", 
+                   type = "wavelet", mother = "d4", bandtolerance = 0.01, relative = FALSE, verboseWavelet = NULL) {
   dataFrame3 = data.frame()
   dataFrame2 = data.frame()
   dataFrameMWavelet = data.frame()
@@ -888,8 +900,8 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
   listTimeStatysticalAnalysis = list()
 
 
-  dataFrameMTimeControl = time_analysis(format, filesControl, classControl, control, dataFrame3, sizeTime, numofbinsTime, intervalTime, verboseTime)
-  dataFrameMTimeCase = time_analysis(format, filesCase, classCase, case, dataFrame3, sizeTime, numofbinsTime, intervalTime, verboseTime)
+  dataFrameMTimeControl = time_analysis(format, filesControl, classControl, control, dataFrame3, size, numofbins, interval, verboseTime)
+  dataFrameMTimeCase = time_analysis(format, filesCase, classCase, case, dataFrame3, size, numofbins, interval, verboseTime)
   # Creating a DF with both in Time
   dataFrameMTime=rbind(dataFrameMTimeControl, dataFrameMTimeCase)
 
@@ -900,12 +912,12 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
   # FREQUENCY:
   if(useWavelet == FALSE){
     
-    dataFrameMFreqControl = freq_analysis(format, filesControl, classControl, control, dataFrame2, freqhrFreq, methodFreq, verboseFreq,
-                                          indexFreqAnalysisPSD, methodFreqPSD, plotFreq,
-                                          ULFminPSD, ULFmaxPSD, VLFminPSD, VLFmaxPSD, LFminPSD, LFmaxPSD, HFminPSD, HFmaxPSD)
-    dataFrameMFreqCase = freq_analysis(format, filesCase, classCase, case, dataFrame2, freqhrFreq, methodFreq, verboseFreq,
-                                       indexFreqAnalysisPSD, methodFreqPSD, plotFreq,
-                                       ULFminPSD, ULFmaxPSD, VLFminPSD, VLFmaxPSD, LFminPSD, LFmaxPSD, HFminPSD, HFmaxPSD)
+    dataFrameMFreqControl = freq_analysis(format, filesControl, classControl, control, dataFrame2, freqhr, methodInterpolation, verboseFreq,
+                                          indexFreqAnalysis, methodCalculationPSD, doPlot,ULFmin, ULFmax, VLFmin, VLFmax, LFmin, LFmax, HFmin, HFmax)
+
+    dataFrameMFreqCase = freq_analysis(format, filesCase, classCase, case, dataFrame2, freqhr, methodInterpolation, verboseFreq,
+                                       indexFreqAnalysis, methodCalculationPSD, doPlot,ULFmin, ULFmax, VLFmin, VLFmax, LFmin, LFmax, HFmin, HFmax)
+    
     dataFrameMFreq=rbind(dataFrameMFreqControl, dataFrameMFreqCase)
     if(verbose == TRUE){
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq, correctSigLevel, verbose)
@@ -916,14 +928,14 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
   }
   # WAVELET
   if(useWavelet == TRUE){
-    dataFrameMWaveletControl = wavelet_analysis(format, filesControl, classControl, control, dataFrameMWavelet, freqhrFreq, methodFreq, verboseFreq,
-                                                indexFreqAnalysisWavelet, sizespWavelet, scaleWavelet, 
-                                                ULFminPSD, ULFmaxPSD, VLFminPSD, VLFmaxPSD, LFminPSD, LFmaxPSD, HFminPSD, HFmaxPSD, 
-                                                typeWavelet, motherWavelet, bandtoleranceWavelet, relativeWavelet, verboseWavelet)
-    dataFrameMWaveletCase = wavelet_analysis(format, filesCase, classCase, case, dataFrameMWavelet, freqhrFreq, methodFreq, verboseFreq, 
-                                             indexFreqAnalysisWavelet, sizespWavelet, scaleWavelet, 
-                                             ULFminPSD, ULFmaxPSD, VLFminPSD, VLFmaxPSD, LFminPSD, LFmaxPSD, HFminPSD, HFmaxPSD, 
-                                             typeWavelet, motherWavelet, bandtoleranceWavelet, relativeWavelet, verboseWavelet)
+    dataFrameMWaveletControl = wavelet_analysis(format, filesControl, classControl, control, dataFrameMWavelet, freqhr, methodInterpolation, verboseWavelet,
+                                                indexFreqAnalysis, sizesp, scaleWavelet, 
+                                                ULFmin, ULFmax, VLFmin, VLFmax, LFmin, LFmax, HFmin, HFmax, 
+                                                type, mother, bandtolerance, relative)
+    dataFrameMWaveletCase = wavelet_analysis(format, filesCase, classCase, case, dataFrameMWavelet, freqhr, methodInterpolation, verboseWavelet,
+                                             indexFreqAnalysis, sizesp, scaleWavelet, 
+                                             ULFmin, ULFmax, VLFmin, VLFmax, LFmin, LFmax, HFmin, HFmax, 
+                                             type, mother, bandtolerance, relative)
     dataFrameMWavelet=rbind(dataFrameMWaveletControl, dataFrameMWaveletCase)
     if(verbose == TRUE){
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMWavelet, correctSigLevel, verbose)
@@ -936,3 +948,11 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
   class(results) = "RHRVEasyResult"
   results
 }
+
+
+
+
+
+
+
+
