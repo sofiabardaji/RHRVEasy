@@ -159,9 +159,7 @@ statistical_analysisFreq<-function(dfM, correctSigLevel, verbose){
   shapiroFreqULFCase = shapiro.test(listaDF[[1]]$ULF)
   shapiroFreqULFControl = shapiro.test(listaDF[[2]]$ULF)
   pvaluesULF = c(shapiroFreqULFCase$p.value,shapiroFreqULFControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesULF = p.adjust(pvaluesULF)
-  }
+
   if (all(pvaluesULF > 0.05)) {
     if (verbose == TRUE){
       cat("ULF Normal: Anova. P-values = ", pvaluesULF, "\n")
@@ -178,9 +176,7 @@ statistical_analysisFreq<-function(dfM, correctSigLevel, verbose){
   shapiroFreqVLFCase = shapiro.test(listaDF[[1]]$VLF)
   shapiroFreqVLFControl = shapiro.test(listaDF[[2]]$VLF)
   pvaluesVLF = c(shapiroFreqVLFCase$p.value,shapiroFreqVLFControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesVLF = p.adjust(pvaluesVLF)
-  }
+
   if (all(pvaluesVLF > 0.05)) {
     if (verbose == TRUE){
       cat("VLF Normal: Anova. P-values = ", pvaluesVLF, "\n")
@@ -196,9 +192,7 @@ statistical_analysisFreq<-function(dfM, correctSigLevel, verbose){
   shapiroFreqLFCase = shapiro.test(listaDF[[1]]$LF)
   shapiroFreqLFControl = shapiro.test(listaDF[[2]]$LF)
   pvaluesLF = c(shapiroFreqLFCase$p.value,shapiroFreqLFControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesLF = p.adjust(pvaluesLF)
-  }
+
   if (all(pvaluesLF > 0.05)) {
     if (verbose == TRUE){
       cat("LF Normal: Anova. P-values = ", pvaluesLF, "\n")
@@ -213,9 +207,7 @@ statistical_analysisFreq<-function(dfM, correctSigLevel, verbose){
   shapiroFreqHFCase = shapiro.test(listaDF[[1]]$HF)
   shapiroFreqHFControl = shapiro.test(listaDF[[2]]$HF)
   pvaluesHF = c(shapiroFreqHFCase$p.value,shapiroFreqHFControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesHF = p.adjust(pvaluesHF)
-  }
+
   if (all(pvaluesHF > 0.05)) {
     if (verbose == TRUE){
       cat("HF Normal: Anova. P-values = ", pvaluesHF, "\n")
@@ -246,9 +238,7 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   shapiroTimeSDNNCase = shapiro.test(listaDF[[1]]$SDNN)
   shapiroTimeSDNNControl = shapiro.test(listaDF[[2]]$SDNN)
   pvaluesSDNN = c(shapiroTimeSDNNCase$p.value,shapiroTimeSDNNControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesSDNN = p.adjust(pvaluesSDNN)
-  }
+
   if (all(pvaluesSDNN > 0.05)) { 
     if (verbose == TRUE){
       cat("SDNN Normal: Anova. P-values = ", pvaluesSDNN, "\n")
@@ -263,9 +253,7 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   shapiroTimeSDANNCase = shapiro.test(listaDF[[1]]$SDANN)
   shapiroTimeSDANNControl = shapiro.test(listaDF[[2]]$SDANN)
   pvaluesSDANN = c(shapiroTimeSDANNCase$p.value,shapiroTimeSDANNControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesSDANN = p.adjust(pvaluesSDANN)
-  }
+
   if (all(pvaluesSDANN > 0.05)) { 
     if (verbose == TRUE){
       cat("SDANN Normal: Anova. P-values = ", pvaluesSDANN, "\n")
@@ -281,9 +269,7 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   shapiroTimeSDNNIDXCase = shapiro.test(listaDF[[1]]$SDNNIDX)
   shapiroTimeSDNNIDXControl = shapiro.test(listaDF[[2]]$SDNNIDX)
   pvaluesSDNNIDX = c(shapiroTimeSDNNIDXCase$p.value,shapiroTimeSDNNIDXControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesSDNNIDX = p.adjust(pvaluesSDNNIDX)
-  }
+
   if (all(pvaluesSDNNIDX > 0.05)) { 
     if (verbose == TRUE){
       cat("SDNNIDX Normal: Anova. P-values = ", pvaluesSDNNIDX, "\n")
@@ -299,10 +285,8 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   shapiroTimepNN50Case = shapiro.test(listaDF[[1]]$pNN50)
   shapiroTimepNN50Control = shapiro.test(listaDF[[2]]$pNN50)
   pvaluespNN50 = c(shapiroTimepNN50Case$p.value, shapiroTimepNN50Control$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluespNN50 = p.adjust(pvaluespNN50)
-  }
-  if (all(pvaluespNN50 > 0.05)) { 
+
+    if (all(pvaluespNN50 > 0.05)) { 
     if (verbose == TRUE){
       cat("pNN50 Normal: Anova. P-values = ", pvaluespNN50, "\n")
     }
@@ -317,9 +301,7 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   shapiroTimeSDSDCase = shapiro.test(listaDF[[1]]$SDSD)
   shapiroTimeSDSDControl = shapiro.test(listaDF[[2]]$SDSD)
   pvaluesSDSD = c(shapiroTimeSDSDCase$p.value,shapiroTimeSDSDControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesSDSD = p.adjust(pvaluesSDSD)
-  }
+
   if (all(pvaluesSDSD > 0.05)) {
     if (verbose == TRUE){
       cat("SDSD Normal: Anova. P-values = ", pvaluesSDSD, "\n")
@@ -336,9 +318,7 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   shapiroTimerMSSDCase = shapiro.test(listaDF[[1]]$rMSSD)
   shapiroTimerMSSDControl = shapiro.test(listaDF[[2]]$rMSSD)
   pvaluesrMSSD = c(shapiroTimerMSSDCase$p.value,shapiroTimerMSSDControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesrMSSD = p.adjust(pvaluesrMSSD)
-  }
+
   if (all(pvaluesrMSSD > 0.05)) { 
     if (verbose == TRUE){
       cat("rMSSD Normal: Anova. P-values = ", pvaluesrMSSD, "\n")
@@ -354,9 +334,7 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   shapiroTimeIRRRCase = shapiro.test(listaDF[[1]]$IRRR)
   shapiroTimeIRRRControl = shapiro.test(listaDF[[2]]$IRRR)
   pvaluesIRRR = c(shapiroTimeIRRRCase$p.value,shapiroTimeIRRRControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesIRRR = p.adjust(pvaluesIRRR)
-  }
+
   if (all(pvaluesIRRR > 0.05)){
     if (verbose == TRUE){
       cat("IRRR Normal: Anova. P-values = ", pvaluesIRRR, "\n")
@@ -372,9 +350,7 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   shapiroTimeMADRRCase = shapiro.test(listaDF[[1]]$MADRR)
   shapiroTimeMADRRControl = shapiro.test(listaDF[[2]]$MADRR)
   pvaluesMADRR = c(shapiroTimeMADRRCase$p.value,shapiroTimeMADRRControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesMADRR = p.adjust(pvaluesMADRR)
-  }
+
   if (all(pvaluesMADRR > 0.05)){ 
     if (verbose == TRUE){
       cat("MADRR Normal: Anova. P-values = ", pvaluesMADRR, "\n")
@@ -390,9 +366,7 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   shapiroTimeTINNCase = shapiro.test(listaDF[[1]]$TINN)
   shapiroTimeTINNControl = shapiro.test(listaDF[[2]]$TINN)
   pvaluesTINN = c(shapiroTimeTINNCase$p.value,shapiroTimeTINNControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesTINN = p.adjust(pvaluesTINN)
-  }
+
   if (all(pvaluesTINN > 0.05)){ 
     if (verbose == TRUE){
       cat("TINN NOT normal: Kruskal. P-values = ", pvaluesTINN, "\n")
@@ -408,9 +382,7 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   shapiroTimeHRViCase = shapiro.test(listaDF[[1]]$HRVi)
   shapiroTimeHRViControl = shapiro.test(listaDF[[2]]$HRVi)
   pvaluesHRVi = c(shapiroTimeHRViCase$p.value,shapiroTimeHRViControl$p.value)
-  if (correctSigLevel == TRUE){
-    pvaluesHRVi = p.adjust(pvaluesHRVi)
-  }
+
   if (all(pvaluesHRVi > 0.05)){ 
     if (verbose == TRUE){
       cat("HRVi NOT normal: Kruskal. P-values = ", pvaluesHRVi, "\n")
@@ -461,7 +433,7 @@ print.RHRVEasyResult <- function(result){
  
   
   else{
-    if(extract_ANOVA_pvalue(result[[2]]$anova$SDNN)>0.05){
+    if(extract_ANOVA_pvalue(result[[2]]$anova$SDNN)<0.05){
       cat("There is a statistically significant difference in SDNN; pvalue: ", extract_ANOVA_pvalue(result[[2]]$anova$SDNN), "\n")
       
       cat("SDNN for the group ", levels(result[[1]]$clase)[1], "is", 
@@ -797,12 +769,20 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
   listFreqStatysticalAnalysis = list()
   listTimeStatysticalAnalysis = list()
   
+  if (useWavelet == FALSE){
+    type = "fourier"
+  }
+  
+  if (useWavelet == TRUE){
+    type = "wavelet"
+  }
+  
   if(type ==  "wavelet"){
     useWavelet = TRUE
   }  
   
   if(type ==  "fourier"){
-    useWavelet = FALSE 
+    useWavelet = FALSE
   }
 
 
@@ -832,6 +812,7 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
     }
     
   }
+  
   # WAVELET
   if(useWavelet == TRUE){
     dataFrameMWaveletControl = wavelet_analysis(format, filesControl, classControl, control, dataFrameMWavelet, freqhr, methodInterpolation, verboseWavelet,
