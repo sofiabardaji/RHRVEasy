@@ -744,14 +744,14 @@ print.RHRVEasyResult <- function(result){
 }
 
 
-RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, verbose=FALSE, format = "RR",
+RHRVEasy<-function(control, case, correctSigLevel = TRUE, verbose=FALSE, format = "RR",
                    size = 300, numofbins = NULL, interval = 7.8125, verboseTime = NULL,
                    freqhr = 4, methodInterpolation = c("linear", "spline"), verboseFreq = NULL,
                    methodCalculationPSD = c("pgram", "ar", "lomb"), doPlot = F,
                    ULFmin = 0, ULFmax = 0.03, VLFmin = 0.03, VLFmax = 0.05,
                    LFmin = 0.05, LFmax = 0.15, HFmin = 0.15, HFmax = 0.4,
                    sizesp = NULL, scale = "linear", 
-                   type = "wavelet", mother = "d4", bandtolerance = 0.01, relative = FALSE, verboseWavelet = NULL) {
+                   type = "fourier", mother = "d4", bandtolerance = 0.01, relative = FALSE, verboseWavelet = NULL) {
   dataFrame3 = data.frame()
   dataFrame2 = data.frame()
   dataFrameMWavelet = data.frame()
@@ -769,21 +769,6 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
   listFreqStatysticalAnalysis = list()
   listTimeStatysticalAnalysis = list()
   
-  if (useWavelet == FALSE){
-    type = "fourier"
-  }
-  
-  if (useWavelet == TRUE){
-    type = "wavelet"
-  }
-  
-  if(type ==  "wavelet"){
-    useWavelet = TRUE
-  }  
-  
-  if(type ==  "fourier"){
-    useWavelet = FALSE
-  }
 
 
   dataFrameMTimeControl = time_analysis(format, filesControl, classControl, control, dataFrame3, size, numofbins, interval, verboseTime)
@@ -796,7 +781,7 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
   listTimeStatysticalAnalysis = statistical_analysisTime(dataFrameMTime, correctSigLevel, verbose)
 
   # FREQUENCY:
-  if(useWavelet == FALSE){
+  if(type == "fourier"){
     
     dataFrameMFreqControl = freq_analysis(format, filesControl, classControl, control, dataFrame2, freqhr, methodInterpolation, verboseFreq,
                                           methodCalculationPSD, doPlot,ULFmin, ULFmax, VLFmin, VLFmax, LFmin, LFmax, HFmin, HFmax)
@@ -814,7 +799,7 @@ RHRVEasy<-function(control, case, useWavelet = FALSE, correctSigLevel = TRUE, ve
   }
   
   # WAVELET
-  if(useWavelet == TRUE){
+  if(type == "wavelet"){
     dataFrameMWaveletControl = wavelet_analysis(format, filesControl, classControl, control, dataFrameMWavelet, freqhr, methodInterpolation, verboseWavelet,
                                                 sizesp, scale, 
                                                 ULFmin, ULFmax, VLFmin, VLFmax, LFmin, LFmax, HFmin, HFmax, 
