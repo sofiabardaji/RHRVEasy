@@ -159,63 +159,71 @@ statistical_analysisFreq<-function(dfM, correctSigLevel, verbose){
   shapiroFreqULFCase = shapiro.test(listaDF[[1]]$ULF)
   shapiroFreqULFControl = shapiro.test(listaDF[[2]]$ULF)
   pvaluesULF = c(shapiroFreqULFCase$p.value,shapiroFreqULFControl$p.value)
+  
+  shapiroFreqVLFCase = shapiro.test(listaDF[[1]]$VLF)
+  shapiroFreqVLFControl = shapiro.test(listaDF[[2]]$VLF)
+  pvaluesVLF = c(shapiroFreqVLFCase$p.value,shapiroFreqVLFControl$p.value)
+  
+  shapiroFreqLFCase = shapiro.test(listaDF[[1]]$LF)
+  shapiroFreqLFControl = shapiro.test(listaDF[[2]]$LF)
+  pvaluesLF = c(shapiroFreqLFCase$p.value,shapiroFreqLFControl$p.value)
+  
+  shapiroFreqHFCase = shapiro.test(listaDF[[1]]$HF)
+  shapiroFreqHFControl = shapiro.test(listaDF[[2]]$HF)
+  pvaluesHF = c(shapiroFreqHFCase$p.value,shapiroFreqHFControl$p.value)
+  
+  pvaluesFreq = c(pvaluesULF, pvaluesVLF, pvaluesLF, pvaluesHF)
+  
+  # SI NO QUEREMOS HACERLO SIEMPRE PONER IF AQUI !!!!!!!
+  pvaluesFreq = p.adjust(pvaluesFreq, method = "bonferroni")
 
-  if (all(pvaluesULF > 0.05)) {
+  if (pvaluesFreq[1] > 0.05 & pvaluesFreq[2] > 0.05) {
     if (verbose == TRUE){
-      cat("ULF Normal: Anova. P-values = ", pvaluesULF, "\n")
+      cat("ULF Normal: Anova. P-values = ", pvaluesFreq[1], " and ", pvaluesFreq[2],  "\n")
     }
     lista$anova$ULF = aov(ULF ~ clase, data = dfM)
   }else {
     if (verbose == TRUE){
-      cat("ULF NOT normal: Kruskal. P-values = ", pvaluesULF, "\n")
+      cat("ULF NOT normal: Kruskal. P-values = ", pvaluesFreq[1], " and ", pvaluesFreq[2],  "\n")
     }
     lista$kruskal$ULF = kruskal.test(ULF ~ clase, data = dfM)
   }
 
   
-  shapiroFreqVLFCase = shapiro.test(listaDF[[1]]$VLF)
-  shapiroFreqVLFControl = shapiro.test(listaDF[[2]]$VLF)
-  pvaluesVLF = c(shapiroFreqVLFCase$p.value,shapiroFreqVLFControl$p.value)
-
-  if (all(pvaluesVLF > 0.05)) {
+  if (pvaluesFreq[3] > 0.05 & pvaluesFreq[4] > 0.05) {
     if (verbose == TRUE){
-      cat("VLF Normal: Anova. P-values = ", pvaluesVLF, "\n")
+      cat("VLF Normal: Anova. P-values = ", pvaluesFreq[3], " and ", pvaluesFreq[4],  "\n")
     }
     aov(VLF ~ clase, data = dfM)
     lista$anova$VLF = aov(VLF ~ clase, data = dfM)
   } else {
     if (verbose == TRUE){
-      cat("VLF NOT normal: Kruskal. P-values = ", pvaluesVLF, "\n")
+      cat("VLF NOT normal: Kruskal. P-values = ",  pvaluesFreq[3], " and ", pvaluesFreq[4],  "\n")
     }
     lista$kruskal$VLF = kruskal.test(VLF ~ clase, data = dfM)
   }
-  shapiroFreqLFCase = shapiro.test(listaDF[[1]]$LF)
-  shapiroFreqLFControl = shapiro.test(listaDF[[2]]$LF)
-  pvaluesLF = c(shapiroFreqLFCase$p.value,shapiroFreqLFControl$p.value)
+ 
 
-  if (all(pvaluesLF > 0.05)) {
+  if (pvaluesFreq[5] > 0.05 & pvaluesFreq[6] > 0.05) {
     if (verbose == TRUE){
-      cat("LF Normal: Anova. P-values = ", pvaluesLF, "\n")
+      cat("LF Normal: Anova. P-values = ", pvaluesFreq[5], " and ", pvaluesFreq[6],  "\n")
     }
     lista$anova$LF = aov(LF ~ clase, data = dfM)  
   } else {
     if (verbose == TRUE){
-      cat("LF NOT normal: Kruskal. P-values = ", pvaluesLF, "\n")
+      cat("LF NOT normal: Kruskal. P-values = ", pvaluesFreq[5], " and ", pvaluesFreq[6],  "\n")
     }
     lista$kruskal$LF = kruskal.test(LF ~ clase, data = dfM)
   }
-  shapiroFreqHFCase = shapiro.test(listaDF[[1]]$HF)
-  shapiroFreqHFControl = shapiro.test(listaDF[[2]]$HF)
-  pvaluesHF = c(shapiroFreqHFCase$p.value,shapiroFreqHFControl$p.value)
-
-  if (all(pvaluesHF > 0.05)) {
+  
+  if (pvaluesFreq[7] > 0.05 & pvaluesFreq[8] > 0.05) {
     if (verbose == TRUE){
-      cat("HF Normal: Anova. P-values = ", pvaluesHF, "\n")
+      cat("HF Normal: Anova. P-values = ", pvaluesFreq[7], " and ", pvaluesFreq[8],  "\n")
     }
     lista$anova$HF = aov(HF ~ clase, data = dfM) 
   } else {
     if (verbose == TRUE){
-      cat("HF NOT normal: Kruskal. P-values = ", pvaluesHF, "\n")
+      cat("HF NOT normal: Kruskal. P-values = ", pvaluesFreq[7], " and ", pvaluesFreq[8],  "\n")
     }
     lista$kruskal$HF = kruskal.test(HF ~ clase, data = dfM)
   }
@@ -238,159 +246,174 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   shapiroTimeSDNNCase = shapiro.test(listaDF[[1]]$SDNN)
   shapiroTimeSDNNControl = shapiro.test(listaDF[[2]]$SDNN)
   pvaluesSDNN = c(shapiroTimeSDNNCase$p.value,shapiroTimeSDNNControl$p.value)
-
-  if (all(pvaluesSDNN > 0.05)) { 
-    if (verbose == TRUE){
-      cat("SDNN Normal: Anova. P-values = ", pvaluesSDNN, "\n")
-    }
-    lista$anova$SDNN = aov(SDNN ~ clase, data = dfM)
-  }else {
-    if (verbose == TRUE){
-      cat("SDNN NOT normal: Kruskal. P-values = ", pvaluesSDNN, "\n")
-    }
-    lista$kruskal$SDNN = kruskal.test(SDNN ~ clase, data = dfM)
-  }
+  
   shapiroTimeSDANNCase = shapiro.test(listaDF[[1]]$SDANN)
   shapiroTimeSDANNControl = shapiro.test(listaDF[[2]]$SDANN)
   pvaluesSDANN = c(shapiroTimeSDANNCase$p.value,shapiroTimeSDANNControl$p.value)
-
-  if (all(pvaluesSDANN > 0.05)) { 
-    if (verbose == TRUE){
-      cat("SDANN Normal: Anova. P-values = ", pvaluesSDANN, "\n")
-    }
-    lista$anova$SDANN = aov(SDANN ~ clase, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("SDANN NOT normal: Kruskal. P-values = ", pvaluesSDANN, "\n")
-    }
-    lista$kruskal$SDANN = kruskal.test(SDANN ~ clase, data = dfM)
-  }
   
   shapiroTimeSDNNIDXCase = shapiro.test(listaDF[[1]]$SDNNIDX)
   shapiroTimeSDNNIDXControl = shapiro.test(listaDF[[2]]$SDNNIDX)
   pvaluesSDNNIDX = c(shapiroTimeSDNNIDXCase$p.value,shapiroTimeSDNNIDXControl$p.value)
-
-  if (all(pvaluesSDNNIDX > 0.05)) { 
-    if (verbose == TRUE){
-      cat("SDNNIDX Normal: Anova. P-values = ", pvaluesSDNNIDX, "\n")
-    }
-    lista$anova$SDNNIDX = aov(SDNNIDX ~ clase, data = dfM)
-  }else {
-    if (verbose == TRUE){
-      cat("SDNNIDX NOT normal: Kruskal. P-values = ", pvaluesSDNNIDX, "\n")
-    }
-    lista$kruskal$SDNNIDX = kruskal.test(SDNNIDX ~ clase, data = dfM)
-  }
   
   shapiroTimepNN50Case = shapiro.test(listaDF[[1]]$pNN50)
   shapiroTimepNN50Control = shapiro.test(listaDF[[2]]$pNN50)
   pvaluespNN50 = c(shapiroTimepNN50Case$p.value, shapiroTimepNN50Control$p.value)
-
-    if (all(pvaluespNN50 > 0.05)) { 
-    if (verbose == TRUE){
-      cat("pNN50 Normal: Anova. P-values = ", pvaluespNN50, "\n")
-    }
-    lista$anova$pNN50 = aov(pNN50 ~ clase, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("pNN50 NOT normal: Kruskal. P-values = ", pvaluespNN50, "\n")
-    }
-    lista$kruskal$pNN50 = kruskal.test(pNN50 ~ clase, data = dfM)
-  }
   
   shapiroTimeSDSDCase = shapiro.test(listaDF[[1]]$SDSD)
   shapiroTimeSDSDControl = shapiro.test(listaDF[[2]]$SDSD)
   pvaluesSDSD = c(shapiroTimeSDSDCase$p.value,shapiroTimeSDSDControl$p.value)
-
-  if (all(pvaluesSDSD > 0.05)) {
-    if (verbose == TRUE){
-      cat("SDSD Normal: Anova. P-values = ", pvaluesSDSD, "\n")
-    }
-    lista$anova$SDSD = aov(SDSD ~ clase, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("SDSD NOT normal: Kruskal. P-values = ", pvaluesSDSD, "\n")
-    }
-    lista$kruskal$SDSD = kruskal.test(SDSD ~ clase, data = dfM)
-  }
-  
   
   shapiroTimerMSSDCase = shapiro.test(listaDF[[1]]$rMSSD)
   shapiroTimerMSSDControl = shapiro.test(listaDF[[2]]$rMSSD)
   pvaluesrMSSD = c(shapiroTimerMSSDCase$p.value,shapiroTimerMSSDControl$p.value)
-
-  if (all(pvaluesrMSSD > 0.05)) { 
-    if (verbose == TRUE){
-      cat("rMSSD Normal: Anova. P-values = ", pvaluesrMSSD, "\n")
-    }
-    lista$anova$rMSSD = aov(rMSSD ~ clase, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("rMSSD NOT normal: Kruskal. P-values = ", pvaluesrMSSD, "\n")
-    }
-    lista$kruskal$rMSSD = kruskal.test(rMSSD ~ clase, data = dfM)
-  }
   
   shapiroTimeIRRRCase = shapiro.test(listaDF[[1]]$IRRR)
   shapiroTimeIRRRControl = shapiro.test(listaDF[[2]]$IRRR)
   pvaluesIRRR = c(shapiroTimeIRRRCase$p.value,shapiroTimeIRRRControl$p.value)
-
-  if (all(pvaluesIRRR > 0.05)){
-    if (verbose == TRUE){
-      cat("IRRR Normal: Anova. P-values = ", pvaluesIRRR, "\n")
-    }
-    lista$anova$IRRR = aov(IRRR ~ clase, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("IRRR NOT normal: Kruskal. P-values = ", pvaluesIRRR, "\n")
-    }
-    lista$kruskal$IRRR = kruskal.test(IRRR ~ clase, data = dfM)
-  }
   
   shapiroTimeMADRRCase = shapiro.test(listaDF[[1]]$MADRR)
   shapiroTimeMADRRControl = shapiro.test(listaDF[[2]]$MADRR)
   pvaluesMADRR = c(shapiroTimeMADRRCase$p.value,shapiroTimeMADRRControl$p.value)
-
-  if (all(pvaluesMADRR > 0.05)){ 
-    if (verbose == TRUE){
-      cat("MADRR Normal: Anova. P-values = ", pvaluesMADRR, "\n")
-    }
-    lista$anova$MADRR = aov(MADRR ~ clase, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("IRRR NOT normal: Kruskal. P-values = ", pvaluesMADRR, "\n")
-    }
-    lista$kruskal$MADRR = kruskal.test(MADRR ~ clase, data = dfM)
-  }
   
   shapiroTimeTINNCase = shapiro.test(listaDF[[1]]$TINN)
   shapiroTimeTINNControl = shapiro.test(listaDF[[2]]$TINN)
   pvaluesTINN = c(shapiroTimeTINNCase$p.value,shapiroTimeTINNControl$p.value)
-
-  if (all(pvaluesTINN > 0.05)){ 
-    if (verbose == TRUE){
-      cat("TINN NOT normal: Kruskal. P-values = ", pvaluesTINN, "\n")
-    }
-    lista$anova$TINN = aov(TINN ~ clase, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("TINN NOT normal: Kruskal. P-values = ", pvaluesTINN, "\n")
-    }
-    lista$kruskal$TINN = kruskal.test(TINN ~ clase, data = dfM)
-  }
   
   shapiroTimeHRViCase = shapiro.test(listaDF[[1]]$HRVi)
   shapiroTimeHRViControl = shapiro.test(listaDF[[2]]$HRVi)
   pvaluesHRVi = c(shapiroTimeHRViCase$p.value,shapiroTimeHRViControl$p.value)
+  
+  pvaluesTime = c(pvaluesSDNN, pvaluesSDANN, pvaluesSDNNIDX, pvaluespNN50, pvaluesSDSD, 
+                  pvaluesrMSSD, pvaluesIRRR, pvaluesMADRR, pvaluesTINN, pvaluesHRVi)
+  
+  # SI ES SOLO CUANDO QUEREMOS, PONER AQUÍ IF !!!!!!!!!!!!!!
+  pvaluesTime = p.adjust(pvaluesTime, method = "bonferroni")
 
-  if (all(pvaluesHRVi > 0.05)){ 
+  if (pvaluesTime[1] > 0.05 & pvaluesTime[2] > 0.05) { 
     if (verbose == TRUE){
-      cat("HRVi NOT normal: Kruskal. P-values = ", pvaluesHRVi, "\n")
+      cat("SDNN Normal: Anova. P-values = ", pvaluesTime[1], " and ", pvaluesTime[2], "\n")
+    }
+    lista$anova$SDNN = aov(SDNN ~ clase, data = dfM)
+  }else {
+    if (verbose == TRUE){
+      cat("SDNN NOT normal: Kruskal. P-values = ", pvaluesTime[1], " and ", pvaluesTime[2], "\n")
+    }
+    lista$kruskal$SDNN = kruskal.test(SDNN ~ clase, data = dfM)
+  }
+  
+  
+  if (pvaluesTime[3] > 0.05 & pvaluesTime[4] > 0.05) { 
+    if (verbose == TRUE){
+      cat("SDANN Normal: Anova. P-values = ", pvaluesTime[3], " and ", pvaluesTime[4], "\n")
+    }
+    lista$anova$SDANN = aov(SDANN ~ clase, data = dfM)
+  } else {
+    if (verbose == TRUE){
+      cat("SDANN NOT normal: Kruskal. P-values = ", pvaluesTime[3], " and ", pvaluesTime[4], "\n")
+    }
+    lista$kruskal$SDANN = kruskal.test(SDANN ~ clase, data = dfM)
+  }
+  
+  
+  if (pvaluesTime[5] > 0.05 & pvaluesTime[6] > 0.05) { 
+    if (verbose == TRUE){
+      cat("SDNNIDX Normal: Anova. P-values = ", pvaluesTime[5], " and ", pvaluesTime[6], "\n")
+    }
+    lista$anova$SDNNIDX = aov(SDNNIDX ~ clase, data = dfM)
+  }else {
+    if (verbose == TRUE){
+      cat("SDNNIDX NOT normal: Kruskal. P-values = ", pvaluesTime[5], " and ", pvaluesTime[6], "\n")
+    }
+    lista$kruskal$SDNNIDX = kruskal.test(SDNNIDX ~ clase, data = dfM)
+  }
+  
+
+  if (pvaluesTime[7] > 0.05 & pvaluesTime[7] > 0.05) { 
+    if (verbose == TRUE){
+      cat("pNN50 Normal: Anova. P-values = ", pvaluesTime[7], " and ", pvaluesTime[8], "\n")
+    }
+    lista$anova$pNN50 = aov(pNN50 ~ clase, data = dfM)
+  } else {
+    if (verbose == TRUE){
+      cat("pNN50 NOT normal: Kruskal. P-values = ", pvaluesTime[7], " and ", pvaluesTime[8], "\n")
+    }
+    lista$kruskal$pNN50 = kruskal.test(pNN50 ~ clase, data = dfM)
+  }
+  
+  
+  if (pvaluesTime[9] > 0.05 & pvaluesTime[10] > 0.05) {
+    if (verbose == TRUE){
+      cat("SDSD Normal: Anova. P-values = ", pvaluesTime[9], " and ", pvaluesTime[10], "\n")
+    }
+    lista$anova$SDSD = aov(SDSD ~ clase, data = dfM)
+  } else {
+    if (verbose == TRUE){
+      cat("SDSD NOT normal: Kruskal. P-values = ", pvaluesTime[9], " and ", pvaluesTime[10], "\n")
+    }
+    lista$kruskal$SDSD = kruskal.test(SDSD ~ clase, data = dfM)
+  }
+ 
+  
+  if (pvaluesTime[11] > 0.05 & pvaluesTime[12] > 0.05) { 
+    if (verbose == TRUE){
+      cat("rMSSD Normal: Anova. P-values = ", pvaluesTime[11], " and ", pvaluesTime[12], "\n")
+    }
+    lista$anova$rMSSD = aov(rMSSD ~ clase, data = dfM)
+  } else {
+    if (verbose == TRUE){
+      cat("rMSSD NOT normal: Kruskal. P-values = ", pvaluesTime[11], " and ", pvaluesTime[12], "\n")
+    }
+    lista$kruskal$rMSSD = kruskal.test(rMSSD ~ clase, data = dfM)
+  }
+  
+
+  if (pvaluesTime[13] > 0.05 & pvaluesTime[14] > 0.05){
+    if (verbose == TRUE){
+      cat("IRRR Normal: Anova. P-values = ", pvaluesTime[13], " and ", pvaluesTime[14], "\n")
+    }
+    lista$anova$IRRR = aov(IRRR ~ clase, data = dfM)
+  } else {
+    if (verbose == TRUE){
+      cat("IRRR NOT normal: Kruskal. P-values = ", pvaluesTime[13], " and ", pvaluesTime[14], "\n")
+    }
+    lista$kruskal$IRRR = kruskal.test(IRRR ~ clase, data = dfM)
+  }
+  
+  
+  if (pvaluesTime[15] > 0.05 & pvaluesTime[16] > 0.05){ 
+    if (verbose == TRUE){
+      cat("MADRR Normal: Anova. P-values = ", pvaluesTime[15], " and ", pvaluesTime[16], "\n")
+    }
+    lista$anova$MADRR = aov(MADRR ~ clase, data = dfM)
+  } else {
+    if (verbose == TRUE){
+      cat("IRRR NOT normal: Kruskal. P-values = ", pvaluesTime[15], " and ", pvaluesTime[16], "\n")
+    }
+    lista$kruskal$MADRR = kruskal.test(MADRR ~ clase, data = dfM)
+  }
+  
+  
+  if (pvaluesTime[17] > 0.05 & pvaluesTime[18] > 0.05){ 
+    if (verbose == TRUE){
+      cat("TINN NOT normal: Kruskal. P-values = ", pvaluesTime[17], " and ", pvaluesTime[18], "\n")
+    }
+    lista$anova$TINN = aov(TINN ~ clase, data = dfM)
+  } else {
+    if (verbose == TRUE){
+      cat("TINN NOT normal: Kruskal. P-values = ", pvaluesTime[17], " and ", pvaluesTime[18], "\n")
+    }
+    lista$kruskal$TINN = kruskal.test(TINN ~ clase, data = dfM)
+  }
+  
+  
+  if (pvaluesTime[19] > 0.05 & pvaluesTime[20] > 0.05){ 
+    if (verbose == TRUE){
+      cat("HRVi NOT normal: Kruskal. P-values = ", pvaluesTime[19], " and ", pvaluesTime[10], "\n")
     }
     lista$anova$HRVi = aov(HRVi ~ clase, data = dfM)
   } else {
     if (verbose == TRUE){
-      cat("HRVi NOT normal: Kruskal. P-values = ", pvaluesHRVi, "\n")
+      cat("HRVi NOT normal: Kruskal. P-values = ", pvaluesTime[19], " and ", pvaluesTime[20], "\n")
     }
     lista$kruskal$HRVi = kruskal.test(HRVi ~ clase, data = dfM)
   }
