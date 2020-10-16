@@ -684,7 +684,7 @@ print.RHRVEasyResult <- function(result){
 
   
   else{
-    if(extract_ANOVA_pvalue(result[[2]]$anova$SDNN)<0.05){
+    if(extract_ANOVA_pvalue(result[[2]]$anova$IRRR)<0.05){
       cat("There is a statistically significant difference in IRRR; pvalue: ", extract_ANOVA_pvalue(result[[2]]$anova$SDNN), "ºn")
       cat("IRRR for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$IRRR), "+-", sd(listaDF[[1]]$IRRR))
