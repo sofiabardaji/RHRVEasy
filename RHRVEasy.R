@@ -227,101 +227,6 @@ statistical_analysisFreq<-function(dfM, correctSigLevel, verbose){
   
 }
 
-correctpValues <- function(lista){
-
-  listapValues = list(ULF = NA, VLF = NA, LF = NA, HF = NA, 
-                      SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
-                      MADRR = NA, TINN = NA, HRVi = NA)
-  
-  if(is.na(lista[[4]]$anova$ULF)){
-    listapValues$ULF = lista[[4]]$kruskal$ULF$p.value
-  }else{
-    listapValues$ULF = extract_ANOVA_pvalue(lista[[4]]$anova$ULF)
-  }
-  
-  if(is.na(lista[[4]]$anova$VLF)){
-    listapValues$VLF = lista[[4]]$kruskal$VLF$p.value
-  }else{
-    listapValues$VLF = extract_ANOVA_pvalue(lista[[4]]$anova$VLF)
-  }
-  
-  if(is.na(lista[[4]]$anova$LF)){
-    listapValues$LF = lista[[4]]$kruskal$LF$p.value
-  }else{
-    listapValues$LF = extract_ANOVA_pvalue(lista[[4]]$anova$LF)
-  }
-  
-  if(is.na(lista[[4]]$anova$HF)){
-    listapValues$HF = lista[[4]]$kruskal$HF$p.value
-  }else{
-    listapValues$HF = extract_ANOVA_pvalue(lista[[4]]$anova$HF)
-  }
-  
-  
-  if(is.na(lista[[2]]$anova$SDNN)){
-    listapValues$SDNN = lista[[2]]$kruskal$SDNN$p.value
-  }else{
-    listapValues$SDNN = extract_ANOVA_pvalue(lista[[2]]$anova$SDNN)
-  }
-  
-  if(is.na(lista[[2]]$anova$SDANN)){
-    listapValues$SDANN = lista[[2]]$kruskal$SDANN$p.value
-  }else{
-    listapValues$SDANN = extract_ANOVA_pvalue(lista[[2]]$anova$SDANN)
-  }
-  
-  if(is.na(lista[[2]]$anova$SDNNIDX)){
-    listapValues$SDNNIDX = lista[[2]]$kruskal$SDNNIDX$p.value
-  }else{
-    listapValues$SDNNIDX = extract_ANOVA_pvalue(lista[[2]]$anova$SDNNIDX)
-  }
-  
-  if(is.na(lista[[2]]$anova$pNN50)){
-    listapValues$pNN50 = lista[[2]]$kruskal$pNN50$p.value
-  }else{
-    listapValues$pNN50 = extract_ANOVA_pvalue(lista[[2]]$anova$pNN50)
-  }
-  
-  if(is.na(lista[[2]]$anova$SDSD)){
-    listapValues$SDSD = lista[[2]]$kruskal$SDSD$p.value
-  }else{
-    listapValues$SDSD = extract_ANOVA_pvalue(lista[[2]]$anova$SDSD)
-  }
-  
-  if(is.na(lista[[2]]$anova$rMSSD)){
-    listapValues$rMSSD = lista[[2]]$kruskal$rMSSD$p.value
-  }else{
-    listapValues$rMSSD = extract_ANOVA_pvalue(lista[[2]]$anova$rMSSD)
-  }
-  
-  if(is.na(lista[[2]]$anova$IRRR)){
-    listapValues$IRRR = lista[[2]]$kruskal$IRRR$p.value
-  }else{
-    listapValues$IRRR = extract_ANOVA_pvalue(lista[[2]]$anova$IRRR)
-  }
-  
-  if(is.na(lista[[2]]$anova$MADRR)){
-    listapValues$MADRR = lista[[2]]$kruskal$MADRR$p.value
-  }else{
-    listapValues$MADRR = extract_ANOVA_pvalue(lista[[2]]$anova$MADRR)
-  }
-  
-  if(is.na(lista[[2]]$anova$TINN)){
-    listapValues$TINN = lista[[2]]$kruskal$TINN$p.value
-  }else{
-    listapValues$TINN = extract_ANOVA_pvalue(lista[[2]]$anova$TINN)
-  }
-  
-  if(is.na(lista[[2]]$anova$HRVi)){
-    listapValues$HRVi = lista[[2]]$kruskal$HRVi$p.value
-  }else{
-    listapValues$HRVi = extract_ANOVA_pvalue(lista[[2]]$anova$HRVi)
-  }
-  
-  listapValuesCorrected = p.adjust(listapValues, "bonferroni")
-  listapValuesCorrected
-}
-
 statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   
   anova = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
@@ -374,7 +279,7 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   pvaluesHRVi = c(shapiroTimeHRViCase$p.value,shapiroTimeHRViControl$p.value)
   
   
-
+  
   if (all(pvaluesSDNN > 0.05)) { 
     if (verbose == TRUE){
       cat("SDNN Normal: Anova. P-values = ", pvaluesSDNN, "\n")
@@ -413,7 +318,7 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
     lista$kruskal$SDNNIDX = kruskal.test(SDNNIDX ~ clase, data = dfM)
   }
   
-
+  
   if (all(pvaluespNN50 > 0.05)) { 
     if (verbose == TRUE){
       cat("pNN50 Normal: Anova. P-values = ", pvaluespNN50, "\n")
@@ -438,7 +343,7 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
     }
     lista$kruskal$SDSD = kruskal.test(SDSD ~ clase, data = dfM)
   }
- 
+  
   
   if (all(pvaluesrMSSD > 0.05)) { 
     if (verbose == TRUE){
@@ -452,7 +357,7 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
     lista$kruskal$rMSSD = kruskal.test(rMSSD ~ clase, data = dfM)
   }
   
-
+  
   if (all(pvaluesIRRR> 0.05)){
     if (verbose == TRUE){
       cat("IRRR Normal: Anova. P-values = ", pvaluesIRRR, "\n")
@@ -508,6 +413,103 @@ statistical_analysisTime<-function(dfM, correctSigLevel, verbose){
   lista
   
 }
+
+
+correctpValues <- function(listTime, listFreq){
+
+  listapValues = list(ULF = NA, VLF = NA, LF = NA, HF = NA, 
+                      SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
+                      MADRR = NA, TINN = NA, HRVi = NA)
+  
+  if(is.na(listFreq$anova$ULF)){
+    listapValues$ULF = listFreq$kruskal$ULF$p.value
+  }else{
+    listapValues$ULF = extract_ANOVA_pvalue(listFreq$anova$ULF)
+  }
+  
+  if(is.na(listFreq$anova$VLF)){
+    listapValues$VLF = listFreq$kruskal$VLF$p.value
+  }else{
+    listapValues$VLF = extract_ANOVA_pvalue(listFreq$anova$VLF)
+  }
+  
+  if(is.na(listFreq$anova$LF)){
+    listapValues$LF = listFreq$kruskal$LF$p.value
+  }else{
+    listapValues$LF = extract_ANOVA_pvalue(listFreq$anova$LF)
+  }
+  
+  if(is.na(listFreq$anova$HF)){
+    listapValues$HF = listFreq$kruskal$HF$p.value
+  }else{
+    listapValues$HF = extract_ANOVA_pvalue(listFreq$anova$HF)
+  }
+  
+  
+  if(is.na(listTime$anova$SDNN)){
+    listapValues$SDNN = listTime$kruskal$SDNN$p.value
+  }else{
+    listapValues$SDNN = extract_ANOVA_pvalue(listTime$anova$SDNN)
+  }
+  
+  if(is.na(listTime$anova$SDANN)){
+    listapValues$SDANN = listTime$kruskal$SDANN$p.value
+  }else{
+    listapValues$SDANN = extract_ANOVA_pvalue(listTime$anova$SDANN)
+  }
+  
+  if(is.na(listTime$anova$SDNNIDX)){
+    listapValues$SDNNIDX = listTime$kruskal$SDNNIDX$p.value
+  }else{
+    listapValues$SDNNIDX = extract_ANOVA_pvalue(listTime$anova$SDNNIDX)
+  }
+  
+  if(is.na(listTime$anova$pNN50)){
+    listapValues$pNN50 = listTime$kruskal$pNN50$p.value
+  }else{
+    listapValues$pNN50 = extract_ANOVA_pvalue(listTime$anova$pNN50)
+  }
+  
+  if(is.na(listTime$anova$SDSD)){
+    listapValues$SDSD = listTime$kruskal$SDSD$p.value
+  }else{
+    listapValues$SDSD = extract_ANOVA_pvalue(listTime$anova$SDSD)
+  }
+  
+  if(is.na(listTime$anova$rMSSD)){
+    listapValues$rMSSD = listTime$kruskal$rMSSD$p.value
+  }else{
+    listapValues$rMSSD = extract_ANOVA_pvalue(listTime$anova$rMSSD)
+  }
+  
+  if(is.na(listTime$anova$IRRR)){
+    listapValues$IRRR = listTime$kruskal$IRRR$p.value
+  }else{
+    listapValues$IRRR = extract_ANOVA_pvalue(listTime$anova$IRRR)
+  }
+  
+  if(is.na(listTime$anova$MADRR)){
+    listapValues$MADRR = listTime$kruskal$MADRR$p.value
+  }else{
+    listapValues$MADRR = extract_ANOVA_pvalue(listTime$anova$MADRR)
+  }
+  
+  if(is.na(listTime$anova$TINN)){
+    listapValues$TINN = listTime$kruskal$TINN$p.value
+  }else{
+    listapValues$TINN = extract_ANOVA_pvalue(listTime$anova$TINN)
+  }
+  
+  if(is.na(listTime$anova$HRVi)){
+    listapValues$HRVi = listTime$kruskal$HRVi$p.value
+  }else{
+    listapValues$HRVi = extract_ANOVA_pvalue(listTime$anova$HRVi)
+  }
+  
+  listapValuesCorrected = p.adjust(listapValues, "bonferroni")
+  listapValuesCorrected
+}
+
 
 split_path <- function(path) {
   if (dirname(path) %in% c(".", path)) return(basename(path))
