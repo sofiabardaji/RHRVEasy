@@ -5,16 +5,16 @@ library(RHRV)
 file_validation<-function(path){
   # 1. Check if path really exists
   if (dir.exists(path) != TRUE){
-    stop("The path is incorrect, it does not exist")
+    stop("\nThe path ", path, " does not exist")
   }else{
-    cat("The path", path, "exists \n")
+    cat("\nThe path ", path, " exists ")
   }
   
   # 2. The path contains files:
   if ((length(list.files(path))>0) != TRUE){
-    stop("There are no files in such directory")
+    stop("but there are no files in it")
   }else{
-    cat("There are files in the path", path, "\n")
+    cat("and there are files in it\n")
   }
   
 
@@ -526,12 +526,15 @@ print.RHRVEasyResult <- function(result){
   
   listaDF = split(result[[1]], result[[1]]$clase)
   
-  cat("Result of the analysis of the variability of the heart rate of the group",
-      levels(result[[1]]$clase)[1], "versus the group", levels(result[[1]]$clase)[2], " \n\n")
+  differencesFound = FALSE
+  
+  cat("\n\nResult of the analysis of the variability of the heart rate of the group",
+      levels(result[[1]]$clase)[1], "versus the group", levels(result[[1]]$clase)[2], ":\n\n")
  
    if(is.na(result[[2]]$anova$SDNN)){
     #report kruskal
     if(result[[2]]$kruskal$SDNN$p.value<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in SDNN; pvalue: ", result[[2]]$kruskal$SDNN$p.value, "\n")
       
       cat("SDNN for the group ", levels(result[[1]]$clase)[1], "is", 
@@ -545,6 +548,7 @@ print.RHRVEasyResult <- function(result){
   
   else{
     if(extract_ANOVA_pvalue(result[[2]]$anova$SDNN)<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in SDNN; pvalue: ", extract_ANOVA_pvalue(result[[2]]$anova$SDNN), "\n")
       
       cat("SDNN for the group ", levels(result[[1]]$clase)[1], "is", 
@@ -558,6 +562,7 @@ print.RHRVEasyResult <- function(result){
   if(is.na(result[[2]]$anova$SDANN)){
     #report kruskal
     if(result[[2]]$kruskal$SDANN$p.value<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in SDANN; pvalue: ", result[[2]]$kruskal$SDANN$p.value, "\n")
       cat("SDANN for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$SDANN), "+-", sd(listaDF[[1]]$SDANN))
@@ -568,6 +573,7 @@ print.RHRVEasyResult <- function(result){
   #report anova
   else{
     if(extract_ANOVA_pvalue(result[[2]]$anova$SDANN)<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in SDANN; pvalue: ", extract_ANOVA_pvalue(result[[2]]$anova$SDANN), "ºn")
       cat("SDANN for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$SDANN), "+-", sd(listaDF[[1]]$SDANN))
@@ -581,6 +587,7 @@ print.RHRVEasyResult <- function(result){
   if(is.na(result[[2]]$anova$SDNNIDX)){
     #report kruskal
     if(result[[2]]$kruskal$SDNNIDX$p.value<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in SDNNIDX; pvalue: ", result[[2]]$kruskal$SDNNIDX$p.value, "\n")
       cat("SDNNIDX for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$SDNNIDX), "+-", sd(listaDF[[1]]$SDNNIDX))
@@ -591,6 +598,7 @@ print.RHRVEasyResult <- function(result){
   #report anova
   else{
     if(extract_ANOVA_pvalue(result[[2]]$anova$SDNNIDX)<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in SDNNIDX; pvalue: ", extract_ANOVA_pvalue(result[[2]]$anova$SDNNIDX), "ºn")
       cat("SDNNIDX for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$SDNNIDX), "+-", sd(listaDF[[1]]$SDNNIDX))
@@ -603,6 +611,7 @@ print.RHRVEasyResult <- function(result){
   if(is.na(result[[2]]$anova$pNN50)){
     #report kruskal
     if(result[[2]]$kruskal$pNN50$p.value<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in pNN50; pvalue: ", result[[2]]$kruskal$pNN50$p.value, "\n")
       cat("pNN50 for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$pNN50), "+-", sd(listaDF[[1]]$pNN50))
@@ -613,6 +622,7 @@ print.RHRVEasyResult <- function(result){
   #report anova
   else{
     if(extract_ANOVA_pvalue(result[[2]]$anova$pNN50)>0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in pNN50; pvalue: ", extract_ANOVA_pvalue(result[[2]]$anova$pNN50), "ºn")
       cat("pNN50 for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$pNN50), "+-", sd(listaDF[[1]]$pNN50))
@@ -622,10 +632,10 @@ print.RHRVEasyResult <- function(result){
   }
   
   
-  
   if(is.na(result[[2]]$anova$SDSD)){
     #report kruskal
     if(result[[2]]$kruskal$SDSD$p.value<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in SDSD; pvalue: ", result[[2]]$kruskal$SDSD$p.value, "\n")
       cat("SDSD for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$SDSD), "+-", sd(listaDF[[1]]$SDSD))
@@ -636,6 +646,7 @@ print.RHRVEasyResult <- function(result){
   #report anova
   else{
     if(extract_ANOVA_pvalue(result[[2]]$anova$SDSD)<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in SDSD; pvalue: ", extract_ANOVA_pvalue(result[[2]]$anova$SDSD), "ºn")
       cat("SDSD for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$SDSD), "+-", sd(listaDF[[1]]$SDSD))
@@ -645,10 +656,10 @@ print.RHRVEasyResult <- function(result){
   }
   
   
-  
   if(is.na(result[[2]]$anova$rMSSD)){
     #report kruskal
     if(result[[2]]$kruskal$rMSSD$p.value<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in rMSSD; pvalue: ", result[[2]]$kruskal$rMSSD$p.value, "\n")
       cat("rMSSD for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$rMSSD), "+-", sd(listaDF[[1]]$rMSSD))
@@ -659,6 +670,7 @@ print.RHRVEasyResult <- function(result){
   #report anova
   else{
     if(extract_ANOVA_pvalue(result[[2]]$anova$rMSSD)<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in rMSSD; pvalue: ", extract_ANOVA_pvalue(result[[2]]$anova$rMSSD), "ºn")
       cat("rMSSD for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$rMSSD), "+-", sd(listaDF[[1]]$rMSSD))
@@ -668,10 +680,10 @@ print.RHRVEasyResult <- function(result){
   }
   
   
-  
   if(is.na(result[[2]]$anova$IRRR)){
     #report kruskal
     if(result[[2]]$kruskal$IRRR$p.value<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in IRRR; pvalue: ", result[[2]]$kruskal$IRRR$p.value, "\n")
       cat("IRRR for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$IRRR), "+-", sd(listaDF[[1]]$IRRR))
@@ -680,11 +692,9 @@ print.RHRVEasyResult <- function(result){
     }
   }
   #report anova
-  
-
-  
   else{
     if(extract_ANOVA_pvalue(result[[2]]$anova$IRRR)<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in IRRR; pvalue: ", extract_ANOVA_pvalue(result[[2]]$anova$SDNN), "ºn")
       cat("IRRR for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$IRRR), "+-", sd(listaDF[[1]]$IRRR))
@@ -694,10 +704,10 @@ print.RHRVEasyResult <- function(result){
   }
   
   
-  
   if(is.na(result[[2]]$anova$MADRR)){
     #report kruskal
     if(result[[2]]$kruskal$MADRR$p.value<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in MADRR; pvalue: ", result[[2]]$kruskal$MADRR$p.value, "\n")
       cat("MADRR for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$MADRR), "+-", sd(listaDF[[1]]$MADRR))
@@ -708,6 +718,7 @@ print.RHRVEasyResult <- function(result){
   #report anova
   else{
     if(extract_ANOVA_pvalue(result[[2]]$anova$MADRR)<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in MADRR; pvalue: ", extract_ANOVA_pvalue(result[[2]]$anova$MADRR), "ºn")
       cat("MADRR for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$MADRR), "+-", sd(listaDF[[1]]$MADRR))
@@ -717,10 +728,10 @@ print.RHRVEasyResult <- function(result){
   }
   
   
-  
   if(is.na(result[[2]]$anova$TINN)){
     #report kruskal
     if(result[[2]]$kruskal$TINN$p.value<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in TINN; pvalue: ", result[[2]]$kruskal$TINN$p.value, "\n")
       cat("TINN for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$TINN), "+-", sd(listaDF[[1]]$TINN))
@@ -732,6 +743,7 @@ print.RHRVEasyResult <- function(result){
   #report anova
   else{
     if(extract_ANOVA_pvalue(result[[2]]$anova$TINN)<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in TINN; pvalue: ", extract_ANOVA_pvalue(result[[2]]$anova$TINN), "ºn")
       cat("TINN for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$TINN), "+-", sd(listaDF[[1]]$TINN))
@@ -745,6 +757,7 @@ print.RHRVEasyResult <- function(result){
   if(is.na(result[[2]]$anova$HRVi)){
     #report kruskal
     if(result[[2]]$kruskal$HRVi$p.value<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in HRVi; pvalue: ", result[[2]]$kruskal$HRVi$p.value, "\n")
       cat("HRVi for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$HRVi), "+-", sd(listaDF[[1]]$HRVi))
@@ -755,6 +768,7 @@ print.RHRVEasyResult <- function(result){
   #report anova
   else{
     if(extract_ANOVA_pvalue(result[[2]]$anova$HRVi)<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in HRVi; pvalue: ", extract_ANOVA_pvalue(result[[2]]$anova$HRVi), "ºn")
       cat("HRVi for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF[[1]]$HRVi), "+-", sd(listaDF[[1]]$HRVi))
@@ -764,13 +778,12 @@ print.RHRVEasyResult <- function(result){
   }
   
   
-  
   listaDF1 = split(result[[3]], result[[3]]$clase)
-  
   
   if(is.na(result[[4]]$anova$ULF)){
     #report kruskal
     if(result[[4]]$kruskal$ULF$p.value<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in ULF; pvalue: ", result[[4]]$kruskal$ULF$p.value, "\n")
       cat("ULF for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF1[[1]]$ULF), "+-", sd(listaDF1[[1]]$ULF))
@@ -779,9 +792,9 @@ print.RHRVEasyResult <- function(result){
     }
   }
   #report anova
-
   else{
     if(extract_ANOVA_pvalue(result[[4]]$anova$ULF)<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in ULF; pvalue: ", extract_ANOVA_pvalue(result[[4]]$anova$ULF), "ºn")
       cat("ULF for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF1[[1]]$ULF), "+-", sd(listaDF1[[1]]$ULF))
@@ -791,10 +804,10 @@ print.RHRVEasyResult <- function(result){
   }
   
   
-  
   if(is.na(result[[4]]$anova$VLF)){
     #report kruskal
     if(result[[4]]$kruskal$VLF$p.value<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in VLF; pvalue: ", result[[4]]$kruskal$VLF$p.value, "\n")
       cat("VLF for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF1[[1]]$VLF), "+-", sd(listaDF1[[1]]$VLF))
@@ -805,6 +818,7 @@ print.RHRVEasyResult <- function(result){
   #report anova
   else{
     if(extract_ANOVA_pvalue(result[[4]]$anova$VLF)<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in VLF; pvalue: ", extract_ANOVA_pvalue(result[[4]]$anova$VLF), "ºn")
       cat("VLF for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF1[[1]]$VLF), "+-", sd(listaDF1[[1]]$VLF))
@@ -815,6 +829,7 @@ print.RHRVEasyResult <- function(result){
   if(is.na(result[[4]]$anova$LF)){
     #report kruskal
     if(result[[4]]$kruskal$LF$p.value<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in LF; pvalue: ", result[[4]]$kruskal$LF$p.value, "\n")
       cat("LF for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF1[[1]]$LF), "+-", sd(listaDF1[[1]]$LF))
@@ -825,6 +840,7 @@ print.RHRVEasyResult <- function(result){
   #report anova
   else{
     if(extract_ANOVA_pvalue(result[[4]]$anova$LF)<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in LF; pvalue: ", extract_ANOVA_pvalue(result[[4]]$anova$LF), "ºn")
       cat("LF for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF1[[1]]$LF), "+-", sd(listaDF1[[1]]$LF))
@@ -835,6 +851,7 @@ print.RHRVEasyResult <- function(result){
   if(is.na(result[[4]]$anova$HF)){
     #report kruskal
     if(result[[4]]$kruskal$HF$p.value<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in HF; pvalue: ", result[[4]]$kruskal$HF$p.value, "\n")
       cat("HF for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF1[[1]]$HF), "+-", sd(listaDF1[[1]]$HF))
@@ -845,12 +862,17 @@ print.RHRVEasyResult <- function(result){
   #report anova
   else{
     if(extract_ANOVA_pvalue(result[[4]]$anova$HF)<0.05){
+      differencesFound = TRUE
       cat("There is a statistically significant difference in HF; pvalue: ", extract_ANOVA_pvalue(result[[4]]$anova$HF), "ºn")
       cat("HF for the group ", levels(result[[1]]$clase)[1], "is", 
           mean(listaDF1[[1]]$HF), "+-", sd(listaDF1[[1]]$HF))
       cat(" and for the group", levels(result[[1]]$clase)[2], " is", 
           mean(listaDF1[[2]]$HF), "+-", sd(listaDF1[[2]]$HF), "\n\n")
     }
+  }
+  
+  if(!differencesFound){
+    cat("No statistically significant difference were found\n")
   }
 }
 
