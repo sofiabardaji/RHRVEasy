@@ -155,20 +155,20 @@ statistical_analysisFreq<-function(dfM, verbose){
   
   listaDF = split(dfM, dfM$clase)
   
-  shapiroFreqULFCase = shapiro.test(listaDF[[1]]$ULF)
-  shapiroFreqULFControl = shapiro.test(listaDF[[2]]$ULF)
+  shapiroFreqULFCase = shapiro.test(listaDF$normal$ULF)
+  shapiroFreqULFControl = shapiro.test(listaDF$chf$ULF)
   pvaluesULF = c(shapiroFreqULFCase$p.value,shapiroFreqULFControl$p.value)
   
-  shapiroFreqVLFCase = shapiro.test(listaDF[[1]]$VLF)
-  shapiroFreqVLFControl = shapiro.test(listaDF[[2]]$VLF)
+  shapiroFreqVLFCase = shapiro.test(listaDF$normal$VLF)
+  shapiroFreqVLFControl = shapiro.test(listaDF$chf$VLF)
   pvaluesVLF = c(shapiroFreqVLFCase$p.value,shapiroFreqVLFControl$p.value)
   
-  shapiroFreqLFCase = shapiro.test(listaDF[[1]]$LF)
-  shapiroFreqLFControl = shapiro.test(listaDF[[2]]$LF)
+  shapiroFreqLFCase = shapiro.test(listaDF$normal$LF)
+  shapiroFreqLFControl = shapiro.test(listaDF$chf$LF)
   pvaluesLF = c(shapiroFreqLFCase$p.value,shapiroFreqLFControl$p.value)
   
-  shapiroFreqHFCase = shapiro.test(listaDF[[1]]$HF)
-  shapiroFreqHFControl = shapiro.test(listaDF[[2]]$HF)
+  shapiroFreqHFCase = shapiro.test(listaDF$normal$HF)
+  shapiroFreqHFControl = shapiro.test(listaDF$chf$HF)
   pvaluesHF = c(shapiroFreqHFCase$p.value,shapiroFreqHFControl$p.value)
   
   
@@ -226,7 +226,6 @@ statistical_analysisFreq<-function(dfM, verbose){
   lista
   
 }
-
 statistical_analysisTime<-function(dfM, verbose){
   
   anova = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
@@ -238,44 +237,44 @@ statistical_analysisTime<-function(dfM, verbose){
   
   listaDF = split(dfM, dfM$clase)
   
-  shapiroTimeSDNNCase = shapiro.test(listaDF[[1]]$SDNN)
-  shapiroTimeSDNNControl = shapiro.test(listaDF[[2]]$SDNN)
+  shapiroTimeSDNNCase = shapiro.test(listaDF$normal$SDNN)
+  shapiroTimeSDNNControl = shapiro.test(listaDF$chf$SDNN)
   pvaluesSDNN = c(shapiroTimeSDNNCase$p.value,shapiroTimeSDNNControl$p.value)
   
-  shapiroTimeSDANNCase = shapiro.test(listaDF[[1]]$SDANN)
-  shapiroTimeSDANNControl = shapiro.test(listaDF[[2]]$SDANN)
+  shapiroTimeSDANNCase = shapiro.test(listaDF$normal$SDANN)
+  shapiroTimeSDANNControl = shapiro.test(listaDF$chf$SDANN)
   pvaluesSDANN = c(shapiroTimeSDANNCase$p.value,shapiroTimeSDANNControl$p.value)
   
-  shapiroTimeSDNNIDXCase = shapiro.test(listaDF[[1]]$SDNNIDX)
-  shapiroTimeSDNNIDXControl = shapiro.test(listaDF[[2]]$SDNNIDX)
+  shapiroTimeSDNNIDXCase = shapiro.test(listaDF$normal$SDNNIDX)
+  shapiroTimeSDNNIDXControl = shapiro.test(listaDF$chf$SDNNIDX)
   pvaluesSDNNIDX = c(shapiroTimeSDNNIDXCase$p.value,shapiroTimeSDNNIDXControl$p.value)
   
-  shapiroTimepNN50Case = shapiro.test(listaDF[[1]]$pNN50)
-  shapiroTimepNN50Control = shapiro.test(listaDF[[2]]$pNN50)
+  shapiroTimepNN50Case = shapiro.test(listaDF$normal$pNN50)
+  shapiroTimepNN50Control = shapiro.test(listaDF$chf$pNN50)
   pvaluespNN50 = c(shapiroTimepNN50Case$p.value, shapiroTimepNN50Control$p.value)
   
-  shapiroTimeSDSDCase = shapiro.test(listaDF[[1]]$SDSD)
-  shapiroTimeSDSDControl = shapiro.test(listaDF[[2]]$SDSD)
+  shapiroTimeSDSDCase = shapiro.test(listaDF$normal$SDSD)
+  shapiroTimeSDSDControl = shapiro.test(listaDF$chf$SDSD)
   pvaluesSDSD = c(shapiroTimeSDSDCase$p.value,shapiroTimeSDSDControl$p.value)
   
-  shapiroTimerMSSDCase = shapiro.test(listaDF[[1]]$rMSSD)
-  shapiroTimerMSSDControl = shapiro.test(listaDF[[2]]$rMSSD)
+  shapiroTimerMSSDCase = shapiro.test(listaDF$normal$rMSSD)
+  shapiroTimerMSSDControl = shapiro.test(listaDF$chf$rMSSD)
   pvaluesrMSSD = c(shapiroTimerMSSDCase$p.value,shapiroTimerMSSDControl$p.value)
   
-  shapiroTimeIRRRCase = shapiro.test(listaDF[[1]]$IRRR)
-  shapiroTimeIRRRControl = shapiro.test(listaDF[[2]]$IRRR)
+  shapiroTimeIRRRCase = shapiro.test(listaDF$normal$IRRR)
+  shapiroTimeIRRRControl = shapiro.test(listaDF$chf$IRRR)
   pvaluesIRRR = c(shapiroTimeIRRRCase$p.value,shapiroTimeIRRRControl$p.value)
   
-  shapiroTimeMADRRCase = shapiro.test(listaDF[[1]]$MADRR)
-  shapiroTimeMADRRControl = shapiro.test(listaDF[[2]]$MADRR)
+  shapiroTimeMADRRCase = shapiro.test(listaDF$normal$MADRR)
+  shapiroTimeMADRRControl = shapiro.test(listaDF$chf$MADRR)
   pvaluesMADRR = c(shapiroTimeMADRRCase$p.value,shapiroTimeMADRRControl$p.value)
   
-  shapiroTimeTINNCase = shapiro.test(listaDF[[1]]$TINN)
-  shapiroTimeTINNControl = shapiro.test(listaDF[[2]]$TINN)
+  shapiroTimeTINNCase = shapiro.test(listaDF$normal$TINN)
+  shapiroTimeTINNControl = shapiro.test(listaDF$chf$TINN)
   pvaluesTINN = c(shapiroTimeTINNCase$p.value,shapiroTimeTINNControl$p.value)
   
-  shapiroTimeHRViCase = shapiro.test(listaDF[[1]]$HRVi)
-  shapiroTimeHRViControl = shapiro.test(listaDF[[2]]$HRVi)
+  shapiroTimeHRViCase = shapiro.test(listaDF$normal$HRVi)
+  shapiroTimeHRViControl = shapiro.test(listaDF$chf$HRVi)
   pvaluesHRVi = c(shapiroTimeHRViCase$p.value,shapiroTimeHRViControl$p.value)
   
   
@@ -415,11 +414,16 @@ statistical_analysisTime<-function(dfM, verbose){
 }
 
 
-correctpValues <- function(listTime, listFreq, correction){
+correctpValues <- function(listTime, listFreq, correction, method){
   
   listapValues = list(ULF = NA, VLF = NA, LF = NA, HF = NA, 
                       SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
                       MADRR = NA, TINN = NA, HRVi = NA)
+  
+  listapValuesCorrected = list(ULF = NA, VLF = NA, LF = NA, HF = NA, 
+                               SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
+                               MADRR = NA, TINN = NA, HRVi = NA)
+  
   
   if(is.na(listFreq$anova$ULF)){
     listapValues$ULF = listFreq$kruskal$ULF$p.value
@@ -507,7 +511,9 @@ correctpValues <- function(listTime, listFreq, correction){
   }
   
   if (correction == TRUE){
-    listapValuesCorrected = p.adjust(listapValues, "bonferroni")
+    listapValuesCorrected = p.adjust(listapValues, method)
+  }else if (correction == FALSE){
+    listapValuesCorrected = listapValues
   }
   listapValuesCorrected
 }
@@ -526,350 +532,350 @@ extract_ANOVA_pvalue<-function(anovaObject){
 
 print.RHRVEasyResult <- function(results){
   
-  listaDF = split(results[[1]], results[[1]]$clase)
+  listaDF = split(results$TimeAnalysis, results$TimeAnalysis$clase)
   
   differencesFound = FALSE
   
   cat("\n\nResult of the analysis of the variability of the heart rate of the group",
-      levels(results[[1]]$clase)[1], "versus the group", levels(results[[1]]$clase)[2], ":\n\n")
+      levels(results$TimeAnalysis$clase)[1], "versus the group", levels(results$TimeAnalysis$clase)[2], ":\n\n")
   
-  if(is.na(results[[2]]$anova$SDNN)){
+  if(is.na(results$StatysticalAnalysisTime$anova$SDNN)){
     #report kruskal
-    if(results[[5]][5]<0.05){
+    if(results$pValues$SDNN<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in SDNN; pvalue: ", results[[2]]$kruskal$SDNN$p.value, "\n")
+      cat("There is a statistically significant difference in SDNN; pvalue: ", results$StatysticalAnalysisTime$kruskal$SDNN$p.value, "\n")
       
-      cat("SDNN for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$SDNN), "+-", sd(listaDF[[1]]$SDNN))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$SDNN), "+-", sd(listaDF[[2]]$SDNN), "\n\n")
+      cat("SDNN for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$SDNN), "+-", sd(listaDF$normal$SDNN))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$SDNN), "+-", sd(listaDF$chf$SDNN), "\n\n")
     }
   }
   #report anova
   
   
   else{
-    if(results[[5]][5]<0.05){
+    if(results$pValues$SDNN<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in SDNN; pvalue: ", extract_ANOVA_pvalue(results[[2]]$anova$SDNN), "\n")
+      cat("There is a statistically significant difference in SDNN; pvalue: ", extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$SDNN), "\n")
       
-      cat("SDNN for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$SDNN), "+-", sd(listaDF[[1]]$SDNN))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$SDNN), "+-", sd(listaDF[[2]]$SDNN), "\n\n")
+      cat("SDNN for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$SDNN), "+-", sd(listaDF$normal$SDNN))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$SDNN), "+-", sd(listaDF$chf$SDNN), "\n\n")
     }
   }
   
   
-  if(is.na(results[[2]]$anova$SDANN)){
+  if(is.na(results$StatysticalAnalysisTime$anova$SDANN)){
     #report kruskal
-    if(results[[5]][6]<0.05){
+    if(results$pValues$SDANN<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in SDANN; pvalue: ", results[[2]]$kruskal$SDANN$p.value, "\n")
-      cat("SDANN for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$SDANN), "+-", sd(listaDF[[1]]$SDANN))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$SDANN), "+-", sd(listaDF[[2]]$SDANN), "\n\n")
+      cat("There is a statistically significant difference in SDANN; pvalue: ", results$StatysticalAnalysisTime$kruskal$SDANN$p.value, "\n")
+      cat("SDANN for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$SDANN), "+-", sd(listaDF$normal$SDANN))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$SDANN), "+-", sd(listaDF$chf$SDANN), "\n\n")
     }
   }
   #report anova
   else{
-    if(results[[5]][6]<0.05){
+    if(results$pValues$SDANN<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in SDANN; pvalue: ", extract_ANOVA_pvalue(results[[2]]$anova$SDANN), "ºn")
-      cat("SDANN for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$SDANN), "+-", sd(listaDF[[1]]$SDANN))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$SDANN), "+-", sd(listaDF[[2]]$SDANN), "\n\n")
+      cat("There is a statistically significant difference in SDANN; pvalue: ", extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$SDANN), "ºn")
+      cat("SDANN for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$SDANN), "+-", sd(listaDF$normal$SDANN))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$SDANN), "+-", sd(listaDF$chf$SDANN), "\n\n")
     }
   }
   
   
   
-  if(is.na(results[[2]]$anova$SDNNIDX)){
+  if(is.na(results$StatysticalAnalysisTime$anova$SDNNIDX)){
     #report kruskal
-    if(results[[5]][7]<0.05){
+    if(results$pValues$SDNNIDX<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in SDNNIDX; pvalue: ", results[[2]]$kruskal$SDNNIDX$p.value, "\n")
-      cat("SDNNIDX for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$SDNNIDX), "+-", sd(listaDF[[1]]$SDNNIDX))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$SDNNIDX), "+-", sd(listaDF[[2]]$SDNNIDX), "\n\n")
+      cat("There is a statistically significant difference in SDNNIDX; pvalue: ", results$StatysticalAnalysisTime$kruskal$SDNNIDX$p.value, "\n")
+      cat("SDNNIDX for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$SDNNIDX), "+-", sd(listaDF$normal$SDNNIDX))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$SDNNIDX), "+-", sd(listaDF$chf$SDNNIDX), "\n\n")
     }
   }
   #report anova
   else{
-    if(results[[5]][7]<0.05){
+    if(results$pValues$SDNNIDX<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in SDNNIDX; pvalue: ", extract_ANOVA_pvalue(results[[2]]$anova$SDNNIDX), "ºn")
-      cat("SDNNIDX for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$SDNNIDX), "+-", sd(listaDF[[1]]$SDNNIDX))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$SDNNIDX), "+-", sd(listaDF[[2]]$SDNNIDX), "\n\n")
+      cat("There is a statistically significant difference in SDNNIDX; pvalue: ", extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$SDNNIDX), "ºn")
+      cat("SDNNIDX for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$SDNNIDX), "+-", sd(listaDF$normal$SDNNIDX))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$SDNNIDX), "+-", sd(listaDF$chf$SDNNIDX), "\n\n")
     }
   }
   
   
-  if(is.na(results[[2]]$anova$pNN50)){
+  if(is.na(results$StatysticalAnalysisTime$anova$pNN50)){
     #report kruskal
-    if(results[[5]][8]<0.05){
+    if(results$pValues$pNN50<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in pNN50; pvalue: ", results[[2]]$kruskal$pNN50$p.value, "\n")
-      cat("pNN50 for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$pNN50), "+-", sd(listaDF[[1]]$pNN50))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$pNN50), "+-", sd(listaDF[[2]]$pNN50), "\n\n")
+      cat("There is a statistically significant difference in pNN50; pvalue: ", results$StatysticalAnalysisTime$kruskal$pNN50$p.value, "\n")
+      cat("pNN50 for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$pNN50), "+-", sd(listaDF$normal$pNN50))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$pNN50), "+-", sd(listaDF$chf$pNN50), "\n\n")
     }
   }
   #report anova
   else{
-    if(results[[5]][8]<0.05){
+    if(results$pValues$pNN50<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in pNN50; pvalue: ", extract_ANOVA_pvalue(results[[2]]$anova$pNN50), "ºn")
-      cat("pNN50 for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$pNN50), "+-", sd(listaDF[[1]]$pNN50))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$pNN50), "+-", sd(listaDF[[2]]$pNN50), "\n\n")
+      cat("There is a statistically significant difference in pNN50; pvalue: ", extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$pNN50), "ºn")
+      cat("pNN50 for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$pNN50), "+-", sd(listaDF$normal$pNN50))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$pNN50), "+-", sd(listaDF$chf$pNN50), "\n\n")
     }
   }
   
   
-  if(is.na(results[[2]]$anova$SDSD)){
+  if(is.na(results$StatysticalAnalysisTime$anova$SDSD)){
     #report kruskal
-    if(results[[5]][9]<0.05){
+    if(results$pValues$SDSD<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in SDSD; pvalue: ", results[[2]]$kruskal$SDSD$p.value, "\n")
-      cat("SDSD for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$SDSD), "+-", sd(listaDF[[1]]$SDSD))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$SDSD), "+-", sd(listaDF[[2]]$SDSD), "\n\n")
+      cat("There is a statistically significant difference in SDSD; pvalue: ", results$StatysticalAnalysisTime$kruskal$SDSD$p.value, "\n")
+      cat("SDSD for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$SDSD), "+-", sd(listaDF$normal$SDSD))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$SDSD), "+-", sd(listaDF$chf$SDSD), "\n\n")
     }
   }
   #report anova
   else{
-    if(results[[5]][9]<0.05){
+    if(results$pValues$SDSD<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in SDSD; pvalue: ", extract_ANOVA_pvalue(results[[2]]$anova$SDSD), "ºn")
-      cat("SDSD for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$SDSD), "+-", sd(listaDF[[1]]$SDSD))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$SDSD), "+-", sd(listaDF[[2]]$SDSD), "\n\n")
+      cat("There is a statistically significant difference in SDSD; pvalue: ", extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$SDSD), "ºn")
+      cat("SDSD for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$SDSD), "+-", sd(listaDF$normal$SDSD))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$SDSD), "+-", sd(listaDF$chf$SDSD), "\n\n")
     }
   }
   
   
-  if(is.na(results[[2]]$anova$rMSSD)){
+  if(is.na(results$StatysticalAnalysisTime$anova$rMSSD)){
     #report kruskal
-    if(results[[5]][10]<0.05){
+    if(results$pValues$rMSSD<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in rMSSD; pvalue: ", results[[2]]$kruskal$rMSSD$p.value, "\n")
-      cat("rMSSD for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$rMSSD), "+-", sd(listaDF[[1]]$rMSSD))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$rMSSD), "+-", sd(listaDF[[2]]$rMSSD), "\n\n")
+      cat("There is a statistically significant difference in rMSSD; pvalue: ", results$StatysticalAnalysisTime$kruskal$rMSSD$p.value, "\n")
+      cat("rMSSD for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$rMSSD), "+-", sd(listaDF$normal$rMSSD))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$rMSSD), "+-", sd(listaDF$chf$rMSSD), "\n\n")
     }
   }
   #report anova
   else{
-    if(results[[5]][10]<0.05){
+    if(results$pValues$rMSSD<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in rMSSD; pvalue: ", extract_ANOVA_pvalue(results[[2]]$anova$rMSSD), "ºn")
-      cat("rMSSD for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$rMSSD), "+-", sd(listaDF[[1]]$rMSSD))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$rMSSD), "+-", sd(listaDF[[2]]$rMSSD), "\n\n")
+      cat("There is a statistically significant difference in rMSSD; pvalue: ", extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$rMSSD), "ºn")
+      cat("rMSSD for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$rMSSD), "+-", sd(listaDF$normal$rMSSD))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$rMSSD), "+-", sd(listaDF$chf$rMSSD), "\n\n")
     }
   }
   
   
-  if(is.na(results[[2]]$anova$IRRR)){
+  if(is.na(results$StatysticalAnalysisTime$anova$IRRR)){
     #report kruskal
-    if(results[[5]][11]<0.05){
+    if(results$pValues$IRRR<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in IRRR; pvalue: ", results[[2]]$kruskal$IRRR$p.value, "\n")
-      cat("IRRR for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$IRRR), "+-", sd(listaDF[[1]]$IRRR))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$IRRR), "+-", sd(listaDF[[2]]$IRRR), "\n\n")
+      cat("There is a statistically significant difference in IRRR; pvalue: ", results$StatysticalAnalysisTime$kruskal$IRRR$p.value, "\n")
+      cat("IRRR for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$IRRR), "+-", sd(listaDF$normal$IRRR))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$IRRR), "+-", sd(listaDF$chf$IRRR), "\n\n")
     }
   }
   #report anova
   else{
-    if(results[[5]][11]<0.05){
+    if(results$pValues$IRRR<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in IRRR; pvalue: ", extract_ANOVA_pvalue(results[[2]]$anova$SDNN), "ºn")
-      cat("IRRR for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$IRRR), "+-", sd(listaDF[[1]]$IRRR))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$IRRR), "+-", sd(listaDF[[2]]$IRRR), "\n\n")
+      cat("There is a statistically significant difference in IRRR; pvalue: ", extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$SDNN), "ºn")
+      cat("IRRR for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$IRRR), "+-", sd(listaDF$normal$IRRR))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$IRRR), "+-", sd(listaDF$chf$IRRR), "\n\n")
     }
   }
   
   
-  if(is.na(results[[2]]$anova$MADRR)){
+  if(is.na(results$StatysticalAnalysisTime$anova$MADRR)){
     #report kruskal
-    if(results[[5]][12]<0.05){
+    if(results$pValues$MADRR<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in MADRR; pvalue: ", results[[2]]$kruskal$MADRR$p.value, "\n")
-      cat("MADRR for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$MADRR), "+-", sd(listaDF[[1]]$MADRR))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$MADRR), "+-", sd(listaDF[[2]]$MADRR), "\n\n")
+      cat("There is a statistically significant difference in MADRR; pvalue: ", results$StatysticalAnalysisTime$kruskal$MADRR$p.value, "\n")
+      cat("MADRR for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$MADRR), "+-", sd(listaDF$normal$MADRR))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$MADRR), "+-", sd(listaDF$chf$MADRR), "\n\n")
     }
   }
   #report anova
   else{
-    if(results[[5]][12]<0.05){
+    if(results$pValues$MADRR<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in MADRR; pvalue: ", extract_ANOVA_pvalue(results[[2]]$anova$MADRR), "ºn")
-      cat("MADRR for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$MADRR), "+-", sd(listaDF[[1]]$MADRR))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$MADRR), "+-", sd(listaDF[[2]]$MADRR), "\n\n")
+      cat("There is a statistically significant difference in MADRR; pvalue: ", extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$MADRR), "ºn")
+      cat("MADRR for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$MADRR), "+-", sd(listaDF$normal$MADRR))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$MADRR), "+-", sd(listaDF$chf$MADRR), "\n\n")
     }
   }
   
   
-  if(is.na(results[[2]]$anova$TINN)){
+  if(is.na(results$StatysticalAnalysisTime$anova$TINN)){
     #report kruskal
-    if(results[[5]][13]<0.05){
+    if(results$pValues$TINN<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in TINN; pvalue: ", results[[2]]$kruskal$TINN$p.value, "\n")
-      cat("TINN for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$TINN), "+-", sd(listaDF[[1]]$TINN))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$TINN), "+-", sd(listaDF[[2]]$TINN), "\n\n")
-      
-    }
-  }
-  #report anova
-  else{
-    if(results[[5]][13]<0.05){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in TINN; pvalue: ", extract_ANOVA_pvalue(results[[2]]$anova$TINN), "ºn")
-      cat("TINN for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$TINN), "+-", sd(listaDF[[1]]$TINN))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$TINN), "+-", sd(listaDF[[2]]$TINN), "\n\n")
+      cat("There is a statistically significant difference in TINN; pvalue: ", results$StatysticalAnalysisTime$kruskal$TINN$p.value, "\n")
+      cat("TINN for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$TINN), "+-", sd(listaDF$normal$TINN))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$TINN), "+-", sd(listaDF$chf$TINN), "\n\n")
       
     }
   }
-  
-  
-  if(is.na(results[[2]]$anova$HRVi)){
-    #report kruskal
-    if(results[[5]][14]<0.05){
+  #report anova
+  else{
+    if(results$pValues$TINN<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in HRVi; pvalue: ", results[[2]]$kruskal$HRVi$p.value, "\n")
-      cat("HRVi for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$HRVi), "+-", sd(listaDF[[1]]$HRVi))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$HRVi), "+-", sd(listaDF[[2]]$HRVi), "\n\n")
+      cat("There is a statistically significant difference in TINN; pvalue: ", extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$TINN), "ºn")
+      cat("TINN for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$TINN), "+-", sd(listaDF$normal$TINN))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$TINN), "+-", sd(listaDF$chf$TINN), "\n\n")
+      
+    }
+  }
+  
+  
+  if(is.na(results$StatysticalAnalysisTime$anova$HRVi)){
+    #report kruskal
+    if(results$pValues$HRVi<0.05){
+      differencesFound = TRUE
+      cat("There is a statistically significant difference in HRVi; pvalue: ", results$StatysticalAnalysisTime$kruskal$HRVi$p.value, "\n")
+      cat("HRVi for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$HRVi), "+-", sd(listaDF$normal$HRVi))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$HRVi), "+-", sd(listaDF$chf$HRVi), "\n\n")
     }
   }
   #report anova
   else{
-    if(results[[5]][14]<0.05){
+    if(results$pValues$HRVi<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in HRVi; pvalue: ", extract_ANOVA_pvalue(results[[2]]$anova$HRVi), "ºn")
-      cat("HRVi for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF[[1]]$HRVi), "+-", sd(listaDF[[1]]$HRVi))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF[[2]]$HRVi), "+-", sd(listaDF[[2]]$HRVi), "\n\n")
+      cat("There is a statistically significant difference in HRVi; pvalue: ", extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$HRVi), "ºn")
+      cat("HRVi for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF$normal$HRVi), "+-", sd(listaDF$normal$HRVi))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF$chf$HRVi), "+-", sd(listaDF$chf$HRVi), "\n\n")
     }
   }
   
   
-  listaDF1 = split(results[[3]], results[[3]]$clase)
+  listaDF1 = split(results$FrequencyAnalysis, results$FrequencyAnalysis$clase)
   
-  if(is.na(results[[4]]$anova$ULF)){
+  if(is.na(results$StatysticalAnalysisFrequency$anova$ULF)){
     #report kruskal
-    if(results[[5]][1]<0.05){
+    if(results$pValues$ULF<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in ULF; pvalue: ", results[[4]]$kruskal$ULF$p.value, "\n")
-      cat("ULF for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF1[[1]]$ULF), "+-", sd(listaDF1[[1]]$ULF))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF1[[2]]$ULF), "+-", sd(listaDF1[[2]]$ULF), "\n\n")
+      cat("There is a statistically significant difference in ULF; pvalue: ", results$StatysticalAnalysisFrequency$kruskal$ULF$p.value, "\n")
+      cat("ULF for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF1$normal$ULF), "+-", sd(listaDF1$normal$ULF))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF1$chf$ULF), "+-", sd(listaDF1$chf$ULF), "\n\n")
     }
   }
   #report anova
   else{
-    if(results[[5]][1]<0.05){
+    if(results$pValues$ULF<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in ULF; pvalue: ", extract_ANOVA_pvalue(results[[4]]$anova$ULF), "ºn")
-      cat("ULF for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF1[[1]]$ULF), "+-", sd(listaDF1[[1]]$ULF))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF1[[2]]$ULF), "+-", sd(listaDF1[[2]]$ULF), "\n\n")
+      cat("There is a statistically significant difference in ULF; pvalue: ", extract_ANOVA_pvalue(results$StatysticalAnalysisFrequency$anova$ULF), "ºn")
+      cat("ULF for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF1$normal$ULF), "+-", sd(listaDF1$normal$ULF))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF1$chf$ULF), "+-", sd(listaDF1$chf$ULF), "\n\n")
     }
   }
   
   
-  if(is.na(results[[4]]$anova$VLF)){
+  if(is.na(results$StatysticalAnalysisFrequency$anova$VLF)){
     #report kruskal
-    if(results[[5]][2]<0.05){
+    if(results$pValues$VLF<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in VLF; pvalue: ", results[[4]]$kruskal$VLF$p.value, "\n")
-      cat("VLF for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF1[[1]]$VLF), "+-", sd(listaDF1[[1]]$VLF))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF1[[2]]$VLF), "+-", sd(listaDF1[[2]]$VLF), "\n\n")
+      cat("There is a statistically significant difference in VLF; pvalue: ", results$StatysticalAnalysisFrequency$kruskal$VLF$p.value, "\n")
+      cat("VLF for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF1$normal$VLF), "+-", sd(listaDF1$normal$VLF))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF1$chf$VLF), "+-", sd(listaDF1$chf$VLF), "\n\n")
     }
   }
   #report anova
   else{
-    if(results[[5]][2]<0.05){
+    if(results$pValues$VLF<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in VLF; pvalue: ", extract_ANOVA_pvalue(results[[4]]$anova$VLF), "ºn")
-      cat("VLF for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF1[[1]]$VLF), "+-", sd(listaDF1[[1]]$VLF))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF1[[2]]$VLF), "+-", sd(listaDF1[[2]]$VLF), "\n\n")
+      cat("There is a statistically significant difference in VLF; pvalue: ", extract_ANOVA_pvalue(results$StatysticalAnalysisFrequency$anova$VLF), "ºn")
+      cat("VLF for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF1$normal$VLF), "+-", sd(listaDF1$normal$VLF))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF1$chf$VLF), "+-", sd(listaDF1$chf$VLF), "\n\n")
     }
   }
-  if(is.na(results[[4]]$anova$LF)){
+  if(is.na(results$StatysticalAnalysisFrequency$anova$LF)){
     #report kruskal
-    if(results[[5]][3]<0.05){
+    if(results$pValues$LF<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in LF; pvalue: ", results[[4]]$kruskal$LF$p.value, "\n")
-      cat("LF for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF1[[1]]$LF), "+-", sd(listaDF1[[1]]$LF))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF1[[2]]$LF), "+-", sd(listaDF1[[2]]$LF), "\n\n")
+      cat("There is a statistically significant difference in LF; pvalue: ", results$StatysticalAnalysisFrequency$kruskal$LF$p.value, "\n")
+      cat("LF for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF1$normal$LF), "+-", sd(listaDF1$normal$LF))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF1$chf$LF), "+-", sd(listaDF1$chf$LF), "\n\n")
     }
   }
   #report anova
   else{
-    if(results[[5]][3]<0.05){
+    if(results$pValues$LF<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in LF; pvalue: ", extract_ANOVA_pvalue(results[[4]]$anova$LF), "ºn")
-      cat("LF for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF1[[1]]$LF), "+-", sd(listaDF1[[1]]$LF))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF1[[2]]$LF), "+-", sd(listaDF1[[2]]$LF), "\n\n")
+      cat("There is a statistically significant difference in LF; pvalue: ", extract_ANOVA_pvalue(results$StatysticalAnalysisFrequency$anova$LF), "ºn")
+      cat("LF for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF1$normal$LF), "+-", sd(listaDF1$normal$LF))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF1$chf$LF), "+-", sd(listaDF1$chf$LF), "\n\n")
     }
   }
-  if(is.na(results[[4]]$anova$HF)){
+  if(is.na(results$StatysticalAnalysisFrequency$anova$HF)){
     #report kruskal
-    if(results[[5]][4]<0.05){
+    if(results$pValues$HF<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in HF; pvalue: ", results[[4]]$kruskal$HF$p.value, "\n")
-      cat("HF for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF1[[1]]$HF), "+-", sd(listaDF1[[1]]$HF))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF1[[2]]$HF), "+-", sd(listaDF1[[2]]$HF), "\n\n")
+      cat("There is a statistically significant difference in HF; pvalue: ", results$StatysticalAnalysisFrequency$kruskal$HF$p.value, "\n")
+      cat("HF for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF1$normal$HF), "+-", sd(listaDF1$normal$HF))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF1$chf$HF), "+-", sd(listaDF1$chf$HF), "\n\n")
     }
   }
   #report anova
   else{
-    if(results[[5]][4]<0.05){
+    if(results$pValues$HF<0.05){
       differencesFound = TRUE
-      cat("There is a statistically significant difference in HF; pvalue: ", extract_ANOVA_pvalue(results[[4]]$anova$HF), "ºn")
-      cat("HF for the group ", levels(results[[1]]$clase)[1], "is", 
-          mean(listaDF1[[1]]$HF), "+-", sd(listaDF1[[1]]$HF))
-      cat(" and for the group", levels(results[[1]]$clase)[2], " is", 
-          mean(listaDF1[[2]]$HF), "+-", sd(listaDF1[[2]]$HF), "\n\n")
+      cat("There is a statistically significant difference in HF; pvalue: ", extract_ANOVA_pvalue(results$StatysticalAnalysisFrequency$anova$HF), "ºn")
+      cat("HF for the group ", levels(results$TimeAnalysis$clase)[1], "is", 
+          mean(listaDF1$normal$HF), "+-", sd(listaDF1$normal$HF))
+      cat(" and for the group", levels(results$TimeAnalysis$clase)[2], " is", 
+          mean(listaDF1$chf$HF), "+-", sd(listaDF1$chf$HF), "\n\n")
     }
   }
   
@@ -879,7 +885,7 @@ print.RHRVEasyResult <- function(results){
 }
 
 
-RHRVEasy<-function(control, case, correction, verbose=FALSE, format = "RR",
+RHRVEasy<-function(control, case, correction = FALSE, method = "bonferroni", verbose=FALSE, format = "RR",
                    size = 300, numofbins = NULL, interval = 7.8125, verboseTime = NULL,
                    freqhr = 4, methodInterpolation = c("linear", "spline"), verboseFreq = NULL,
                    methodCalculationPSD = c("pgram", "ar", "lomb"), doPlot = F,
@@ -954,7 +960,9 @@ RHRVEasy<-function(control, case, correction, verbose=FALSE, format = "RR",
   
   listapValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis, correction)
   
-  results = list(dataFrameMTime, listTimeStatysticalAnalysis, dataFrameMFreq, listFreqStatysticalAnalysis, listapValues)
+  results =  list("TimeAnalysis" = dataFrameMTime, "StatysticalAnalysisTime" = listTimeStatysticalAnalysis, 
+                  "FrequencyAnalysis" = dataFrameMFreq, "StatysticalAnalysisFrequency" = listFreqStatysticalAnalysis, 
+                  "pValues" = listapValues)
   class(results) = "RHRVEasyResult"
   results
 }
