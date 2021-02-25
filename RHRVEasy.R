@@ -14,7 +14,7 @@ file_validation<-function(path){
   if ((length(list.files(path))>0) != TRUE){
     stop("but there are no files in it")
   }else{
-    cat("and there are files in it\n")
+    cat("and there are files in it\n\n")
   }
   
   
@@ -512,11 +512,15 @@ correctpValues <- function(listTime, listFreq, correction, method){
   
   if (correction == TRUE){
     listapValuesCorrected = p.adjust(listapValues, method)
+    listapValuesCorrected <- as.list(listapValuesCorrected) 
+    
   }else if (correction == FALSE){
     listapValuesCorrected = listapValues
   }
   listapValuesCorrected
 }
+
+
 
 
 split_path <- function(path) {
@@ -958,7 +962,7 @@ RHRVEasy<-function(control, case, correction = FALSE, method = "bonferroni", ver
     dataFrameMFreq = dataFrameMWavelet
   }
   
-  listapValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis, correction)
+  listapValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis, correction, method)
   
   results =  list("TimeAnalysis" = dataFrameMTime, "StatysticalAnalysisTime" = listTimeStatysticalAnalysis, 
                   "FrequencyAnalysis" = dataFrameMFreq, "StatysticalAnalysisFrequency" = listFreqStatysticalAnalysis, 
