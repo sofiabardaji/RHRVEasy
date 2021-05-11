@@ -93,6 +93,8 @@ wavelet_analysis<-function(format, files, class, rrs2, dataFrameMWavelet, ...){
                                   LFmin = 0.05, LFmax = 0.15, HFmin = 0.15, HFmax = 0.4,
                                   type = "fourier", wavelet = "d4", bandtolerance = 0.01, relative = FALSE, verbose = FALSE)
     
+    # no entiendo por qué sale error al hacerlo con línea 99, si cuando hago como en línea 91 tampoco especifico size ni shift???
+
     
     # hrv.data = easy_call(hrv.data, CalculatePowerBand, ...)
     index = length (hrv.data$FreqAnalysis)
