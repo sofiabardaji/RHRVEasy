@@ -31,12 +31,17 @@ preparing_analysis<-function(file, rrs, format){
   hrv.data$Beat = hrv.data$Beat[2: nrow(hrv.data$Beat),]
   hrv.data
 }
+easy_call <- function(hrv.data, mf, ...) {
+  args.list = plotrix::clean.args(list(...), mf)
+  args.list$HRVData = hrv.data
+  do.call(mf, args.list)
+}
 
 # CREATING TIME ANALYSIS DATA FRAMES
-time_analysis<-function(format, files, class, rrs2, dataFrame3, size, numofbins, interval, verbose){
+time_analysis<-function(format, files, class, rrs2, dataFrame3, ...){
   for (file in files) {
     hrv.data = preparing_analysis(format, file = file, rrs = rrs2)
-    hrv.data=CreateTimeAnalysis(hrv.data, size=size, numofbins=numofbins, interval=interval, verbose=verbose)
+    hrv.data = easy_call(hrv.data, CreateTimeAnalysis, ...)
     results=hrv.data$TimeAnalysis[]
     name_file = list ("filename" = file)
     group = list ("group" = class)
@@ -49,26 +54,17 @@ time_analysis<-function(format, files, class, rrs2, dataFrame3, size, numofbins,
 }
 
 # FREQUENCY ANALYSIS
-freq_analysis<-function(format, files, class, rrs2, dataFrame2, freqhr, methodInterpolation, verbose, 
-                        methodCalculationPSD, doPlot, ULFmin, ULFmax, VLFmin, VLFmax, 
-                        LFmin,LFmax, HFmin, HFmax){
+freq_analysis<-function(format, files, class, rrs2, dataFrame2, ...){
   for (file in files) {
     hrv.data = preparing_analysis(format, file = file, rrs = rrs2)
-    # PlotNIHR(hrv.data)
-    hrv.data=InterpolateNIHR(hrv.data, freqhr = freqhr, method = methodInterpolation, verbose = verbose)
-    # Find the zeros in HR
+    hrv.data = easy_call(hrv.data, InterpolateNIHR, ...)
     zero_indexes = which(hrv.data$HR == 0)
-    # Compute the median of HR after removing 0s
     hr_median = median(hrv.data$HR[-zero_indexes])
-    # Substitute the 0s in HR by the median
     hrv.data$HR[zero_indexes] = hr_median
     hrv.data=CreateFreqAnalysis(hrv.data)
-    hrv.data=CalculatePSD(hrv.data, indexFreqAnalysis = 1, method = methodCalculationPSD, doPlot = doPlot)
-    
+    hrv.data = easy_call(hrv.data, CalculatePSD, ...)
     name_file = list ("filename" = file)
-    x1 = as.list(CalculateEnergyInPSDBands(hrv.data, indexFreqAnalysis = 1, ULFmin = ULFmin, ULFmax = ULFmax, VLFmin = VLFmin, VLFmax = VLFmax, 
-                                           LFmin = LFmin, LFmax = LFmax, HFmin = HFmin, HFmax = HFmax))
-    
+    x1 = easy_call(hrv.data, CalculateEnergyInPSDBands, ...)
     names(x1) = c("ULF", "VLF", "LF", "HF")
     group = list ("group" = class)
     row_list = c (name_file, x1, group)
@@ -80,26 +76,25 @@ freq_analysis<-function(format, files, class, rrs2, dataFrame2, freqhr, methodIn
 }
 
 #  WAVELET ANALYSIS
-wavelet_analysis<-function(format, files, class, rrs2, dataFrameMWavelet, freqhr, method, verbose, 
-                           sizesp, scale, ULFmin, ULFmax, VLFmin, VLFmax, 
-                           LFmin,LFmax, HFmin, HFmax, 
-                           type, mother, bandtolerance, relative){
+wavelet_analysis<-function(format, files, class, rrs2, dataFrameMWavelet, ...){
   for (file in files) {
     hrv.data = preparing_analysis(format, file = file, rrs = rrs2)
-    # PlotNIHR(hrv.data)
-    hrv.data=InterpolateNIHR(hrv.data, freqhr = freqhr, method = method, verbose = verbose)
-    # Find the zeros in HR
+    hrv.data = easy_call(hrv.data, InterpolateNIHR, ...)
     zero_indexes = which(hrv.data$HR == 0)
-    # Compute the median of HR after removing 0s
     hr_median = median(hrv.data$HR[-zero_indexes])
-    # Substitute the 0s in HR by the median
     hrv.data$HR[zero_indexes] = hr_median
     hrv.data=CreateFreqAnalysis(hrv.data)
     hrv.data=SetVerbose(hrv.data, FALSE)
-    hrv.data = CalculatePowerBand(hrv.data, indexFreqAnalysis = 1, 
-                                  sizesp = sizesp, scale = scale, ULFmin = ULFmin, ULFmax = ULFmax, VLFmin = VLFmin, VLFmax = VLFmax, 
-                                  LFmin = LFmin, LFmax = LFmax, HFmin = HFmin, HFmax = HFmax, 
-                                  type = type, wavelet = mother, bandtolerance = bandtolerance, relative = relative, verbose = verbose)
+    
+    
+    
+    hrv.data = CalculatePowerBand(hrv.data, indexFreqAnalysis = 1, size = 60, shift = 30, 
+                                  sizesp = NULL, scale = "linear", ULFmin = 0, ULFmax = 0.03, VLFmin = 0.03, VLFmax = 0.05,
+                                  LFmin = 0.05, LFmax = 0.15, HFmin = 0.15, HFmax = 0.4,
+                                  type = "fourier", wavelet = "d4", bandtolerance = 0.01, relative = FALSE, verbose = FALSE)
+    
+    
+    # hrv.data = easy_call(hrv.data, CalculatePowerBand, ...)
     index = length (hrv.data$FreqAnalysis)
     resultsWavelet = hrv.data$FreqAnalysis[[index]]
     resultsWavelet$File = file
@@ -110,7 +105,6 @@ wavelet_analysis<-function(format, files, class, rrs2, dataFrameMWavelet, freqhr
     resultsWavelet$HF = sum(hrv.data$FreqAnalysis[[index]]$HF)
     resultsWavelet$LFHF = NULL
     resultsWavelet$Time = NULL
-    
     name_file = list ("filename" = file)
     x1 = as.list(resultsWavelet)
     group = list ("group" = class)
@@ -156,70 +150,76 @@ statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups){
   
   listaDF = split(dfM, dfM$group)
   
-  shapiroFreqULFCase = shapiro.test(listaDF$normal$ULF)
-  shapiroFreqULFControl = shapiro.test(listaDF$chf$ULF)
-  pvaluesULF = c(shapiroFreqULFCase$p.value,shapiroFreqULFControl$p.value)
-  
-  shapiroFreqVLFCase = shapiro.test(listaDF$normal$VLF)
-  shapiroFreqVLFControl = shapiro.test(listaDF$chf$VLF)
-  pvaluesVLF = c(shapiroFreqVLFCase$p.value,shapiroFreqVLFControl$p.value)
-  
-  shapiroFreqLFCase = shapiro.test(listaDF$normal$LF)
-  shapiroFreqLFControl = shapiro.test(listaDF$chf$LF)
-  pvaluesLF = c(shapiroFreqLFCase$p.value,shapiroFreqLFControl$p.value)
-  
-  shapiroFreqHFCase = shapiro.test(listaDF$normal$HF)
-  shapiroFreqHFControl = shapiro.test(listaDF$chf$HF)
-  pvaluesHF = c(shapiroFreqHFCase$p.value,shapiroFreqHFControl$p.value)
+  dataFramePvalues = data.frame()
+  vec = c("group" = NA, "p-value ULF" = NA, "p-value VLF" = NA, 
+          "p-value LF" = NA, "p-value HF" = NA)
   
   
-  if (numberOfExperimentalGroups > 2 || all(pvaluesULF > 0.05)) {
+  
+  for(objeto in sapply(dfM, levels)$group){
+    
+    vec$group = objeto
+    vec$`p-value ULF` = shapiro.test(listaDF[[objeto]][["ULF"]])$p.value
+    vec$`p-value VLF` = shapiro.test(listaDF[[objeto]][["VLF"]])$p.value
+    vec$`p-value LF` = shapiro.test(listaDF[[objeto]][["LF"]])$p.value
+    vec$`p-value HF` = shapiro.test(listaDF[[objeto]][["HF"]])$p.value
+
+    
+    df = data.frame(vec)
+    
+    dataFramePvalues = rbind(dataFramePvalues, df)
+    
+  }
+
+  
+  
+  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.ULF > 0.05)) {
     if (verbose == TRUE){
-      cat("ULF Normal: Anova. P-values = ", pvaluesULF, "\n")
+      cat("ULF Normal: Anova. P-values = ", dataFramePvalues$p.value.ULF, "\n")
     }
     lista$anova$ULF = aov(ULF ~ group, data = dfM)
   }else {
     if (verbose == TRUE){
-      cat("ULF NOT normal: Kruskal. P-values = ", pvaluesULF, "\n")
+      cat("ULF NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.ULF, "\n")
     }
     lista$kruskal$ULF = kruskal.test(ULF ~ group, data = dfM)
   }
   
   
-  if (numberOfExperimentalGroups > 2 || all(pvaluesVLF > 0.05)) {
+  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.VLF > 0.05)) {
     if (verbose == TRUE){
-      cat("VLF Normal: Anova. P-values = ", pvaluesVLF, "\n")
+      cat("VLF Normal: Anova. P-values = ", dataFramePvalues$p.value.VLF, "\n")
     }
     aov(VLF ~ group, data = dfM)
     lista$anova$VLF = aov(VLF ~ group, data = dfM)
   } else {
     if (verbose == TRUE){
-      cat("VLF NOT normal: Kruskal. P-values = ",   pvaluesVLF,  "\n")
+      cat("VLF NOT normal: Kruskal. P-values = ",   dataFramePvalues$p.value.VLF,  "\n")
     }
     lista$kruskal$VLF = kruskal.test(VLF ~ group, data = dfM)
   }
   
   
-  if (numberOfExperimentalGroups > 2 || all(pvaluesLF > 0.05)) {
+  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.LF > 0.05)) {
     if (verbose == TRUE){
-      cat("LF Normal: Anova. P-values = ",  pvaluesLF, "\n")
+      cat("LF Normal: Anova. P-values = ",  dataFramePvalues$p.value.LF, "\n")
     }
     lista$anova$LF = aov(LF ~ group, data = dfM)  
   } else {
     if (verbose == TRUE){
-      cat("LF NOT normal: Kruskal. P-values = ",  pvaluesLF, "\n")
+      cat("LF NOT normal: Kruskal. P-values = ",  dataFramePvalues$p.value.LF, "\n")
     }
     lista$kruskal$LF = kruskal.test(LF ~ group, data = dfM)
   }
   
-  if (numberOfExperimentalGroups > 2 || all(pvaluesHF > 0.05)) {
+  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.HF > 0.05)) {
     if (verbose == TRUE){
-      cat("HF Normal: Anova. P-values = ",  pvaluesHF,  "\n")
+      cat("HF Normal: Anova. P-values = ",  dataFramePvalues$p.value.HF,  "\n")
     }
     lista$anova$HF = aov(HF ~ group, data = dfM) 
   } else {
     if (verbose == TRUE){
-      cat("HF NOT normal: Kruskal. P-values = ", pvaluesHF,  "\n")
+      cat("HF NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.HF,  "\n")
     }
     lista$kruskal$HF = kruskal.test(HF ~ group, data = dfM)
   }
@@ -238,173 +238,157 @@ statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups){
   
   listaDF = split(dfM, dfM$group)
   
-  shapiroTimeSDNNCase = shapiro.test(listaDF$normal$SDNN)
-  shapiroTimeSDNNControl = shapiro.test(listaDF$chf$SDNN)
-  pvaluesSDNN = c(shapiroTimeSDNNCase$p.value,shapiroTimeSDNNControl$p.value)
-  
-  shapiroTimeSDANNCase = shapiro.test(listaDF$normal$SDANN)
-  shapiroTimeSDANNControl = shapiro.test(listaDF$chf$SDANN)
-  pvaluesSDANN = c(shapiroTimeSDANNCase$p.value,shapiroTimeSDANNControl$p.value)
-  
-  shapiroTimeSDNNIDXCase = shapiro.test(listaDF$normal$SDNNIDX)
-  shapiroTimeSDNNIDXControl = shapiro.test(listaDF$chf$SDNNIDX)
-  pvaluesSDNNIDX = c(shapiroTimeSDNNIDXCase$p.value,shapiroTimeSDNNIDXControl$p.value)
-  
-  shapiroTimepNN50Case = shapiro.test(listaDF$normal$pNN50)
-  shapiroTimepNN50Control = shapiro.test(listaDF$chf$pNN50)
-  pvaluespNN50 = c(shapiroTimepNN50Case$p.value, shapiroTimepNN50Control$p.value)
-  
-  shapiroTimeSDSDCase = shapiro.test(listaDF$normal$SDSD)
-  shapiroTimeSDSDControl = shapiro.test(listaDF$chf$SDSD)
-  pvaluesSDSD = c(shapiroTimeSDSDCase$p.value,shapiroTimeSDSDControl$p.value)
-  
-  shapiroTimerMSSDCase = shapiro.test(listaDF$normal$rMSSD)
-  shapiroTimerMSSDControl = shapiro.test(listaDF$chf$rMSSD)
-  pvaluesrMSSD = c(shapiroTimerMSSDCase$p.value,shapiroTimerMSSDControl$p.value)
-  
-  shapiroTimeIRRRCase = shapiro.test(listaDF$normal$IRRR)
-  shapiroTimeIRRRControl = shapiro.test(listaDF$chf$IRRR)
-  pvaluesIRRR = c(shapiroTimeIRRRCase$p.value,shapiroTimeIRRRControl$p.value)
-  
-  shapiroTimeMADRRCase = shapiro.test(listaDF$normal$MADRR)
-  shapiroTimeMADRRControl = shapiro.test(listaDF$chf$MADRR)
-  pvaluesMADRR = c(shapiroTimeMADRRCase$p.value,shapiroTimeMADRRControl$p.value)
-  
-  shapiroTimeTINNCase = shapiro.test(listaDF$normal$TINN)
-  shapiroTimeTINNControl = shapiro.test(listaDF$chf$TINN)
-  pvaluesTINN = c(shapiroTimeTINNCase$p.value,shapiroTimeTINNControl$p.value)
-  
-  shapiroTimeHRViCase = shapiro.test(listaDF$normal$HRVi)
-  shapiroTimeHRViControl = shapiro.test(listaDF$chf$HRVi)
-  pvaluesHRVi = c(shapiroTimeHRViCase$p.value,shapiroTimeHRViControl$p.value)
+  dataFramePvalues = data.frame()
+  vec = c("group" = NA, "p-value SDNN" = NA, "p-value SDANN" = NA, 
+          "p-value SDNNIDX" = NA, "p-value pNN50" = NA, "p-value SDSD" = NA, "p-value rMSSD" = NA, "p-value IRRR" = NA,
+          "p-value MADRR" = NA, "p-value TINN" = NA, "p-value HRVi" = NA)
+ 
+  for(objeto in sapply(dfM, levels)$group){
+
+    vec$group = objeto
+    vec$`p-value SDNN` = shapiro.test(listaDF[[objeto]][["SDNN"]])$p.value
+    vec$`p-value SDANN` = shapiro.test(listaDF[[objeto]][["SDANN"]])$p.value
+    vec$`p-value SDNNIDX` = shapiro.test(listaDF[[objeto]][["SDNNIDX"]])$p.value
+    vec$`p-value pNN50` = shapiro.test(listaDF[[objeto]][["pNN50"]])$p.value
+    vec$`p-value SDSD` = shapiro.test(listaDF[[objeto]][["SDSD"]])$p.value
+    vec$`p-value rMSSD` = shapiro.test(listaDF[[objeto]][["rMSSD"]])$p.value
+    vec$`p-value IRRR` = shapiro.test(listaDF[[objeto]][["IRRR"]])$p.value
+    vec$`p-value MADRR` = shapiro.test(listaDF[[objeto]][["MADRR"]])$p.value
+    vec$`p-value TINN` = shapiro.test(listaDF[[objeto]][["TINN"]])$p.value
+    vec$`p-value HRVi` = shapiro.test(listaDF[[objeto]][["HRVi"]])$p.value
+
+    df = data.frame(vec)
+    
+    dataFramePvalues = rbind(dataFramePvalues, df)
+
+  }
   
   
-  
-  if (numberOfExperimentalGroups > 2 || all(pvaluesSDNN > 0.05)) { 
+    if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.SDNN > 0.05)) { 
     if (verbose == TRUE){
-      cat("SDNN Normal: Anova. P-values = ", pvaluesSDNN, "\n")
+      cat("SDNN Normal: Anova. P-values = ", dataFramePvalues$p.value.SDNN, "\n")
     }
     lista$anova$SDNN = aov(SDNN ~ group, data = dfM)
   }else {
     if (verbose == TRUE){
-      cat("SDNN NOT normal: Kruskal. P-values = ", pvaluesSDNN, "\n")
+      cat("SDNN NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.SDNN, "\n")
     }
     lista$kruskal$SDNN = kruskal.test(SDNN ~ group, data = dfM)
   }
   
   
-  if (numberOfExperimentalGroups > 2 || all(pvaluesSDANN > 0.05)) { 
+  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.SDANN > 0.05)) { 
     if (verbose == TRUE){
-      cat("SDANN Normal: Anova. P-values = ", pvaluesSDANN, "\n")
+      cat("SDANN Normal: Anova. P-values = ", dataFramePvalues$p.value.SDANN, "\n")
     }
     lista$anova$SDANN = aov(SDANN ~ group, data = dfM)
   } else {
     if (verbose == TRUE){
-      cat("SDANN NOT normal: Kruskal. P-values = ", pvaluesSDANN, "\n")
+      cat("SDANN NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.SDANN, "\n")
     }
     lista$kruskal$SDANN = kruskal.test(SDANN ~ group, data = dfM)
   }
   
   
-  if (numberOfExperimentalGroups > 2 || all(pvaluesSDNNIDX > 0.05)) { 
+  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.SDNNIDX > 0.05)) { 
     if (verbose == TRUE){
-      cat("SDNNIDX Normal: Anova. P-values = ", pvaluesSDNNIDX, "\n")
+      cat("SDNNIDX Normal: Anova. P-values = ", dataFramePvalues$p.value.SDNNIDX, "\n")
     }
     lista$anova$SDNNIDX = aov(SDNNIDX ~ group, data = dfM)
   }else {
     if (verbose == TRUE){
-      cat("SDNNIDX NOT normal: Kruskal. P-values = ", pvaluesSDNNIDX, "\n")
+      cat("SDNNIDX NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.SDNNIDX, "\n")
     }
     lista$kruskal$SDNNIDX = kruskal.test(SDNNIDX ~ group, data = dfM)
   }
   
   
-  if (numberOfExperimentalGroups > 2 || all(pvaluespNN50 > 0.05)) { 
+  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.pNN50 > 0.05)) { 
     if (verbose == TRUE){
-      cat("pNN50 Normal: Anova. P-values = ", pvaluespNN50, "\n")
+      cat("pNN50 Normal: Anova. P-values = ", dataFramePvalues$p.value.pNN50, "\n")
     }
     lista$anova$pNN50 = aov(pNN50 ~ group, data = dfM)
   } else {
     if (verbose == TRUE){
-      cat("pNN50 NOT normal: Kruskal. P-values = ", pvaluespNN50, "\n")
+      cat("pNN50 NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.pNN50, "\n")
     }
     lista$kruskal$pNN50 = kruskal.test(pNN50 ~ group, data = dfM)
   }
   
   
-  if (numberOfExperimentalGroups > 2 || all(pvaluesSDSD > 0.05)) {
+  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.SDSD > 0.05)) {
     if (verbose == TRUE){
-      cat("SDSD Normal: Anova. P-values = ", pvaluesSDSD, "\n")
+      cat("SDSD Normal: Anova. P-values = ", dataFramePvalues$p.value.SDSD, "\n")
     }
     lista$anova$SDSD = aov(SDSD ~ group, data = dfM)
   } else {
     if (verbose == TRUE){
-      cat("SDSD NOT normal: Kruskal. P-values = ", pvaluesSDSD, "\n")
+      cat("SDSD NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.SDSD, "\n")
     }
     lista$kruskal$SDSD = kruskal.test(SDSD ~ group, data = dfM)
   }
   
   
-  if (numberOfExperimentalGroups > 2 || all(pvaluesrMSSD > 0.05)) { 
+  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.rMSSD > 0.05)) { 
     if (verbose == TRUE){
-      cat("rMSSD Normal: Anova. P-values = ", pvaluesrMSSD, "\n")
+      cat("rMSSD Normal: Anova. P-values = ", dataFramePvalues$p.value.rMSSD, "\n")
     }
     lista$anova$rMSSD = aov(rMSSD ~ group, data = dfM)
   } else {
     if (verbose == TRUE){
-      cat("rMSSD NOT normal: Kruskal. P-values = ", pvaluesrMSSD, "\n")
+      cat("rMSSD NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.rMSSD, "\n")
     }
     lista$kruskal$rMSSD = kruskal.test(rMSSD ~ group, data = dfM)
   }
   
   
-  if (numberOfExperimentalGroups > 2 || all(pvaluesIRRR> 0.05)){
+  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.IRRR> 0.05)){
     if (verbose == TRUE){
-      cat("IRRR Normal: Anova. P-values = ", pvaluesIRRR, "\n")
+      cat("IRRR Normal: Anova. P-values = ", dataFramePvalues$p.value.IRRR, "\n")
     }
     lista$anova$IRRR = aov(IRRR ~ group, data = dfM)
   } else {
     if (verbose == TRUE){
-      cat("IRRR NOT normal: Kruskal. P-values = ", pvaluesIRRR, "\n")
+      cat("IRRR NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.IRRR, "\n")
     }
     lista$kruskal$IRRR = kruskal.test(IRRR ~ group, data = dfM)
   }
   
   
-  if (numberOfExperimentalGroups > 2 || all(pvaluesMADRR > 0.05)){ 
+  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.MADRR > 0.05)){ 
     if (verbose == TRUE){
-      cat("MADRR Normal: Anova. P-values = ", pvaluesMADRR, "\n")
+      cat("MADRR Normal: Anova. P-values = ", dataFramePvalues$p.value.MADRR, "\n")
     }
     lista$anova$MADRR = aov(MADRR ~ group, data = dfM)
   } else {
     if (verbose == TRUE){
-      cat("MADRR NOT normal: Kruskal. P-values = ", pvaluesMADRR, "\n")
+      cat("MADRR NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.MADRR, "\n")
     }
     lista$kruskal$MADRR = kruskal.test(MADRR ~ group, data = dfM)
   }
   
   
-  if (numberOfExperimentalGroups > 2 || all(pvaluesTINN > 0.05)){ 
+  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.TINN > 0.05)){ 
     if (verbose == TRUE){
-      cat("TINN NOT normal: Kruskal. P-values = ", pvaluesTINN, "\n")
+      cat("TINN NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.TINN, "\n")
     }
     lista$anova$TINN = aov(TINN ~ group, data = dfM)
   } else {
     if (verbose == TRUE){
-      cat("TINN NOT normal: Kruskal. P-values = ", pvaluesTINN, "\n")
+      cat("TINN NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.TINN, "\n")
     }
     lista$kruskal$TINN = kruskal.test(TINN ~ group, data = dfM)
   }
   
   
-  if (numberOfExperimentalGroups > 2 || all(pvaluesHRVi > 0.05)){ 
+  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.HRVi > 0.05)){ 
     if (verbose == TRUE){
-      cat("HRVi NOT normal: Kruskal. P-values = ", pvaluesHRVi, "\n")
+      cat("HRVi NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.HRVi, "\n")
     }
     lista$anova$HRVi = aov(HRVi ~ group, data = dfM)
   } else {
     if (verbose == TRUE){
-      cat("HRVi NOT normal: Kruskal. P-values = ", pvaluesHRVi, "\n")
+      cat("HRVi NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.HRVi, "\n")
     }
     lista$kruskal$HRVi = kruskal.test(HRVi ~ group, data = dfM)
   }
@@ -887,88 +871,62 @@ print.RHRVEasyResult <- function(results){
 }
 
 
-RHRVEasy<-function(correction = FALSE, method = "bonferroni", verbose=FALSE, format = "RR",
-                   size = 300, numofbins = NULL, interval = 7.8125, verboseTime = NULL,
-                   freqhr = 4, methodInterpolation = c("linear", "spline"), verboseFreq = NULL,
-                   methodCalculationPSD = c("pgram", "ar", "lomb"), doPlot = F,
-                   ULFmin = 0, ULFmax = 0.03, VLFmin = 0.03, VLFmax = 0.05,
-                   LFmin = 0.05, LFmax = 0.15, HFmin = 0.15, HFmax = 0.4,
-                   sizesp = NULL, scale = "linear", 
-                   type = "fourier", mother = "d4", bandtolerance = 0.01, relative = FALSE, verboseWavelet = NULL,
-                   case = NULL, control = NULL, ...) {
-  dataFrame3 = data.frame()
+
+RHRVEasy<-function(correction = FALSE, method = "bonferroni", verbose=FALSE, format = "RR", type  = "fourier", directorios, ...) {
+  dataFrame = data.frame()
   dataFrame2 = data.frame()
   dataFrameMWavelet = data.frame()
+  dataFrameMTime = data.frame()
+  dataFrameMFreq = data.frame()
   
-  file_validation(control)
-  file_validation(case)
+  files = list()
   
+  for (directorio in directorios){
+    file_validation(directorio)
+    dataFrameMTime = rbind(dataFrameMTime, dataFrameMTime = time_analysis(format, list.files(directorio), split_path(directorio)[1], directorio, dataFrame2, ...))
+  }
   
-  filesControl = list.files(control)
-  classControl = split_path(control)[1]
-  
-  filesCase = list.files(case)
-  classCase = split_path(case)[1]
-  
-  listFreqStatysticalAnalysis = list()
-  listTimeStatysticalAnalysis = list()
-  
-  
-  
-  
-  
-  dataFrameMTimeControl = time_analysis(format, filesControl, classControl, control, dataFrame3, size, numofbins, interval, verboseTime)
-  dataFrameMTimeCase = time_analysis(format, filesCase, classCase, case, dataFrame3, size, numofbins, interval, verboseTime)
-  # Creating a DF with both in Time
-  dataFrameTime=rbind(dataFrameMTimeControl, dataFrameMTimeCase)
-  
-  # numberOfExperimentalGroups = ?????
+  numberOfExperimentalGroups = length(directorios)
     
-  # Statistical analysis of both
-  listTimeStatysticalAnalysis = statistical_analysisTime(dataFrameTime, verbose, numberOfExperimentalGroups)
+  listTimeStatysticalAnalysis = statistical_analysisTime(dataFrameMTime, verbose, numberOfExperimentalGroups)
   
   # FREQUENCY:
   if(type == "fourier"){
-    
-    dataFrameMFreqControl = freq_analysis(format, filesControl, classControl, control, dataFrame2, freqhr, methodInterpolation, verboseFreq,
-                                          methodCalculationPSD, doPlot,ULFmin, ULFmax, VLFmin, VLFmax, LFmin, LFmax, HFmin, HFmax)
-    
-    dataFrameMFreqCase = freq_analysis(format, filesCase, classCase, case, dataFrame2, freqhr, methodInterpolation, verboseFreq,
-                                       methodCalculationPSD, doPlot,ULFmin, ULFmax, VLFmin, VLFmax, LFmin, LFmax, HFmin, HFmax)
-    dataFrameMFreq=rbind(dataFrameMFreqControl, dataFrameMFreqCase)
-    
+
+    for (directorio in directorios){
+      dataFrameMFreq = rbind(dataFrameMFreq, dataFrameMFreq = freq_analysis(format, list.files(directorio), split_path(directorio)[1], directorio, dataFrame, ...))
+    }
+
     if(verbose == TRUE){
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq, verbose, numberOfExperimentalGroups)
     }else{
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq, verbose, numberOfExperimentalGroups)
     }
-    
+
   }
-  
+
   # WAVELET
   if(type == "wavelet"){
-    dataFrameMWaveletControl = wavelet_analysis(format, filesControl, classControl, control, dataFrameMWavelet, freqhr, methodInterpolation, verboseWavelet,
-                                                sizesp, scale, 
-                                                ULFmin, ULFmax, VLFmin, VLFmax, LFmin, LFmax, HFmin, HFmax, 
-                                                type, mother, bandtolerance, relative)
-    dataFrameMWaveletCase = wavelet_analysis(format, filesCase, classCase, case, dataFrameMWavelet, freqhr, methodInterpolation, verboseWavelet,
-                                             sizesp, scale, 
-                                             ULFmin, ULFmax, VLFmin, VLFmax, LFmin, LFmax, HFmin, HFmax, 
-                                             type, mother, bandtolerance, relative)
-    dataFrameMWavelet=rbind(dataFrameMWaveletControl, dataFrameMWaveletCase)
+    for (directorio in directorios){
+      dataFrameMWavelet = rbind(dataFrameMWavelet, dataFrameMWavelet = wavelet_analysis(format, list.files(directorio), split_path(directorio)[1], directorio, dataFrame, ...))
+    }
+
     if(verbose == TRUE){
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMWavelet, verbose, numberOfExperimentalGroups)
     }else{
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMWavelet, verbose, numberOfExperimentalGroups)
-    }    
+    }
     dataFrameMFreq = dataFrameMWavelet
   }
+
+ listapValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis, correction, method)
+
   
-  listapValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis, correction, method)
   
-  results =  list("TimeAnalysis" = dataFrameTime, "StatysticalAnalysisTime" = listTimeStatysticalAnalysis, 
-                  "FrequencyAnalysis" = dataFrameMFreq, "StatysticalAnalysisFrequency" = listFreqStatysticalAnalysis, 
+  results =  list("TimeAnalysis" = dataFrameMTime, "StatysticalAnalysisTime" = listTimeStatysticalAnalysis,
+                  "FrequencyAnalysis" = dataFrameMFreq, "StatysticalAnalysisFrequency" = listFreqStatysticalAnalysis,
                   "pValues" = listapValues)
+    
   class(results) = "RHRVEasyResult"
   results
 }
