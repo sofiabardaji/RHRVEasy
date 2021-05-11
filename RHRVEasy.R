@@ -88,13 +88,13 @@ wavelet_analysis<-function(format, files, class, rrs2, dataFrameMWavelet, ...){
     
     
     
-    # hrv.data = CalculatePowerBand(hrv.data, indexFreqAnalysis = 1, size = 60, shift = 30, 
-    #                               sizesp = NULL, scale = "linear", ULFmin = 0, ULFmax = 0.03, VLFmin = 0.03, VLFmax = 0.05,
-    #                               LFmin = 0.05, LFmax = 0.15, HFmin = 0.15, HFmax = 0.4,
-    #                               type = "fourier", wavelet = "d4", bandtolerance = 0.01, relative = FALSE, verbose = FALSE)
+    hrv.data = CalculatePowerBand(hrv.data, indexFreqAnalysis = 1, size = 60, shift = 30,
+                                  sizesp = NULL, scale = "linear", ULFmin = 0, ULFmax = 0.03, VLFmin = 0.03, VLFmax = 0.05,
+                                  LFmin = 0.05, LFmax = 0.15, HFmin = 0.15, HFmax = 0.4,
+                                  type = "fourier", wavelet = "d4", bandtolerance = 0.01, relative = FALSE, verbose = FALSE)
     
     
-    hrv.data = easy_call(hrv.data, CalculatePowerBand, ...)
+    # hrv.data = easy_call(hrv.data, CalculatePowerBand, ...)
     index = length (hrv.data$FreqAnalysis)
     resultsWavelet = hrv.data$FreqAnalysis[[index]]
     resultsWavelet$File = file
