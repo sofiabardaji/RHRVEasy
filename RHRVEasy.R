@@ -1,7 +1,6 @@
 #install.packages("RHRV")
 library(RHRV)
 
-
 file_validation<-function(path){
   # 1. Check if path really exists
   if (dir.exists(path) != TRUE){
@@ -85,17 +84,13 @@ wavelet_analysis<-function(format, files, class, rrs2, dataFrameMWavelet, ...){
     hrv.data$HR[zero_indexes] = hr_median
     hrv.data=CreateFreqAnalysis(hrv.data)
     hrv.data=SetVerbose(hrv.data, FALSE)
-    
-    
-    
+
     hrv.data = CalculatePowerBand(hrv.data, indexFreqAnalysis = 1, size = 60, shift = 30,
                                   sizesp = NULL, scale = "linear", ULFmin = 0, ULFmax = 0.03, VLFmin = 0.03, VLFmax = 0.05,
                                   LFmin = 0.05, LFmax = 0.15, HFmin = 0.15, HFmax = 0.4,
                                   type = "fourier", wavelet = "d4", bandtolerance = 0.01, relative = FALSE, verbose = FALSE)
     
-    # no entiendo por qué sale error al hacerlo con línea 99, si cuando hago como en línea 91 tampoco especifico size ni shift???
-
-    
+    # no entiendo por qué sale error al hacerlo con línea 97, si cuando hago como en línea 91 tampoco especifico size ni shift???
     # hrv.data = easy_call(hrv.data, CalculatePowerBand, ...)
     index = length (hrv.data$FreqAnalysis)
     resultsWavelet = hrv.data$FreqAnalysis[[index]]
@@ -158,7 +153,7 @@ statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups){
   
   
   
-  for(objeto in sapply(dfM, levels)$group){
+  for(objeto in names(listaDF)){
     
     vec$group = objeto
     vec$`p-value ULF` = shapiro.test(listaDF[[objeto]][["ULF"]])$p.value
@@ -245,7 +240,7 @@ statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups){
           "p-value SDNNIDX" = NA, "p-value pNN50" = NA, "p-value SDSD" = NA, "p-value rMSSD" = NA, "p-value IRRR" = NA,
           "p-value MADRR" = NA, "p-value TINN" = NA, "p-value HRVi" = NA)
  
-  for(objeto in sapply(dfM, levels)$group){
+  for(objeto in names(listaDF)){
 
     vec$group = objeto
     vec$`p-value SDNN` = shapiro.test(listaDF[[objeto]][["SDNN"]])$p.value
@@ -400,7 +395,6 @@ statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups){
   
 }
 
-
 correctpValues <- function(listTime, listFreq, correction, method){
   
   listapValues = list(ULF = NA, VLF = NA, LF = NA, HF = NA, 
@@ -517,7 +511,6 @@ extract_ANOVA_pvalue<-function(anovaObject){
   pvalue
 }
 
-
 print.RHRVEasyResult <- function(results){
   
   listaDF = split(results$TimeAnalysis, results$TimeAnalysis$group)
@@ -540,8 +533,6 @@ print.RHRVEasyResult <- function(results){
     }
   }
   #report anova
-  
-  
   else{
     if(results$pValues$SDNN<0.05){
       differencesFound = TRUE
@@ -872,9 +863,7 @@ print.RHRVEasyResult <- function(results){
   }
 }
 
-
-
-RHRVEasy<-function(correction = FALSE, method = "bonferroni", verbose=FALSE, format = "RR", type  = "fourier", directorios, ...) {
+RHRVEasy<-function(directorios, correction = FALSE, method = "bonferroni", verbose=FALSE, format = "RR", typeAnalysis = 'fourier', ...) {
   dataFrame = data.frame()
   dataFrame2 = data.frame()
   dataFrameMWavelet = data.frame()
@@ -890,31 +879,26 @@ RHRVEasy<-function(correction = FALSE, method = "bonferroni", verbose=FALSE, for
   
   numberOfExperimentalGroups = length(directorios)
   # Statistical analysis of both
-  
-  
+
   listTimeStatysticalAnalysis = statistical_analysisTime(dataFrameMTime, verbose, numberOfExperimentalGroups)
   
   # FREQUENCY:
-  if(type == "fourier"){
-
+  if(typeAnalysis == "fourier"){
     for (directorio in directorios){
       dataFrameMFreq = rbind(dataFrameMFreq, dataFrameMFreq = freq_analysis(format, list.files(directorio), split_path(directorio)[1], directorio, dataFrame, ...))
     }
-
     if(verbose == TRUE){
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq, verbose, numberOfExperimentalGroups)
     }else{
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq, verbose, numberOfExperimentalGroups)
     }
-
   }
 
   # WAVELET
-  if(type == "wavelet"){
+  if(typeAnalysis == "wavelet"){
     for (directorio in directorios){
       dataFrameMWavelet = rbind(dataFrameMWavelet, dataFrameMWavelet = wavelet_analysis(format, list.files(directorio), split_path(directorio)[1], directorio, dataFrame, ...))
     }
-
     if(verbose == TRUE){
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMWavelet, verbose, numberOfExperimentalGroups)
     }else{
@@ -923,10 +907,8 @@ RHRVEasy<-function(correction = FALSE, method = "bonferroni", verbose=FALSE, for
     dataFrameMFreq = dataFrameMWavelet
   }
 
- listapValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis, correction, method)
+  listapValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis, correction, method)
 
-  
-  
   results =  list("TimeAnalysis" = dataFrameMTime, "StatysticalAnalysisTime" = listTimeStatysticalAnalysis,
                   "FrequencyAnalysis" = dataFrameMFreq, "StatysticalAnalysisFrequency" = listFreqStatysticalAnalysis,
                   "pValues" = listapValues)
