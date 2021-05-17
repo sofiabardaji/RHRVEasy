@@ -117,29 +117,29 @@ wavelet_analysis<-function(format, files, class, rrs2, ...){
 }
 
 # PostHoc Dunn
-dunnfreq<-function(dfM){
+dunnfreq<-function(dfM, method){
   dfM$group = factor(dfM$group)
-  list (ULF = posthoc.kruskal.dunn.test(ULF ~ group, data=dfM, p.adjust="bonf"),
-        VLF = posthoc.kruskal.dunn.test(VLF ~ group, data=dfM, p.adjust="bonf"),
-        LF = posthoc.kruskal.dunn.test(LF ~ group, data=dfM, p.adjust="bonf"),
-        HF = posthoc.kruskal.dunn.test(HF ~ group, data=dfM, p.adjust="bonf") )
+  list (ULF = posthoc.kruskal.dunn.test(ULF ~ group, data=dfM, p.adjust=method),
+        VLF = posthoc.kruskal.dunn.test(VLF ~ group, data=dfM, p.adjust=method),
+        LF = posthoc.kruskal.dunn.test(LF ~ group, data=dfM, p.adjust=method),
+        HF = posthoc.kruskal.dunn.test(HF ~ group, data=dfM, p.adjust=method) )
 }
 
-dunntime<-function(dfM){
+dunntime<-function(dfM, method){
   dfM$group = factor(dfM$group)
-  list (SDNN= posthoc.kruskal.dunn.test(SDNN ~ group, data = dfM, p.adjust="bonf"),
-        SDANN = posthoc.kruskal.dunn.test(SDANN ~ group, data = dfM, p.adjust="bonf"),
-        SDNNIDX = posthoc.kruskal.dunn.test(SDNNIDX ~ group, data = dfM, p.adjust="bonf"),
-        pNN50 = posthoc.kruskal.dunn.test(pNN50 ~ group, data = dfM, p.adjust="bonf"),
-        SDSD = posthoc.kruskal.dunn.test(SDSD ~ group, data = dfM, p.adjust="bonf"),
-        rMSSD = posthoc.kruskal.dunn.test(rMSSD ~ group, data = dfM, p.adjust="bonf"),
-        IRRR = posthoc.kruskal.dunn.test(IRRR ~ group, data = dfM, p.adjust="bonf"),
-        MADRR = posthoc.kruskal.dunn.test(MADRR ~ group, data = dfM, p.adjust="bonf"),
-        TINN = posthoc.kruskal.dunn.test(TINN ~ group, data = dfM, p.adjust="bonf"),
-        HRVi = posthoc.kruskal.dunn.test(HRVi ~ group, data = dfM, p.adjust="bonf"))
+  list (SDNN= posthoc.kruskal.dunn.test(SDNN ~ group, data = dfM, p.adjust=method),
+        SDANN = posthoc.kruskal.dunn.test(SDANN ~ group, data = dfM, p.adjust=method),
+        SDNNIDX = posthoc.kruskal.dunn.test(SDNNIDX ~ group, data = dfM, p.adjust=method),
+        pNN50 = posthoc.kruskal.dunn.test(pNN50 ~ group, data = dfM, p.adjust=method),
+        SDSD = posthoc.kruskal.dunn.test(SDSD ~ group, data = dfM, p.adjust=method),
+        rMSSD = posthoc.kruskal.dunn.test(rMSSD ~ group, data = dfM, p.adjust=method),
+        IRRR = posthoc.kruskal.dunn.test(IRRR ~ group, data = dfM, p.adjust=method),
+        MADRR = posthoc.kruskal.dunn.test(MADRR ~ group, data = dfM, p.adjust=method),
+        TINN = posthoc.kruskal.dunn.test(TINN ~ group, data = dfM, p.adjust=method),
+        HRVi = posthoc.kruskal.dunn.test(HRVi ~ group, data = dfM, p.adjust=method))
 }
 
-statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups){
+statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups, method){
   anova = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
   kruskal = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
   dunn = NA
@@ -216,12 +216,12 @@ statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups){
     }
     list$kruskal$HF = kruskal.test(HF ~ group, data = dfM)
   }
-  list$dunn = dunnfreq(dfM)
+  list$dunn = dunnfreq(dfM, method = method)
   list
   
 }
 
-statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups){
+statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups, method){
   
   anova = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
                MADRR = NA, TINN = NA, HRVi = NA)
@@ -388,7 +388,7 @@ statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups){
     list$kruskal$HRVi = kruskal.test(HRVi ~ group, data = dfM)
   }
   
-  list$dunn = dunntime(dfM)
+  list$dunn = dunntime(dfM, method = method)
   list
 }
 
@@ -544,14 +544,17 @@ print.RHRVEasyResult <- function(results){
             mean(listDF[[group]][["SDNN"]]), "+-", sd(listDF[[group]][["SDNN"]]), "\n")
       }
       
+      # Dunn
+      # if((length(listDF))>2){
+      #   if(results$StatysticalAnalysisTime$dunn[["SDNN"]]$p.value<signif_level){
+      #     print(results$StatysticalAnalysisTime$dunn[["SDNN"]]$statistic)
+      #   }
+      # }
+      # 
+      
     }
   }
-  
-  # if(length(listDF)>2){
-  #   print("The result of DUNN for SDNN is") 
-  #   results$StatysticalAnalysisTime$dunn$SDNN
-  # }
-  
+
   
   if(is.na(results$StatysticalAnalysisTime$anova$SDANN)){
     #report kruskal
@@ -668,7 +671,7 @@ print.RHRVEasyResult <- function(results){
       differencesFound = TRUE
       cat("There is a statistically significant difference in SDSD; pvalue: ", 
           extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$SDSD), "\n")
-
+      
       for (i in 1:length(listDF)){
         group = levels(results$TimeAnalysis$group)[i]
         cat("SDSD for the group ", levels(results$TimeAnalysis$group)[i], "is",
@@ -990,7 +993,7 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
   # Statistical analysis of both
   
   listTimeStatysticalAnalysis = statistical_analysisTime(dataFrameMTime, 
-                                                         verbose, numberOfExperimentalGroups)
+                                                         verbose, numberOfExperimentalGroups, method)
   
   # FREQUENCY:
   if(typeAnalysis == "fourier"){
@@ -1000,10 +1003,10 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
     }
     if(verbose == TRUE){
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq, 
-                                                             verbose, numberOfExperimentalGroups)
+                                                             verbose, numberOfExperimentalGroups, method)
     }else{
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq, 
-                                                             verbose, numberOfExperimentalGroups)
+                                                             verbose, numberOfExperimentalGroups, method)
     }
   }
   
@@ -1016,10 +1019,10 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
     }
     if(verbose == TRUE){
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMWavelet, 
-                                                             verbose, numberOfExperimentalGroups)
+                                                             verbose, numberOfExperimentalGroups, method)
     }else{
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMWavelet, 
-                                                             verbose, numberOfExperimentalGroups)
+                                                             verbose, numberOfExperimentalGroups, method)
     }
     dataFrameMFreq = dataFrameMWavelet
   }
