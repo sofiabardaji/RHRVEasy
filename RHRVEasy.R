@@ -93,7 +93,6 @@ wavelet_analysis<-function(format, files, class, rrs2, ...){
     hrv.data=CreateFreqAnalysis(hrv.data)
     hrv.data=SetVerbose(hrv.data, FALSE)
     
-    # you were using type = "fourier" when we want a wavelet analysis
     hrv.data = easy_call(hrv.data, CalculatePowerBand, ...)
     
     index = length (hrv.data$FreqAnalysis)
@@ -117,29 +116,29 @@ wavelet_analysis<-function(format, files, class, rrs2, ...){
 }
 
 # PostHoc Dunn
-dunnfreq<-function(dfM, method){
+dunnfreq<-function(dfM){
   dfM$group = factor(dfM$group)
-  list (ULF = posthoc.kruskal.dunn.test(ULF ~ group, data=dfM, p.adjust=method),
-        VLF = posthoc.kruskal.dunn.test(VLF ~ group, data=dfM, p.adjust=method),
-        LF = posthoc.kruskal.dunn.test(LF ~ group, data=dfM, p.adjust=method),
-        HF = posthoc.kruskal.dunn.test(HF ~ group, data=dfM, p.adjust=method) )
+  list (ULF = posthoc.kruskal.dunn.test(ULF ~ group, data=dfM, p.adjust="bonf"),
+        VLF = posthoc.kruskal.dunn.test(VLF ~ group, data=dfM, p.adjust="bonf"),
+        LF = posthoc.kruskal.dunn.test(LF ~ group, data=dfM, p.adjust="bonf"),
+        HF = posthoc.kruskal.dunn.test(HF ~ group, data=dfM, p.adjust="bonf") )
 }
 
-dunntime<-function(dfM, method){
+dunntime<-function(dfM){
   dfM$group = factor(dfM$group)
-  list (SDNN= posthoc.kruskal.dunn.test(SDNN ~ group, data = dfM, p.adjust=method),
-        SDANN = posthoc.kruskal.dunn.test(SDANN ~ group, data = dfM, p.adjust=method),
-        SDNNIDX = posthoc.kruskal.dunn.test(SDNNIDX ~ group, data = dfM, p.adjust=method),
-        pNN50 = posthoc.kruskal.dunn.test(pNN50 ~ group, data = dfM, p.adjust=method),
-        SDSD = posthoc.kruskal.dunn.test(SDSD ~ group, data = dfM, p.adjust=method),
-        rMSSD = posthoc.kruskal.dunn.test(rMSSD ~ group, data = dfM, p.adjust=method),
-        IRRR = posthoc.kruskal.dunn.test(IRRR ~ group, data = dfM, p.adjust=method),
-        MADRR = posthoc.kruskal.dunn.test(MADRR ~ group, data = dfM, p.adjust=method),
-        TINN = posthoc.kruskal.dunn.test(TINN ~ group, data = dfM, p.adjust=method),
-        HRVi = posthoc.kruskal.dunn.test(HRVi ~ group, data = dfM, p.adjust=method))
+  list (SDNN= posthoc.kruskal.dunn.test(SDNN ~ group, data = dfM, p.adjust="bonf"),
+        SDANN = posthoc.kruskal.dunn.test(SDANN ~ group, data = dfM, p.adjust="bonf"),
+        SDNNIDX = posthoc.kruskal.dunn.test(SDNNIDX ~ group, data = dfM, p.adjust="bonf"),
+        pNN50 = posthoc.kruskal.dunn.test(pNN50 ~ group, data = dfM, p.adjust="bonf"),
+        SDSD = posthoc.kruskal.dunn.test(SDSD ~ group, data = dfM, p.adjust="bonf"),
+        rMSSD = posthoc.kruskal.dunn.test(rMSSD ~ group, data = dfM, p.adjust="bonf"),
+        IRRR = posthoc.kruskal.dunn.test(IRRR ~ group, data = dfM, p.adjust="bonf"),
+        MADRR = posthoc.kruskal.dunn.test(MADRR ~ group, data = dfM, p.adjust="bonf"),
+        TINN = posthoc.kruskal.dunn.test(TINN ~ group, data = dfM, p.adjust="bonf"),
+        HRVi = posthoc.kruskal.dunn.test(HRVi ~ group, data = dfM, p.adjust="bonf"))
 }
 
-statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups, method){
+statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups){
   anova = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
   kruskal = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
   dunn = NA
@@ -154,29 +153,44 @@ statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups, met
   
   for(objeto in names(listDF)){
     vec$group = objeto
-    vec$`p-value ULF` = shapiro.test(listDF[[objeto]][["ULF"]])$p.value
-    vec$`p-value VLF` = shapiro.test(listDF[[objeto]][["VLF"]])$p.value
-    vec$`p-value LF` = shapiro.test(listDF[[objeto]][["LF"]])$p.value
-    vec$`p-value HF` = shapiro.test(listDF[[objeto]][["HF"]])$p.value
     
+    for (column in c('ULF', 'VLF', 'LF', 'HF')){
+      destino = paste0('p-value ', column)
+      vec[[destino]] = (shapiro.test(listDF[[objeto]][[column]])$p.value)
+    }
+
     df = data.frame(vec)
     
     dataFramePvalues = rbind(dataFramePvalues, df)
   }
   
+  # for (column in c('ULF', 'VLF', 'LF', 'HF')){
+  #   if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.column > signif_level)) {
+  #     if (verbose == TRUE){
+  #       cat(column, "Normal: Anova. P-values = ", dataFramePvalues$p.value.ULF, "\n")
+  #     }
+  #     list$anova[[column]] = aov(column ~ group, data = dfM)
+  #   } else {
+  #     if (verbose == TRUE){
+  #       cat(column, " NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.column, "\n")
+  #     }
+  #     list$kruskal$column = kruskal.test(column ~ group, data = dfM)
+  #   }
+  # }
+  #### NO FUNCIONA EL AOV ~ !!!!!!!
+  
   
   if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.ULF > signif_level)) {
     if (verbose == TRUE){
-      cat("ULF Normal: Anova. P-values = ", dataFramePvalues$p.value.ULF, "\n")
+      cat(ULF, "Normal: Anova. P-values = ", dataFramePvalues$p.value.ULF, "\n")
     }
-    list$anova$ULF = aov(ULF ~ group, data = dfM)
-  }else {
+    list$anova[[ULF]] = aov(ULF ~ group, data = dfM)
+  } else {
     if (verbose == TRUE){
-      cat("ULF NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.ULF, "\n")
+      cat(ULF, " NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.ULF, "\n")
     }
     list$kruskal$ULF = kruskal.test(ULF ~ group, data = dfM)
   }
-  
   
   if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.VLF > signif_level)) {
     if (verbose == TRUE){
@@ -216,12 +230,12 @@ statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups, met
     }
     list$kruskal$HF = kruskal.test(HF ~ group, data = dfM)
   }
-  list$dunn = dunnfreq(dfM, method = method)
+  list$dunn = dunnfreq(dfM)
   list
   
 }
 
-statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups, method){
+statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups){
   
   anova = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
                MADRR = NA, TINN = NA, HRVi = NA)
@@ -241,24 +255,18 @@ statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups, met
   
   for(objeto in names(listDF)){
     vec$group = objeto
-    vec$`p-value SDNN` = shapiro.test(listDF[[objeto]][["SDNN"]])$p.value
-    vec$`p-value SDANN` = shapiro.test(listDF[[objeto]][["SDANN"]])$p.value
-    vec$`p-value SDNNIDX` = shapiro.test(listDF[[objeto]][["SDNNIDX"]])$p.value
-    vec$`p-value pNN50` = shapiro.test(listDF[[objeto]][["pNN50"]])$p.value
-    vec$`p-value SDSD` = shapiro.test(listDF[[objeto]][["SDSD"]])$p.value
-    vec$`p-value rMSSD` = shapiro.test(listDF[[objeto]][["rMSSD"]])$p.value
-    vec$`p-value IRRR` = shapiro.test(listDF[[objeto]][["IRRR"]])$p.value
-    vec$`p-value MADRR` = shapiro.test(listDF[[objeto]][["MADRR"]])$p.value
-    vec$`p-value TINN` = shapiro.test(listDF[[objeto]][["TINN"]])$p.value
-    vec$`p-value HRVi` = shapiro.test(listDF[[objeto]][["HRVi"]])$p.value
+    
+    for (column in c('SDNN', 'SDANN', 'SDNNIDX', 'pNN50', 'SDSD', 'rMSSD', 'IRRR',
+                     'MADRR', 'TINN', 'HRVi')){
+      destino = paste0('p-value ', column)
+      vec[[destino]] = (shapiro.test(listDF[[objeto]][[column]])$p.value)
+    }
     
     df = data.frame(vec)
     
     dataFramePvalues = rbind(dataFramePvalues, df)
-    
   }
-  
-  
+
   if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.SDNN > signif_level)) {
     if (verbose == TRUE){
       cat("SDNN Normal: Anova. P-values = ", dataFramePvalues$p.value.SDNN, "\n")
@@ -388,7 +396,7 @@ statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups, met
     list$kruskal$HRVi = kruskal.test(HRVi ~ group, data = dfM)
   }
   
-  list$dunn = dunntime(dfM, method = method)
+  list$dunn = dunntime(dfM)
   list
 }
 
@@ -402,90 +410,23 @@ correctpValues <- function(listTime, listFreq, correction, method){
                               SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
                               MADRR = NA, TINN = NA, HRVi = NA)
   
-  
-  if(is.na(listFreq$anova$ULF)){
-    listpValues$ULF = listFreq$kruskal$ULF$p.value
-  }else{
-    listpValues$ULF = extract_ANOVA_pvalue(listFreq$anova$ULF)
+  for (column in c('ULF', 'VLF', 'LF', 'HF')){
+    if(is.na(listFreq$anova[[column]])){
+      listpValues[[column]] = listFreq$kruskal[[column]]$p.value
+    }else{
+      listpValues[[column]] = extract_ANOVA_pvalue(listFreq$anova[[column]])
+    }
   }
   
-  if(is.na(listFreq$anova$VLF)){
-    listpValues$VLF = listFreq$kruskal$VLF$p.value
-  }else{
-    listpValues$VLF = extract_ANOVA_pvalue(listFreq$anova$VLF)
+  for (column in c('SDNN', 'SDANN', 'SDNNIDX', 'pNN50', 'SDSD', 'rMSSD', 'IRRR',
+                   'MADRR', 'TINN', 'HRVi')){
+    if(is.na(listTime$anova[[column]])){
+      listpValues[[column]] = listTime$kruskal[[column]]$p.value
+    }else{
+      listpValues[[column]] = extract_ANOVA_pvalue(listTime$anova[[column]])
+    }
   }
   
-  if(is.na(listFreq$anova$LF)){
-    listpValues$LF = listFreq$kruskal$LF$p.value
-  }else{
-    listpValues$LF = extract_ANOVA_pvalue(listFreq$anova$LF)
-  }
-  
-  if(is.na(listFreq$anova$HF)){
-    listpValues$HF = listFreq$kruskal$HF$p.value
-  }else{
-    listpValues$HF = extract_ANOVA_pvalue(listFreq$anova$HF)
-  }
-  
-  if(is.na(listTime$anova$SDNN)){
-    listpValues$SDNN = listTime$kruskal$SDNN$p.value
-  }else{
-    listpValues$SDNN = extract_ANOVA_pvalue(listTime$anova$SDNN)
-  }
-  
-  if(is.na(listTime$anova$SDANN)){
-    listpValues$SDANN = listTime$kruskal$SDANN$p.value
-  }else{
-    listpValues$SDANN = extract_ANOVA_pvalue(listTime$anova$SDANN)
-  }
-  
-  if(is.na(listTime$anova$SDNNIDX)){
-    listpValues$SDNNIDX = listTime$kruskal$SDNNIDX$p.value
-  }else{
-    listpValues$SDNNIDX = extract_ANOVA_pvalue(listTime$anova$SDNNIDX)
-  }
-  
-  if(is.na(listTime$anova$pNN50)){
-    listpValues$pNN50 = listTime$kruskal$pNN50$p.value
-  }else{
-    listpValues$pNN50 = extract_ANOVA_pvalue(listTime$anova$pNN50)
-  }
-  
-  if(is.na(listTime$anova$SDSD)){
-    listpValues$SDSD = listTime$kruskal$SDSD$p.value
-  }else{
-    listpValues$SDSD = extract_ANOVA_pvalue(listTime$anova$SDSD)
-  }
-  
-  if(is.na(listTime$anova$rMSSD)){
-    listpValues$rMSSD = listTime$kruskal$rMSSD$p.value
-  }else{
-    listpValues$rMSSD = extract_ANOVA_pvalue(listTime$anova$rMSSD)
-  }
-  
-  if(is.na(listTime$anova$IRRR)){
-    listpValues$IRRR = listTime$kruskal$IRRR$p.value
-  }else{
-    listpValues$IRRR = extract_ANOVA_pvalue(listTime$anova$IRRR)
-  }
-  
-  if(is.na(listTime$anova$MADRR)){
-    listpValues$MADRR = listTime$kruskal$MADRR$p.value
-  }else{
-    listpValues$MADRR = extract_ANOVA_pvalue(listTime$anova$MADRR)
-  }
-  
-  if(is.na(listTime$anova$TINN)){
-    listpValues$TINN = listTime$kruskal$TINN$p.value
-  }else{
-    listpValues$TINN = extract_ANOVA_pvalue(listTime$anova$TINN)
-  }
-  
-  if(is.na(listTime$anova$HRVi)){
-    listpValues$HRVi = listTime$kruskal$HRVi$p.value
-  }else{
-    listpValues$HRVi = extract_ANOVA_pvalue(listTime$anova$HRVi)
-  }
   
   if (correction == TRUE){
     listpValuesCorrected = p.adjust(listpValues, method)
@@ -517,455 +458,114 @@ print.RHRVEasyResult <- function(results){
       levels(results$TimeAnalysis$group)[1], 
       "versus the group", levels(results$TimeAnalysis$group)[2], ":\n\n")
   
-  if(is.na(results$StatysticalAnalysisTime$anova$SDNN)){
-    #report kruskal
-    if(results$pValues$SDNN<signif_level){#error pvalue 1
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in SDNN; pvalue: ", 
-          results$StatysticalAnalysisTime$kruskal$SDNN$p.value, "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("SDNN for the group", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["SDNN"]]), "+-", sd(listDF[[group]][["SDNN"]]), "\n")
+  for (column in c('SDNN', 'SDANN', 'SDNNIDX', 'pNN50', 'SDSD', 'rMSSD', 'IRRR',
+                   'MADRR', 'TINN', 'HRVi')){
+    if(is.na(results$StatysticalAnalysisTime$anova[[column]])){
+      #report kruskal
+      if(results$pValues[[column]]<signif_level){#error pvalue 1
+        differencesFound = TRUE
+        cat("There is a statistically significant difference in", column,  "; pvalue: ", 
+            results$StatysticalAnalysisTime$kruskal[[column]]$p.value, "\n")
+        
+        for (i in 1:length(listDF)){
+          group = levels(results$TimeAnalysis$group)[i]
+          column = ""
+          cat(column, " for the group", levels(results$TimeAnalysis$group)[i], "is",
+              mean(listDF[[group]][[column]]), "+-", sd(listDF[[group]][[column]]), "\n")
+        }
+      }
+    }
+    #report anova
+    else{
+      if(results$pValues[[column]]<signif_level){
+        differencesFound = TRUE
+        cat("There is a statistically significant difference in", column, "; pvalue: ", 
+            extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova[[column]]), "\n")
+        
+        for (i in 1:length(listDF)){
+          group = levels(results$TimeAnalysis$group)[i]
+          cat(column, " for the group ", levels(results$TimeAnalysis$group)[i], "is",
+              mean(listDF[[group]][[column]]), "+-", sd(listDF[[group]][[column]]), "\n")
+        }
+        
       }
     }
   }
-  #report anova
-  else{
-    if(results$pValues$SDNN<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in SDNN; pvalue: ", 
-          extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$SDNN), "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("SDNN for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["SDNN"]]), "+-", sd(listDF[[group]][["SDNN"]]), "\n")
-      }
-      
-      # Dunn
-      # if((length(listDF))>2){
-      #   if(results$StatysticalAnalysisTime$dunn[["SDNN"]]$p.value<signif_level){
-      #     print(results$StatysticalAnalysisTime$dunn[["SDNN"]]$statistic)
-      #   }
-      # }
-      # 
-      
-    }
-  }
-
   
-  if(is.na(results$StatysticalAnalysisTime$anova$SDANN)){
-    #report kruskal
-    if(results$pValues$SDANN<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in SDANN; pvalue: ", 
-          results$StatysticalAnalysisTime$kruskal$SDANN$p.value, "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("SDANN for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["SDANN"]]), "+-", sd(listDF[[group]][["SDANN"]]), "\n")
+  # 2 Conditions to report Dunn:
+  # 1. We have more than 2 groups, we check that by looking at the length of listDF
+  if(length(listDF)>2){
+    for (column in c('SDNN', 'SDANN', 'SDNNIDX', 'pNN50', 'SDSD', 'rMSSD', 'IRRR',
+                     'MADRR', 'TINN', 'HRVi')){
+      # 2. ANOVA Test is significative. We check that by comparing it to the signif_level
+      var = which(a4$StatysticalAnalysisTime$dunn[[column]][["p.value"]]<signif_level, arr.ind = TRUE)
+      if(length(var)>0){
+      for (i in 1:nrow(var)){
+        cat(a4$StatysticalAnalysisTime$dunn[[column]][["p.value"]][var][i], 'is the p value of',
+            row.names(a4$StatysticalAnalysisTime$dunn[[column]][["p.value"]])[var[i,1]], 'vs',
+            colnames(a4$StatysticalAnalysisTime$dunn[[column]][["p.value"]])[var[i,2]], '\n')
       }
-      
-    }
-  }
-  #report anova
-  else{
-    if(results$pValues$SDANN<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in SDANN; pvalue: ", 
-          extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$SDANN), "\n")
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("SDANN for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["SDANN"]]), "+-", sd(listDF[[group]][["SDANN"]]), "\n")
+      cat('for', column, '\n')
       }
     }
   }
   
   
   
-  if(is.na(results$StatysticalAnalysisTime$anova$SDNNIDX)){
-    #report kruskal
-    if(results$pValues$SDNNIDX<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in SDNNIDX; pvalue: ", 
-          results$StatysticalAnalysisTime$kruskal$SDNNIDX$p.value, "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("SDNNIDX for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["SDNNIDX"]]), "+-", sd(listDF[[group]][["SDNNIDX"]]), "\n")
-      }
-      
-    }
-  }
-  #report anova
-  else{
-    if(results$pValues$SDNNIDX<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in SDNNIDX; pvalue: ", 
-          extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$SDNNIDX), "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("SDNNIDX for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["SDNNIDX"]]), "+-", sd(listDF[[group]][["SDNNIDX"]]), "\n")
-      }
-      
-    }
-  }
-  
-  
-  if(is.na(results$StatysticalAnalysisTime$anova$pNN50)){
-    #report kruskal
-    if(results$pValues$pNN50<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in pNN50; pvalue: ", 
-          results$StatysticalAnalysisTime$kruskal$pNN50$p.value, "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("pNN50 for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["pNN50"]]), "+-", sd(listDF[[group]][["pNN50"]]), "\n")
-      }
-    }
-  }
-  #report anova
-  else{
-    if(results$pValues$pNN50<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in pNN50; pvalue: ", 
-          extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$pNN50), "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("pNN50 for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["pNN50"]]), "+-", sd(listDF[[group]][["pNN50"]]), "\n")
-      }
-      
-    }
-  }
-  
-  
-  if(is.na(results$StatysticalAnalysisTime$anova$SDSD)){
-    #report kruskal
-    if(results$pValues$SDSD<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in SDSD; pvalue: ", 
-          results$StatysticalAnalysisTime$kruskal$SDSD$p.value, "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("SDSD for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["SDSD"]]), "+-", sd(listDF[[group]][["SDSD"]]), "\n")
-      }
-      
-    }
-  }
-  #report anova
-  else{
-    if(results$pValues$SDSD<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in SDSD; pvalue: ", 
-          extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$SDSD), "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("SDSD for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["SDSD"]]), "+-", sd(listDF[[group]][["SDSD"]]), "\n")
-      }
-      
-    }
-  }
-  
-  
-  if(is.na(results$StatysticalAnalysisTime$anova$rMSSD)){
-    #report kruskal
-    if(results$pValues$rMSSD<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in rMSSD; pvalue: ", 
-          results$StatysticalAnalysisTime$kruskal$rMSSD$p.value, "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("rMSSD for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["rMSSD"]]), "+-", sd(listDF[[group]][["rMSSD"]]), "\n")
-      }
-      
-    }
-  }
-  #report anova
-  else{
-    if(results$pValues$rMSSD<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in rMSSD; pvalue: ", 
-          extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$rMSSD), "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("rMSSD for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["rMSSD"]]), "+-", sd(listDF[[group]][["rMSSD"]]), "\n")
-      }
-      
-    }
-  }
-  
-  
-  if(is.na(results$StatysticalAnalysisTime$anova$IRRR)){
-    #report kruskal
-    if(results$pValues$IRRR<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in IRRR; pvalue: ", 
-          results$StatysticalAnalysisTime$kruskal$IRRR$p.value, "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("IRRR for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["IRRR"]]), "+-", sd(listDF[[group]][["IRRR"]]), "\n")
-      }
-      
-    }
-  }
-  #report anova
-  else{
-    if(results$pValues$IRRR<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in IRRR; pvalue: ", 
-          extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$SDNN), "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("IRRR for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["IRRR"]]), "+-", sd(listDF[[group]][["IRRR"]]), "\n")
-      }
-      
-    }
-  }
-  
-  
-  if(is.na(results$StatysticalAnalysisTime$anova$MADRR)){
-    #report kruskal
-    if(results$pValues$MADRR<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in MADRR; pvalue: ", 
-          results$StatysticalAnalysisTime$kruskal$MADRR$p.value, "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("MADRR for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["MADRR"]]), "+-", sd(listDF[[group]][["MADRR"]]), "\n")
-      }
-      
-    }
-  }
-  #report anova
-  else{
-    if(results$pValues$MADRR<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in MADRR; pvalue: ", 
-          extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$MADRR), "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("MADRR for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["MADRR"]]), "+-", sd(listDF[[group]][["MADRR"]]), "\n")
-      }
-      
-    }
-  }
-  
-  
-  if(is.na(results$StatysticalAnalysisTime$anova$TINN)){
-    #report kruskal
-    if(results$pValues$TINN<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in TINN; pvalue: ", 
-          results$StatysticalAnalysisTime$kruskal$TINN$p.value, "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("TINN for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["TINN"]]), "+-", sd(listDF[[group]][["TINN"]]), "\n")
-      }
-      
-    }
-  }
-  #report anova
-  else{
-    if(results$pValues$TINN<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in TINN; pvalue: ", 
-          extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$TINN), "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("TINN for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["TINN"]]), "+-", sd(listDF[[group]][["TINN"]]), "\n")
-      }
-      
-    }
-  }
-  
-  
-  if(is.na(results$StatysticalAnalysisTime$anova$HRVi)){
-    #report kruskal
-    if(results$pValues$HRVi<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in HRVi; pvalue: ", 
-          results$StatysticalAnalysisTime$kruskal$HRVi$p.value, "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("HRVi for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["HRVi"]]), "+-", sd(listDF[[group]][["HRVi"]]), "\n")
-      }
-      
-    }
-  }
-  #report anova
-  else{
-    if(results$pValues$HRVi<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in HRVi; pvalue: ", 
-          extract_ANOVA_pvalue(results$StatysticalAnalysisTime$anova$HRVi), "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$TimeAnalysis$group)[i]
-        cat("HRVi for the group ", levels(results$TimeAnalysis$group)[i], "is",
-            mean(listDF[[group]][["HRVi"]]), "+-", sd(listDF[[group]][["HRVi"]]), "\n")
-      }
-      
-    }
-  }
   
   
   listDF = split(results$FrequencyAnalysis, results$FrequencyAnalysis$group)
   
-  if(is.na(results$StatysticalAnalysisFrequency$anova$ULF)){
-    #report kruskal
-    if(results$pValues$ULF<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in ULF; pvalue: ", 
-          results$StatysticalAnalysisFrequency$kruskal$ULF$p.value, "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$FrequencyAnalysis$group)[i]
-        cat("ULF for the group ", levels(results$FrequencyAnalysis$group)[i], "is",
-            mean(listDF[[group]][["ULF"]]), "+-", sd(listDF[[group]][["ULF"]]), "\n")
+  for (column in c('ULF', 'VLF', 'LF', 'HF')){
+    if(is.na(results$StatysticalAnalysisFrequency$anova[[column]])){
+      #report kruskal
+      if(results$pValues[[column]]<signif_level){#error pvalue 1
+        differencesFound = TRUE
+        cat("There is a statistically significant difference in", column,  "; pvalue: ", 
+            results$StatysticalAnalysisFrequency$kruskal[[column]]$p.value, "\n")
+        
+        for (i in 1:length(listDF)){
+          group = levels(results$TimeAnalysis$group)[i]
+          column = ""
+          cat(column, " for the group", levels(results$TimeAnalysis$group)[i], "is",
+              mean(listDF[[group]][[column]]), "+-", sd(listDF[[group]][[column]]), "\n")
+        }
       }
-      
     }
-  }
-  #report anova
-  else{
-    if(results$pValues$ULF<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in ULF; pvalue: ", 
-          extract_ANOVA_pvalue(results$StatysticalAnalysisFrequency$anova$ULF), "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$FrequencyAnalysis$group)[i]
-        cat("ULF for the group ", levels(results$FrequencyAnalysis$group)[i], "is",
-            mean(listDF[[group]][["ULF"]]), "+-", sd(listDF[[group]][["ULF"]]), "\n")
+    #report anova
+    else{
+      if(results$pValues[[column]]<signif_level){
+        differencesFound = TRUE
+        cat("There is a statistically significant difference in", column, "; pvalue: ", 
+            extract_ANOVA_pvalue(results$StatysticalAnalysisFrequency$anova[[column]]), "\n")
+        
+        for (i in 1:length(listDF)){
+          group = levels(results$TimeAnalysis$group)[i]
+          cat(column, " for the group ", levels(results$TimeAnalysis$group)[i], "is",
+              mean(listDF[[group]][[column]]), "+-", sd(listDF[[group]][[column]]), "\n")
+        }
+        
       }
-      
     }
   }
   
+  if(length(listDF)>2){
+    for (column in c('ULF', 'VLF', 'LF', 'HF')){
+      # 2. ANOVA Test is significative. We check that by comparing it to the signif_level
+      
+      var = which(a4$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]]<signif_level, arr.ind = TRUE)
+      if(length(var)>0){
+        for (i in 1:nrow(var)){
+          cat(a4$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]][var][i], 'is the p value of',
+              row.names(a4$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]])[var[i,1]], 'vs',
+              colnames(a4$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]])[var[i,2]], '\n')
+        }
+        cat('for', column, '\n')
+      }
+    }
+    
+  }
   
-  if(is.na(results$StatysticalAnalysisFrequency$anova$VLF)){
-    #report kruskal
-    if(results$pValues$VLF<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in VLF; pvalue: ", 
-          results$StatysticalAnalysisFrequency$kruskal$VLF$p.value, "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$FrequencyAnalysis$group)[i]
-        cat("VLF for the group ", levels(results$FrequencyAnalysis$group)[i], "is",
-            mean(listDF[[group]][["VLF"]]), "+-", sd(listDF[[group]][["VLF"]]), "\n")
-      }
-      
-    }
-  }
-  #report anova
-  else{
-    if(results$pValues$VLF<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in VLF; pvalue: ", 
-          extract_ANOVA_pvalue(results$StatysticalAnalysisFrequency$anova$VLF), "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$FrequencyAnalysis$group)[i]
-        cat("VLF for the group ", levels(results$FrequencyAnalysis$group)[i], "is",
-            mean(listDF[[group]][["VLF"]]), "+-", sd(listDF[[group]][["VLF"]]), "\n")
-      }
-      
-    }
-  }
-  if(is.na(results$StatysticalAnalysisFrequency$anova$LF)){
-    #report kruskal
-    if(results$pValues$LF<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in LF; pvalue: ", 
-          results$StatysticalAnalysisFrequency$kruskal$LF$p.value, "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$FrequencyAnalysis$group)[i]
-        cat("LF for the group ", levels(results$FrequencyAnalysis$group)[i], "is",
-            mean(listDF[[group]][["LF"]]), "+-", sd(listDF[[group]][["LF"]]), "\n")
-      }
-      
-    }
-  }
-  #report anova
-  else{
-    if(results$pValues$LF<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in LF; pvalue: ", 
-          extract_ANOVA_pvalue(results$StatysticalAnalysisFrequency$anova$LF), "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$FrequencyAnalysis$group)[i]
-        cat("LF for the group ", levels(results$FrequencyAnalysis$group)[i], "is",
-            mean(listDF[[group]][["LF"]]), "+-", sd(listDF[[group]][["LF"]]), "\n")
-      }
-      
-    }
-  }
-  if(is.na(results$StatysticalAnalysisFrequency$anova$HF)){
-    #report kruskal
-    if(results$pValues$HF<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in HF; pvalue: ", 
-          results$StatysticalAnalysisFrequency$kruskal$HF$p.value, "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$FrequencyAnalysis$group)[i]
-        cat("HF for the group ", levels(results$FrequencyAnalysis$group)[i], "is",
-            mean(listDF[[group]][["HF"]]), "+-", sd(listDF[[group]][["HF"]]), "\n")
-      }
-      
-    }
-  }
-  #report anova
-  else{
-    if(results$pValues$HF<signif_level){
-      differencesFound = TRUE
-      cat("There is a statistically significant difference in HF; pvalue: ", 
-          extract_ANOVA_pvalue(results$StatysticalAnalysisFrequency$anova$HF), "\n")
-      
-      for (i in 1:length(listDF)){
-        group = levels(results$FrequencyAnalysis$group)[i]
-        cat("HF for the group ", levels(results$FrequencyAnalysis$group)[i], "is",
-            mean(listDF[[group]][["HF"]]), "+-", sd(listDF[[group]][["HF"]]), "\n")
-      }
-      
-    }
-  }
   
   if(!differencesFound){
     cat("No statistically significant difference were found\n")
@@ -993,7 +593,7 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
   # Statistical analysis of both
   
   listTimeStatysticalAnalysis = statistical_analysisTime(dataFrameMTime, 
-                                                         verbose, numberOfExperimentalGroups, method)
+                                                         verbose, numberOfExperimentalGroups)
   
   # FREQUENCY:
   if(typeAnalysis == "fourier"){
@@ -1003,10 +603,10 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
     }
     if(verbose == TRUE){
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq, 
-                                                             verbose, numberOfExperimentalGroups, method)
+                                                             verbose, numberOfExperimentalGroups)
     }else{
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq, 
-                                                             verbose, numberOfExperimentalGroups, method)
+                                                             verbose, numberOfExperimentalGroups)
     }
   }
   
@@ -1019,10 +619,10 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
     }
     if(verbose == TRUE){
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMWavelet, 
-                                                             verbose, numberOfExperimentalGroups, method)
+                                                             verbose, numberOfExperimentalGroups)
     }else{
       listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMWavelet, 
-                                                             verbose, numberOfExperimentalGroups, method)
+                                                             verbose, numberOfExperimentalGroups)
     }
     dataFrameMFreq = dataFrameMWavelet
   }
