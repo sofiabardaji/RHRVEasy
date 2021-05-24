@@ -93,6 +93,7 @@ wavelet_analysis<-function(format, files, class, rrs2, ...){
     hrv.data=CreateFreqAnalysis(hrv.data)
     hrv.data=SetVerbose(hrv.data, FALSE)
     
+    # you were using type = "fourier" when we want a wavelet analysis
     hrv.data = easy_call(hrv.data, CalculatePowerBand, ...)
     
     index = length (hrv.data$FreqAnalysis)
@@ -164,72 +165,24 @@ statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups){
     dataFramePvalues = rbind(dataFramePvalues, df)
   }
   
-  # for (column in c('ULF', 'VLF', 'LF', 'HF')){
-  #   if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.column > signif_level)) {
-  #     if (verbose == TRUE){
-  #       cat(column, "Normal: Anova. P-values = ", dataFramePvalues$p.value.ULF, "\n")
-  #     }
-  #     list$anova[[column]] = aov(column ~ group, data = dfM)
-  #   } else {
-  #     if (verbose == TRUE){
-  #       cat(column, " NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.column, "\n")
-  #     }
-  #     list$kruskal$column = kruskal.test(column ~ group, data = dfM)
-  #   }
-  # }
-  #### NO FUNCIONA EL AOV ~ !!!!!!!
-  
-  
-  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.ULF > signif_level)) {
-    if (verbose == TRUE){
-      cat(ULF, "Normal: Anova. P-values = ", dataFramePvalues$p.value.ULF, "\n")
+  for (column in c('ULF', 'VLF', 'LF', 'HF')){
+    p_values = formula_str = paste0("p.value.", column)
+    if (numberOfExperimentalGroups > 2 || all(dataFramePvalues[[p_values]] > signif_level)) {
+      if (verbose == TRUE){
+        cat(column, " Normal: Anova. P-values = ", dataFramePvalues[[p_values]], "\n")
+      }
+      formula_str = paste0(column, "~ group")
+      formula = as.formula(formula_str)
+      
+      list$anova[[column]] = aov(formula, data = dfM)
+    }else {
+      if (verbose == TRUE){
+        cat(column, " NOT normal: Kruskal. P-values = ", dataFramePvalues[[p_values]], "\n")
+      }
+      list$kruskal[[column]] = kruskal.test(formula, data = dfM)
     }
-    list$anova[[ULF]] = aov(ULF ~ group, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat(ULF, " NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.ULF, "\n")
-    }
-    list$kruskal$ULF = kruskal.test(ULF ~ group, data = dfM)
   }
-  
-  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.VLF > signif_level)) {
-    if (verbose == TRUE){
-      cat("VLF Normal: Anova. P-values = ", dataFramePvalues$p.value.VLF, "\n")
-    }
-    aov(VLF ~ group, data = dfM)
-    list$anova$VLF = aov(VLF ~ group, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("VLF NOT normal: Kruskal. P-values = ",   dataFramePvalues$p.value.VLF,  "\n")
-    }
-    list$kruskal$VLF = kruskal.test(VLF ~ group, data = dfM)
-  }
-  
-  
-  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.LF > signif_level)) {
-    if (verbose == TRUE){
-      cat("LF Normal: Anova. P-values = ",  dataFramePvalues$p.value.LF, "\n")
-    }
-    list$anova$LF = aov(LF ~ group, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("LF NOT normal: Kruskal. P-values = ",  dataFramePvalues$p.value.LF, "\n")
-    }
-    list$kruskal$LF = kruskal.test(LF ~ group, data = dfM)
-  }
-  
-  
-  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.HF > signif_level)) {
-    if (verbose == TRUE){
-      cat("HF Normal: Anova. P-values = ",  dataFramePvalues$p.value.HF,  "\n")
-    }
-    list$anova$HF = aov(HF ~ group, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("HF NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.HF,  "\n")
-    }
-    list$kruskal$HF = kruskal.test(HF ~ group, data = dfM)
-  }
+
   list$dunn = dunnfreq(dfM)
   list
   
@@ -247,7 +200,7 @@ statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups){
   listDF = split(dfM, dfM$group)
   
   dataFramePvalues = data.frame()
-  # Can't be a vector, must be a list to use the $ notation
+
   vec = list("group" = NA, "p-value SDNN" = NA, "p-value SDANN" = NA,
              "p-value SDNNIDX" = NA, "p-value pNN50" = NA, "p-value SDSD" = NA, 
              "p-value rMSSD" = NA, "p-value IRRR" = NA, "p-value MADRR" = NA, 
@@ -266,134 +219,24 @@ statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups){
     
     dataFramePvalues = rbind(dataFramePvalues, df)
   }
-
-  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.SDNN > signif_level)) {
-    if (verbose == TRUE){
-      cat("SDNN Normal: Anova. P-values = ", dataFramePvalues$p.value.SDNN, "\n")
-    }
-    list$anova$SDNN = aov(SDNN ~ group, data = dfM)
-  }else {
-    if (verbose == TRUE){
-      cat("SDNN NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.SDNN, "\n")
-    }
-    list$kruskal$SDNN = kruskal.test(SDNN ~ group, data = dfM)
-  }
   
-  
-  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.SDANN > signif_level)) {
-    if (verbose == TRUE){
-      cat("SDANN Normal: Anova. P-values = ", dataFramePvalues$p.value.SDANN, "\n")
+  for (column in c('SDNN', 'SDANN', 'SDNNIDX', 'pNN50', 'SDSD', 'rMSSD', 'IRRR',
+                   'MADRR', 'TINN', 'HRVi')){
+    p_values = formula_str = paste0("p.value.", column)
+    if (numberOfExperimentalGroups > 2 || all(dataFramePvalues[[p_values]] > signif_level)) {
+      if (verbose == TRUE){
+        cat(column, " Normal: Anova. P-values = ", dataFramePvalues[[p_values]], "\n")
+      }
+      formula_str = paste0(column, "~ group")
+      formula = as.formula(formula_str)
+      
+      list$anova[[column]] = aov(formula, data = dfM)
+    }else {
+      if (verbose == TRUE){
+        cat(column, " NOT normal: Kruskal. P-values = ", dataFramePvalues[[p_values]], "\n")
+      }
+      list$kruskal[[column]] = kruskal.test(formula, data = dfM)
     }
-    list$anova$SDANN = aov(SDANN ~ group, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("SDANN NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.SDANN, "\n")
-    }
-    list$kruskal$SDANN = kruskal.test(SDANN ~ group, data = dfM)
-  }
-  
-  
-  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.SDNNIDX > signif_level)) {
-    if (verbose == TRUE){
-      cat("SDNNIDX Normal: Anova. P-values = ", dataFramePvalues$p.value.SDNNIDX, "\n")
-    }
-    list$anova$SDNNIDX = aov(SDNNIDX ~ group, data = dfM)
-  }else {
-    if (verbose == TRUE){
-      cat("SDNNIDX NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.SDNNIDX, "\n")
-    }
-    list$kruskal$SDNNIDX = kruskal.test(SDNNIDX ~ group, data = dfM)
-  }
-  
-  
-  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.pNN50 > signif_level)) {
-    if (verbose == TRUE){
-      cat("pNN50 Normal: Anova. P-values = ", dataFramePvalues$p.value.pNN50, "\n")
-    }
-    list$anova$pNN50 = aov(pNN50 ~ group, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("pNN50 NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.pNN50, "\n")
-    }
-    list$kruskal$pNN50 = kruskal.test(pNN50 ~ group, data = dfM)
-  }
-  
-  
-  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.SDSD > signif_level)) {
-    if (verbose == TRUE){
-      cat("SDSD Normal: Anova. P-values = ", dataFramePvalues$p.value.SDSD, "\n")
-    }
-    list$anova$SDSD = aov(SDSD ~ group, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("SDSD NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.SDSD, "\n")
-    }
-    list$kruskal$SDSD = kruskal.test(SDSD ~ group, data = dfM)
-  }
-  
-  
-  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.rMSSD > signif_level)) {
-    if (verbose == TRUE){
-      cat("rMSSD Normal: Anova. P-values = ", dataFramePvalues$p.value.rMSSD, "\n")
-    }
-    list$anova$rMSSD = aov(rMSSD ~ group, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("rMSSD NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.rMSSD, "\n")
-    }
-    list$kruskal$rMSSD = kruskal.test(rMSSD ~ group, data = dfM)
-  }
-  
-  
-  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.IRRR> signif_level)){
-    if (verbose == TRUE){
-      cat("IRRR Normal: Anova. P-values = ", dataFramePvalues$p.value.IRRR, "\n")
-    }
-    list$anova$IRRR = aov(IRRR ~ group, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("IRRR NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.IRRR, "\n")
-    }
-    list$kruskal$IRRR = kruskal.test(IRRR ~ group, data = dfM)
-  }
-  
-  
-  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.MADRR > signif_level)){
-    if (verbose == TRUE){
-      cat("MADRR Normal: Anova. P-values = ", dataFramePvalues$p.value.MADRR, "\n")
-    }
-    list$anova$MADRR = aov(MADRR ~ group, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("MADRR NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.MADRR, "\n")
-    }
-    list$kruskal$MADRR = kruskal.test(MADRR ~ group, data = dfM)
-  }
-  
-  
-  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.TINN > signif_level)){
-    if (verbose == TRUE){
-      cat("TINN NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.TINN, "\n")
-    }
-    list$anova$TINN = aov(TINN ~ group, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("TINN NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.TINN, "\n")
-    }
-    list$kruskal$TINN = kruskal.test(TINN ~ group, data = dfM)
-  }
-  
-  
-  if (numberOfExperimentalGroups > 2 || all(dataFramePvalues$p.value.HRVi > signif_level)){
-    if (verbose == TRUE){
-      cat("HRVi NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.HRVi, "\n")
-    }
-    list$anova$HRVi = aov(HRVi ~ group, data = dfM)
-  } else {
-    if (verbose == TRUE){
-      cat("HRVi NOT normal: Kruskal. P-values = ", dataFramePvalues$p.value.HRVi, "\n")
-    }
-    list$kruskal$HRVi = kruskal.test(HRVi ~ group, data = dfM)
   }
   
   list$dunn = dunntime(dfM)
@@ -469,7 +312,6 @@ print.RHRVEasyResult <- function(results){
         
         for (i in 1:length(listDF)){
           group = levels(results$TimeAnalysis$group)[i]
-          column = ""
           cat(column, " for the group", levels(results$TimeAnalysis$group)[i], "is",
               mean(listDF[[group]][[column]]), "+-", sd(listDF[[group]][[column]]), "\n")
         }
@@ -498,13 +340,13 @@ print.RHRVEasyResult <- function(results){
     for (column in c('SDNN', 'SDANN', 'SDNNIDX', 'pNN50', 'SDSD', 'rMSSD', 'IRRR',
                      'MADRR', 'TINN', 'HRVi')){
       # 2. ANOVA Test is significative. We check that by comparing it to the signif_level
-      var = which(a4$StatysticalAnalysisTime$dunn[[column]][["p.value"]]<signif_level, arr.ind = TRUE)
+      var = which(results$StatysticalAnalysisTime$dunn[[column]][["p.value"]]<signif_level, arr.ind = TRUE)
       if(length(var)>0){
-      for (i in 1:nrow(var)){
-        cat(a4$StatysticalAnalysisTime$dunn[[column]][["p.value"]][var][i], 'is the p value of',
-            row.names(a4$StatysticalAnalysisTime$dunn[[column]][["p.value"]])[var[i,1]], 'vs',
-            colnames(a4$StatysticalAnalysisTime$dunn[[column]][["p.value"]])[var[i,2]], '\n')
-      }
+        for (i in 1:nrow(var)){
+          cat('\n',results$StatysticalAnalysisTime$dunn[[column]][["p.value"]][var][i], 'is the p value of',
+              row.names(results$StatysticalAnalysisTime$dunn[[column]][["p.value"]])[var[i,1]], 'vs',
+              colnames(results$StatysticalAnalysisTime$dunn[[column]][["p.value"]])[var[i,2]], '')
+        }
       cat('for', column, '\n')
       }
     }
@@ -516,6 +358,8 @@ print.RHRVEasyResult <- function(results){
   
   listDF = split(results$FrequencyAnalysis, results$FrequencyAnalysis$group)
   
+  cat("\n\nFrequency analysis:\n")
+  
   for (column in c('ULF', 'VLF', 'LF', 'HF')){
     if(is.na(results$StatysticalAnalysisFrequency$anova[[column]])){
       #report kruskal
@@ -526,7 +370,6 @@ print.RHRVEasyResult <- function(results){
         
         for (i in 1:length(listDF)){
           group = levels(results$TimeAnalysis$group)[i]
-          column = ""
           cat(column, " for the group", levels(results$TimeAnalysis$group)[i], "is",
               mean(listDF[[group]][[column]]), "+-", sd(listDF[[group]][[column]]), "\n")
         }
@@ -553,12 +396,15 @@ print.RHRVEasyResult <- function(results){
     for (column in c('ULF', 'VLF', 'LF', 'HF')){
       # 2. ANOVA Test is significative. We check that by comparing it to the signif_level
       
-      var = which(a4$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]]<signif_level, arr.ind = TRUE)
-      if(length(var)>0){
-        for (i in 1:nrow(var)){
-          cat(a4$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]][var][i], 'is the p value of',
-              row.names(a4$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]])[var[i,1]], 'vs',
-              colnames(a4$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]])[var[i,2]], '\n')
+      variable = which(results$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]]<signif_level, 
+                       arr.ind = TRUE)
+      if(length(variable)>0){
+        for (i in 1:nrow(variable)){
+          cat('\n',results$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]][variable][i], 
+              'is the p value of',
+              row.names(results$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]])[variable[i,1]], 
+              'vs',
+              colnames(results$StatysticalAnalysisFrequency$dunn[[column]]$p.value)[variable[i,2]], '')
         }
         cat('for', column, '\n')
       }
