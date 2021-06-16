@@ -178,6 +178,8 @@ statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups, met
       if (verbose == TRUE){
         cat(column, " NOT normal: Kruskal. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
+      formula_str = paste0(column, "~ group")
+      formula = as.formula(formula_str)
       list$kruskal[[column]] = kruskal.test(formula, data = dfM)
     }
   }
@@ -234,6 +236,8 @@ statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups, met
       if (verbose == TRUE){
         cat(column, " NOT normal: Kruskal. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
+      formula_str = paste0(column, "~ group")
+      formula = as.formula(formula_str)
       list$kruskal[[column]] = kruskal.test(formula, data = dfM)
     }
   }
