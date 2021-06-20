@@ -6,6 +6,9 @@ library(dunn.test)
 library(FSA)
 library(PMCMR)
 
+source('scaling_region_estimation.R')
+
+
 file_validation<-function(path){
   # 1. Check if path really exists
   if (dir.exists(path) != TRUE){
@@ -24,7 +27,7 @@ file_validation<-function(path){
 
 preparing_analysis<-function(file, rrs, format){
   hrv.data = CreateHRVData()
-  hrv.data = SetVerbose(hrv.data, FALSE)
+  hrv.data = SetVerbose(hrv.data, TRUE)
   
   hrv.data = LoadBeat(fileType = format, HRVData = hrv.data,  Recordname = file, RecordPath = rrs)
   
@@ -113,6 +116,60 @@ wavelet_analysis<-function(format, files, class, rrs2, ...){
     
   }
   dataFrameMWavelet
+}
+
+# Non Linear analysis
+non_linear_analysis <- function(format, files, class, rrs2, ...){
+  dataFrame = data.frame()
+  for (file in files){
+    hrv.data = preparing_analysis(format, file = file, rrs = rrs2)
+    hrv.data = CreateNonLinearAnalysis(hrv.data)
+    kTimeLag=CalculateTimeLag(hrv.data,method="first.minimum",lagMax=100,doPlot=FALSE)
+    
+    kEmbeddingDim = CalculateEmbeddingDim(hrv.data, numberPoints = 10000,
+                                          timeLag = kTimeLag, maxEmbeddingDim = 15, doPlot=FALSE)
+   
+    hrv.data = CalculateCorrDim(hrv.data, indexNonLinearAnalysis = 1, minEmbeddingDim=kEmbeddingDim -1,
+                                maxEmbeddingDim = kEmbeddingDim + 2, timeLag = 1, minRadius = 1, maxRadius = 50,
+                                pointsRadius = 100, theilerWindow =10, corrOrder = 2, doPlot = FALSE)
+    
+    cd = hrv.data$NonLinearAnalysis[[1]]$correlation$computations
+    
+    filteredCd = nltsFilter(cd, threshold = 0.99)
+ 
+    cdScalingRegion = 
+      estimate_scaling_region(filteredCd, numberOfLinearRegions = 3, doPlot = FALSE)
+    
+    
+    hrv.data = EstimateCorrDim(hrv.data, indexNonLinearAnalysis=1, regressionRange=cdScalingRegion, # ahi va variable
+                               useEmbeddings=(kEmbeddingDim-1):(kEmbeddingDim+2), 
+                               doPlot=FALSE)
+    
+    hrv.data = CalculateSampleEntropy(hrv.data, indexNonLinearAnalysis= 1, doPlot = FALSE)
+    
+    hrv.data = EstimateSampleEntropy(hrv.data, indexNonLinearAnalysis=1, doPlot = TRUE)
+    
+    hrv.data = CalculateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
+                                    minEmbeddingDim= kEmbeddingDim, 
+                                    maxEmbeddingDim= kEmbeddingDim+2,
+                                    timeLag = kTimeLag,radius = 3, theilerWindow = 20,
+                                    doPlot = TRUE)
+    hrv.data = EstimateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
+                                   regressionRange = c(1,6),
+                                   useEmbeddings = (kEmbeddingDim):(kEmbeddingDim+2),
+                                   doPlot = TRUE)
+    
+    
+    resultsCS = list("Correlation Statistic" = hrv.data$NonLinearAnalysis[[1]]$correlation$statistic)
+    resultsSE = list("Sample Entropy" = hrv.data$NonLinearAnalysis[[1]]$sampleEntropy$statistic)
+    resultsML = list("Max Lyapunov" = hrv.data$NonLinearAnalysis[[1]]$lyapunov$statistic)
+    name_file = list ("filename" = file)
+    group = list ("group" = class)
+    row_list = c (name_file, resultsCS, resultsSE, group)
+    df=as.data.frame(row_list)
+    dataFrame=rbind(dataFrame, df)
+  }
+  dataFrame
 }
 
 # Statistical tests application
@@ -429,6 +486,8 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
   dataFrameMWavelet = data.frame()
   dataFrameMTime = data.frame()
   dataFrameMFreq = data.frame()
+  dataFrameMNonLinear = data.frame()
+  
   #We create a global variable signif_level with the level significance
   signif_level <<- significance_level
   
@@ -438,6 +497,8 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
     file_validation(folder)
     dataFrameMTime = rbind(dataFrameMTime, dataFrameMTime = time_analysis(format, 
                                             list.files(folder), split_path(folder)[1], folder, ...))
+    dataFrameMNonLinear = rbind(dataFrameMNonLinear, dataFrameMNonLinear = non_linear_analysis(format, 
+                                           list.files(folder), split_path(folder)[1], folder, ...))
   }
   
   numberOfExperimentalGroups = length(folders)
@@ -476,7 +537,7 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
                                correction, method)
   
   results = list("TimeAnalysis" = dataFrameMTime, "StatysticalAnalysisTime" = listTimeStatysticalAnalysis,
-                 "FrequencyAnalysis" = dataFrameMFreq, 
+                 "FrequencyAnalysis" = dataFrameMFreq, "NonLinearAnalysis" = dataFrameMNonLinear, 
                  "StatysticalAnalysisFrequency" = listFreqStatysticalAnalysis, "pValues" = listpValues)
   
   class(results) = "RHRVEasyResult"
