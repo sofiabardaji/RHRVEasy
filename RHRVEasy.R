@@ -8,7 +8,6 @@ library(PMCMR)
 
 source('scaling_region_estimation.R')
 
-
 file_validation<-function(path){
   # 1. Check if path really exists
   if (dir.exists(path) != TRUE){
@@ -124,7 +123,8 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
   for (file in files){
     hrv.data = preparing_analysis(format, file = file, rrs = rrs2)
     hrv.data = CreateNonLinearAnalysis(hrv.data)
-    kTimeLag=CalculateTimeLag(hrv.data,method="first.minimum",lagMax=100,doPlot=FALSE)
+    kTimeLag=CalculateTimeLag(hrv.data,technique = "acf", method = "first.minimum",
+                              lagMax = 20, doPlot=FALSE)
     
     kEmbeddingDim = CalculateEmbeddingDim(hrv.data, numberPoints = 10000,
                                           timeLag = kTimeLag, maxEmbeddingDim = 15, doPlot=FALSE)
