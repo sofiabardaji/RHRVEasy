@@ -92,7 +92,7 @@ wavelet_analysis<-function(format, files, class, rrs2, ...){
     zero_indexes = which(hrv.data$HR == 0)
     hr_median = median(hrv.data$HR[-zero_indexes])
     hrv.data$HR[zero_indexes] = hr_median
-    
+   
     hrv.data = easy_call(hrv.data, CreateFreqAnalysis, ...)
     hrv.data=SetVerbose(hrv.data, FALSE)
     hrv.data = easy_call(hrv.data, CalculatePowerBand, ...)
@@ -117,102 +117,55 @@ wavelet_analysis<-function(format, files, class, rrs2, ...){
   dataFrameMWavelet
 }
 
-
 # Non Linear analysis
 non_linear_analysis <- function(format, files, class, rrs2, ...){
   dataFrame = data.frame()
   for (file in files){
     hrv.data = preparing_analysis(format, file = file, rrs = rrs2)
     hrv.data = CreateNonLinearAnalysis(hrv.data)
-    attempToCalculateTimeLag <- function(hrv.data) {
-      kTimeLag = NA
-      tryCatch(
-        {
-          kTimeLag=CalculateTimeLag(hrv.data,technique = "acf", method = "first.minimum",
-                                    lagMax = 20, doPlot=FALSE)
-        },
-        error=function(cond) {
-          tryCatch(
-            {
-              kTimeLag=CalculateTimeLag(hrv.data,technique = "acf", method = "first.e.decay",
-                                        lagMax = 20, doPlot=FALSE)
-            },
-            error=function(cond) {
-              
-              tryCatch(
-                {
-                  kTimeLag=CalculateTimeLag(hrv.data,technique = "ami", method = "first.minimum",
-                                            lagMax = 20, doPlot=FALSE)
-                },
-                error=function(cond) {
-                  tryCatch(
-                    {
-                      kTimeLag=CalculateTimeLag(hrv.data,technique = "ami", method = "first.e.decay",
-                                                lagMax = 20, doPlot=FALSE)
-                    },
-                    error=function(cond) {
-                      kTimeLag=NA
-                    }
-                  )
-                }
-              )
-            }
-          )
-        }
-      )
-      kTimeLag
-    }
+    kTimeLag=CalculateTimeLag(hrv.data,technique = "acf", method = "first.minimum",
+                              lagMax = 20, doPlot=FALSE)
+    
+    kEmbeddingDim = CalculateEmbeddingDim(hrv.data, numberPoints = 10000,
+                                          timeLag = kTimeLag, maxEmbeddingDim = 15, doPlot=FALSE)
+   
+    hrv.data = CalculateCorrDim(hrv.data, indexNonLinearAnalysis = 1, minEmbeddingDim=kEmbeddingDim -1,
+                                maxEmbeddingDim = kEmbeddingDim + 2, timeLag = 1, minRadius = 1, maxRadius = 50,
+                                pointsRadius = 100, theilerWindow =10, corrOrder = 2, doPlot = FALSE)
+    
+    cd = hrv.data$NonLinearAnalysis[[1]]$correlation$computations
+    
+    filteredCd = nltsFilter(cd, threshold = 0.99)
+ 
+    cdScalingRegion = 
+      estimate_scaling_region(filteredCd, numberOfLinearRegions = 3, doPlot = FALSE)
     
     
-    kTimeLag=attempToCalculateTimeLag(hrv.data)
+    hrv.data = EstimateCorrDim(hrv.data, indexNonLinearAnalysis=1, regressionRange=cdScalingRegion, # ahi va variable
+                               useEmbeddings=(kEmbeddingDim-1):(kEmbeddingDim+2), 
+                               doPlot=FALSE)
     
-    if(is.na(kTimeLag)){
-      hrv.data$NonLinearAnalysis[[1]]$correlation$statistic = NA
-      hrv.data$NonLinearAnalysis[[1]]$sampleEntropy$statistic = NA
-      hrv.data$NonLinearAnalysis[[1]]$lyapunov$statistic = NA   
-    }
-    else{
-      
-      
-      kEmbeddingDim = CalculateEmbeddingDim(hrv.data, numberPoints = 10000,
-                                            timeLag = kTimeLag, maxEmbeddingDim = 15, doPlot=FALSE)
-      
-      hrv.data = CalculateCorrDim(hrv.data, indexNonLinearAnalysis = 1, minEmbeddingDim=kEmbeddingDim,
-                                  maxEmbeddingDim = kEmbeddingDim + 2, timeLag = 1, minRadius = 1, maxRadius = 50,
-                                  pointsRadius = 100, theilerWindow =10, corrOrder = 2, doPlot = FALSE)
-      
-      cd = hrv.data$NonLinearAnalysis[[1]]$correlation$computations
-      
-      filteredCd = nltsFilter(cd, threshold = 0.99)
-      
-      cdScalingRegion = 
-        estimate_scaling_region(filteredCd, numberOfLinearRegions = 3, doPlot = FALSE)
-      
-      
-      hrv.data = EstimateCorrDim(hrv.data, indexNonLinearAnalysis=1, regressionRange=cdScalingRegion, # ahi va variable
-                                 useEmbeddings=(kEmbeddingDim):(kEmbeddingDim+2), 
-                                 doPlot=FALSE)
-      
-      hrv.data = CalculateSampleEntropy(hrv.data, indexNonLinearAnalysis= 1, doPlot = FALSE)
-      
-      hrv.data = EstimateSampleEntropy(hrv.data, indexNonLinearAnalysis=1, doPlot = TRUE)
-      
-      hrv.data = CalculateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
-                                      minEmbeddingDim= kEmbeddingDim, 
-                                      maxEmbeddingDim= kEmbeddingDim+2,
-                                      timeLag = kTimeLag,radius = 3, theilerWindow = 20,
-                                      doPlot = TRUE)
-      hrv.data = EstimateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
-                                     regressionRange = c(1,6),
-                                     useEmbeddings = (kEmbeddingDim):(kEmbeddingDim+2),
-                                     doPlot = TRUE)    
-    }
-    resultsCS = list("CorrelationStatistic" = hrv.data$NonLinearAnalysis[[1]]$correlation$statistic)
-    resultsSE = list("SampleEntropy" = hrv.data$NonLinearAnalysis[[1]]$sampleEntropy$statistic)
-    resultsML = list("MaxLyapunov" = hrv.data$NonLinearAnalysis[[1]]$lyapunov$statistic)
+    hrv.data = CalculateSampleEntropy(hrv.data, indexNonLinearAnalysis= 1, doPlot = FALSE)
+    
+    hrv.data = EstimateSampleEntropy(hrv.data, indexNonLinearAnalysis=1, doPlot = TRUE)
+    
+    hrv.data = CalculateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
+                                    minEmbeddingDim= kEmbeddingDim, 
+                                    maxEmbeddingDim= kEmbeddingDim+2,
+                                    timeLag = kTimeLag,radius = 3, theilerWindow = 20,
+                                    doPlot = TRUE)
+    hrv.data = EstimateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
+                                   regressionRange = c(1,6),
+                                   useEmbeddings = (kEmbeddingDim):(kEmbeddingDim+2),
+                                   doPlot = TRUE)
+    
+    
+    resultsCS = list("Correlation Statistic" = hrv.data$NonLinearAnalysis[[1]]$correlation$statistic)
+    resultsSE = list("Sample Entropy" = hrv.data$NonLinearAnalysis[[1]]$sampleEntropy$statistic)
+    resultsML = list("Max Lyapunov" = hrv.data$NonLinearAnalysis[[1]]$lyapunov$statistic)
     name_file = list ("filename" = file)
     group = list ("group" = class)
-    row_list = c (name_file, resultsCS, resultsSE, resultsML, group)
+    row_list = c (name_file, resultsCS, resultsSE, group)
     df=as.data.frame(row_list)
     dataFrame=rbind(dataFrame, df)
   }
@@ -262,7 +215,7 @@ statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups, met
       destino = paste0('p-value ', column)
       vec[[destino]] = (shapiro.test(listDF[[objeto]][[column]])$p.value)
     }
-    
+
     df = data.frame(vec)
     
     dataFramePvalues = rbind(dataFramePvalues, df)
@@ -287,7 +240,7 @@ statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups, met
       list$kruskal[[column]] = kruskal.test(formula, data = dfM)
     }
   }
-  
+
   list$dunn = dunnfreq(dfM, method)
   list
   
@@ -305,7 +258,7 @@ statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups, met
   listDF = split(dfM, dfM$group)
   
   dataFramePvalues = data.frame()
-  
+
   vec = list("group" = NA, "p-value SDNN" = NA, "p-value SDANN" = NA,
              "p-value SDNNIDX" = NA, "p-value pNN50" = NA, "p-value SDSD" = NA, 
              "p-value rMSSD" = NA, "p-value IRRR" = NA, "p-value MADRR" = NA, 
@@ -349,57 +302,6 @@ statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups, met
   list$dunn = dunntime(dfM, method)
   list
 }
-
-statistical_analysisNonLinear<-function(dfM, verbose, numberOfExperimentalGroups, method, signif_level){
-  anova = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
-  kruskal = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
-  dunn = NA
-  list = list(anova = anova, kruskal = kruskal, dunn = dunn)
-  
-  listDF = split(dfM, dfM$group)
-  
-  dataFramePvalues = data.frame()
-  vec = c("group" = NA, "p-value CorrelationStatistic" = NA, "p-value SampleEntropy" = NA,  
-          "p-value MaxLyapunov" = NA)
-  
-  for(objeto in names(listDF)){
-    vec$group = objeto
-    
-    for (column in c('CorrelationStatistic', 'SampleEntropy', 'MaxLyapunov')){
-      destino = paste0('p-value ', column)
-      vec[[destino]] = (shapiro.test(listDF[[objeto]][[column]])$p.value)
-    }
-    
-    df = data.frame(vec)
-    
-    dataFramePvalues = rbind(dataFramePvalues, df)
-  }
-  
-  for (column in c('CorrelationStatistic', 'SampleEntropy', 'MaxLyapunov')){
-    p_values = formula_str = paste0("p.value.", column)
-    if (numberOfExperimentalGroups > 2 || all(dataFramePvalues[[p_values]] > signif_level)) {
-      if (verbose == TRUE){
-        cat(column, " Normal: Anova. P-values = ", dataFramePvalues[[p_values]], "\n")
-      }
-      formula_str = paste0(column, "~ group")
-      formula = as.formula(formula_str)
-      
-      list$anova[[column]] = aov(formula, data = dfM)
-    }else {
-      if (verbose == TRUE){
-        cat(column, " NOT normal: Kruskal. P-values = ", dataFramePvalues[[p_values]], "\n")
-      }
-      formula_str = paste0(column, "~ group")
-      formula = as.formula(formula_str)
-      list$kruskal[[column]] = kruskal.test(formula, data = dfM)
-    }
-  }
-  
-  list$dunn = dunnfreq(dfM, method)
-  list
-  
-}
-
 
 correctpValues <- function(listTime, listFreq, correction, method){
   
@@ -571,7 +473,7 @@ print.RHRVEasyResult <- function(results){
     
   }
   
-  
+
   
   if(!differencesFound){
     cat("No statistically significant difference were found\n")
@@ -580,14 +482,11 @@ print.RHRVEasyResult <- function(results){
 
 
 RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=FALSE, 
-                   format = "RR", typeAnalysis = 'fourier', significance_level = 0.05, nonLinear=FALSE, ...) {
+                   format = "RR", typeAnalysis = 'fourier', significance_level = 0.05, ...) {
   dataFrameMWavelet = data.frame()
   dataFrameMTime = data.frame()
   dataFrameMFreq = data.frame()
   dataFrameMNonLinear = data.frame()
-  listNonLinearStatisticalAnalysis = list()
-  listTimeStatysticalAnalysis = list()
-  listFreqStatysticalAnalysis = list()
   
   #We create a global variable signif_level with the level significance
   signif_level <<- significance_level
@@ -596,57 +495,51 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
   
   for (folder in folders){
     file_validation(folder)
-    dataFrameMTime = rbind(dataFrameMTime, dataFrameMTime = time_analysis(format,
+    dataFrameMTime = rbind(dataFrameMTime, dataFrameMTime = time_analysis(format, 
                                             list.files(folder), split_path(folder)[1], folder, ...))
-    if(nonLinear == TRUE){
-      dataFrameMNonLinear = rbind(dataFrameMNonLinear, dataFrameMNonLinear = non_linear_analysis(format, 
-                                                  list.files(folder), split_path(folder)[1], folder, ...))
-      
-    }
+    dataFrameMNonLinear = rbind(dataFrameMNonLinear, dataFrameMNonLinear = non_linear_analysis(format, 
+                                           list.files(folder), split_path(folder)[1], folder, ...))
   }
   
   numberOfExperimentalGroups = length(folders)
   # Statistical analysis of both
-
-  listTimeStatysticalAnalysis = statistical_analysisTime(dataFrameMTime,
+  
+  listTimeStatysticalAnalysis = statistical_analysisTime(dataFrameMTime, 
                                                          verbose, numberOfExperimentalGroups, method, signif_level)
-
+  
   # FREQUENCY:
   if(typeAnalysis == "fourier"){
     for (folder in folders){
-      dataFrameMFreq = rbind(dataFrameMFreq, dataFrameMFreq = freq_analysis(format,
+      dataFrameMFreq = rbind(dataFrameMFreq, dataFrameMFreq = freq_analysis(format, 
                                                  list.files(folder), split_path(folder)[1], folder, ...))
     }
-
-    listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq,
-                                                 verbose, numberOfExperimentalGroups, method, signif_level)
+    
+    listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq, 
+                                                             verbose, numberOfExperimentalGroups, method, signif_level)
+    
   }
-
+  
   # WAVELET
   if(typeAnalysis == "wavelet"){
     for (folder in folders){
       dataFrameMWavelet = rbind(dataFrameMWavelet, dataFrameMWavelet = wavelet_analysis(format,
-                                                  list.files(folder), split_path(folder)[1], folder,
-                                                  type = typeAnalysis, ...))
+                                                                                        list.files(folder), split_path(folder)[1], folder, 
+                                                                                        type = typeAnalysis, ...))
     }
-
-    listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMWavelet,
-                                                    verbose, numberOfExperimentalGroups, method, signif_level)
-
+   
+    listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMWavelet, 
+                                                             verbose, numberOfExperimentalGroups, method, signif_level)
+    
     dataFrameMFreq = dataFrameMWavelet
   }
-
-  listpValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
+  
+  listpValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis, 
                                correction, method)
-
-  listNonLinearStatisticalAnalysis = statistical_analysisNonLinear(dataFrameMNonLinear,
-                                                                   verbose, numberOfExperimentalGroups, method, signif_level)
   
   results = list("TimeAnalysis" = dataFrameMTime, "StatysticalAnalysisTime" = listTimeStatysticalAnalysis,
-                 "FrequencyAnalysis" = dataFrameMFreq, "NonLinearAnalysis" = dataFrameMNonLinear,
-                 "StatysticalAnalysisNonLinear" = listNonLinearStatisticalAnalysis,
+                 "FrequencyAnalysis" = dataFrameMFreq, "NonLinearAnalysis" = dataFrameMNonLinear, 
                  "StatysticalAnalysisFrequency" = listFreqStatysticalAnalysis, "pValues" = listpValues)
-
+  
   class(results) = "RHRVEasyResult"
   results
 }
