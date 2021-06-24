@@ -262,7 +262,7 @@ dunnNonLinar<-function(dfM, method){
       CorrelationStatistic = posthoc.kruskal.dunn.test(CorrelationStatistic ~ group, data=dfM, p.adjust=method)
     },
     error=function(cond) {
-      #TODO : habrá que tener en cuenta si es NULL
+      #TODO : habrá que tener en cuenta si es NULL; no aquí sino donde corresponda
 
     })
   
@@ -271,7 +271,7 @@ dunnNonLinar<-function(dfM, method){
       SampleEntropy = posthoc.kruskal.dunn.test(SampleEntropy ~ group, data=dfM, p.adjust=method)
     },
     error=function(cond) {
-      #TODO : habrá que tener en cuenta si es NULL
+      #TODO : habrá que tener en cuenta si es NULL; no aquí sino donde corresponda
     })
   
   tryCatch(
@@ -279,7 +279,7 @@ dunnNonLinar<-function(dfM, method){
       MaxLyapunov = posthoc.kruskal.dunn.test(MaxLyapunov ~ group, data=dfM, p.adjust=method)
     },
     error=function(cond) {
-      #TODO : habrá que tener en cuenta si es NULL
+      #TODO : habrá que tener en cuenta si es NULL; no aquí sino donde corresponda
     })
   
   list (CorrelationStatistic, SampleEntropy, MaxLyapunov)
@@ -350,20 +350,18 @@ statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups, met
   
   for (column in c('ULF', 'VLF', 'LF', 'HF')){
     p_values = formula_str = paste0("p.value.", column)
+    formula_str = paste0(column, "~ group")
+    formula = as.formula(formula_str)
+    
     if (numberOfExperimentalGroups > 2 || all(dataFramePvalues[[p_values]] > signif_level)) {
       if (verbose == TRUE){
         cat(column, " Normal: Anova. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
-      formula_str = paste0(column, "~ group")
-      formula = as.formula(formula_str)
-      
       list$anova[[column]] = aov(formula, data = dfM)
     }else {
       if (verbose == TRUE){
         cat(column, " NOT normal: Kruskal. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
-      formula_str = paste0(column, "~ group")
-      formula = as.formula(formula_str)
       list$kruskal[[column]] = kruskal.test(formula, data = dfM)
     }
 
@@ -409,20 +407,18 @@ statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups, met
   for (column in c('SDNN', 'SDANN', 'SDNNIDX', 'pNN50', 'SDSD', 'rMSSD', 'IRRR',
                    'MADRR', 'TINN', 'HRVi')){
     p_values = formula_str = paste0("p.value.", column)
+    formula_str = paste0(column, "~ group")
+    formula = as.formula(formula_str)
+    
     if (numberOfExperimentalGroups > 2 || all(dataFramePvalues[[p_values]] > signif_level)) {
       if (verbose == TRUE){
         cat(column, " Normal: Anova. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
-      formula_str = paste0(column, "~ group")
-      formula = as.formula(formula_str)
-      
       list$anova[[column]] = aov(formula, data = dfM)
     }else {
       if (verbose == TRUE){
         cat(column, " NOT normal: Kruskal. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
-      formula_str = paste0(column, "~ group")
-      formula = as.formula(formula_str)
       list$kruskal[[column]] = kruskal.test(formula, data = dfM)
     }
   }
@@ -458,12 +454,12 @@ statistical_analysisNonLinear<-function(dfM, verbose, numberOfExperimentalGroups
   
   for (column in c('CorrelationStatistic', 'SampleEntropy', 'MaxLyapunov')){
     p_values = formula_str = paste0("p.value.", column)
+    formula_str = paste0(column, "~ group")
+    formula = as.formula(formula_str)
     if (numberOfExperimentalGroups > 2 || all(dataFramePvalues[[p_values]] > signif_level)) {
       if (verbose == TRUE){
         cat(column, " Normal: Anova. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
-      formula_str = paste0(column, "~ group")
-      formula = as.formula(formula_str)
       
       #ANOVA will fail if the statistic could not be calculated for all recordings in a group
       tryCatch(
@@ -480,8 +476,6 @@ statistical_analysisNonLinear<-function(dfM, verbose, numberOfExperimentalGroups
       if (verbose == TRUE){
         cat(column, " NOT normal: Kruskal. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
-      formula_str = paste0(column, "~ group")
-      formula = as.formula(formula_str)
       #Krustal will fail if the statistic could not be calculated for all recordings in a group
       tryCatch(
         {      
