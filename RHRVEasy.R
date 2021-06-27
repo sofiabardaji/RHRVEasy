@@ -6,7 +6,7 @@ library(dunn.test)
 library(FSA)
 library(PMCMR)
 
-#source('scaling_region_estimation.R')
+source('scaling_region_estimation.R')
 
 file_validation<-function(path){
   # 1. Check if path really exists
@@ -26,7 +26,7 @@ file_validation<-function(path){
 
 preparing_analysis<-function(file, rrs, format){
   hrv.data = CreateHRVData()
-  hrv.data = SetVerbose(hrv.data, TRUE)
+  hrv.data = SetVerbose(hrv.data, FALSE)
   
   hrv.data = LoadBeat(fileType = format, HRVData = hrv.data,  Recordname = file, RecordPath = rrs)
   
@@ -171,51 +171,51 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
     }
     else{
       
-              tryCatch(
-          {
-      kEmbeddingDim = CalculateEmbeddingDim(hrv.data, numberPoints = 10000,
-                                            timeLag = kTimeLag, maxEmbeddingDim = 15, doPlot=FALSE)
-      if(kEmbeddingDim == 0){
-        hrv.data$NonLinearAnalysis[[1]]$correlation$statistic = NA
-        hrv.data$NonLinearAnalysis[[1]]$sampleEntropy$statistic = NA
-        hrv.data$NonLinearAnalysis[[1]]$lyapunov$statistic = NA   
-      }
-      else{
-        
-        hrv.data = CalculateCorrDim(hrv.data, indexNonLinearAnalysis = 1, minEmbeddingDim=kEmbeddingDim,
-                                    maxEmbeddingDim = kEmbeddingDim + 2, timeLag = 1, minRadius = 1, maxRadius = 50,
-                                    pointsRadius = 100, theilerWindow =10, corrOrder = 2, doPlot = FALSE)
-        
-        cd = hrv.data$NonLinearAnalysis[[1]]$correlation$computations
-        
-        filteredCd = nltsFilter(cd, threshold = 0.99)
-        
-        cdScalingRegion = 
-          estimate_scaling_region(filteredCd, numberOfLinearRegions = 3, doPlot = FALSE)
-        
-
-            hrv.data = EstimateCorrDim(hrv.data, indexNonLinearAnalysis=1, regressionRange=cdScalingRegion, # ahi va variable
-                                   useEmbeddings=(kEmbeddingDim):(kEmbeddingDim+2), 
-                                   doPlot=FALSE)
-          
-        hrv.data = CalculateSampleEntropy(hrv.data, indexNonLinearAnalysis= 1, doPlot = FALSE)
-        
-        hrv.data = EstimateSampleEntropy(hrv.data, indexNonLinearAnalysis=1, doPlot = FALSE)
-        
-        hrv.data = CalculateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
-                                        minEmbeddingDim= kEmbeddingDim, 
-                                        maxEmbeddingDim= kEmbeddingDim+2,
-                                        timeLag = kTimeLag,radius = 3, theilerWindow = 20,
-                                        doPlot = TRUE)
-
-        hrv.data = EstimateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
-                                       regressionRange = c(1,6),
-                                       useEmbeddings = (kEmbeddingDim):(kEmbeddingDim+2),
-                                       doPlot = TRUE)   
+      tryCatch(
+        {
+          kEmbeddingDim = CalculateEmbeddingDim(hrv.data, numberPoints = 10000,
+                                                timeLag = kTimeLag, maxEmbeddingDim = 15, doPlot=FALSE)
+          if(kEmbeddingDim == 0){
+            hrv.data$NonLinearAnalysis[[1]]$correlation$statistic = NA
+            hrv.data$NonLinearAnalysis[[1]]$sampleEntropy$statistic = NA
+            hrv.data$NonLinearAnalysis[[1]]$lyapunov$statistic = NA   
           }
-      },
+          else{
+            
+            hrv.data = CalculateCorrDim(hrv.data, indexNonLinearAnalysis = 1, minEmbeddingDim=kEmbeddingDim,
+                                        maxEmbeddingDim = kEmbeddingDim + 2, timeLag = 1, minRadius = 1, maxRadius = 50,
+                                        pointsRadius = 100, theilerWindow =10, corrOrder = 2, doPlot = FALSE)
+            
+            cd = hrv.data$NonLinearAnalysis[[1]]$correlation$computations
+            
+            filteredCd = nltsFilter(cd, threshold = 0.99)
+            
+            cdScalingRegion = 
+              estimate_scaling_region(filteredCd, numberOfLinearRegions = 3, doPlot = FALSE)
+            
+            
+            hrv.data = EstimateCorrDim(hrv.data, indexNonLinearAnalysis=1, regressionRange=cdScalingRegion, # ahi va variable
+                                       useEmbeddings=(kEmbeddingDim):(kEmbeddingDim+2), 
+                                       doPlot=FALSE)
+            
+            hrv.data = CalculateSampleEntropy(hrv.data, indexNonLinearAnalysis= 1, doPlot = FALSE)
+            
+            hrv.data = EstimateSampleEntropy(hrv.data, indexNonLinearAnalysis=1, doPlot = FALSE)
+            
+            hrv.data = CalculateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
+                                            minEmbeddingDim= kEmbeddingDim, 
+                                            maxEmbeddingDim= kEmbeddingDim+2,
+                                            timeLag = kTimeLag,radius = 3, theilerWindow = 20,
+                                            doPlot = TRUE)
+            
+            hrv.data = EstimateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
+                                           regressionRange = c(1,6),
+                                           useEmbeddings = (kEmbeddingDim):(kEmbeddingDim+2),
+                                           doPlot = TRUE)   
+          }
+        },
         error=function(cond) {
-          message("Falla el cálculo de algún estadístico no lineal !!!!!!!!!!!!!!!!!!!!!!!!!!!")
+          message("There has been a problem calculating some non lineal statystic  !!!!!!!!")
           message(cond)
           
         })
@@ -224,9 +224,9 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
     resultsCS = list("CorrelationStatistic" = mean(hrv.data$NonLinearAnalysis[[1]]$correlation$statistic, na.rm = TRUE))
     resultsSE = list("SampleEntropy" = mean(hrv.data$NonLinearAnalysis[[1]]$sampleEntropy$statistic, na.rm = TRUE))
     resultsML = list("MaxLyapunov" = mean(hrv.data$NonLinearAnalysis[[1]]$lyapunov$statistic, na.rm = TRUE))
- 
+    
     #as.data.frame considers that if the value of a list is NULL it does not exist. It must contain NA
-    message(c("resultsCS ",resultsCS["CorrelationStatistic"]))
+    message(c("\nresultsCS ",resultsCS["CorrelationStatistic"]))
     if(is.null(resultsCS["CorrelationStatistic"])){
       resultsCS["CorrelationStatistic"] = NA
     }
@@ -253,17 +253,17 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
 # Statistical tests application
 dunnNonLinar<-function(dfM, method){
   dfM$group = factor(dfM$group)
-  CorrelationStatistic = NULL
-  SampleEntropy = NULL
-  MaxLyapunov  = NULL
+  CorrelationStatistic = NA
+  SampleEntropy = NA
+  MaxLyapunov  = NA
   
   tryCatch(
     {
       CorrelationStatistic = posthoc.kruskal.dunn.test(CorrelationStatistic ~ group, data=dfM, p.adjust=method)
     },
     error=function(cond) {
-      #TODO : habrá que tener en cuenta si es NULL; no aquí sino donde corresponda
-
+      #TODO : habrÃ¡ que tener en cuenta si es NULL; no aquÃ­ sino donde corresponda
+      
     })
   
   tryCatch(
@@ -271,7 +271,7 @@ dunnNonLinar<-function(dfM, method){
       SampleEntropy = posthoc.kruskal.dunn.test(SampleEntropy ~ group, data=dfM, p.adjust=method)
     },
     error=function(cond) {
-      #TODO : habrá que tener en cuenta si es NULL; no aquí sino donde corresponda
+      #TODO : habrÃ¡ que tener en cuenta si es NULL; no aquÃ­ sino donde corresponda
     })
   
   tryCatch(
@@ -279,7 +279,7 @@ dunnNonLinar<-function(dfM, method){
       MaxLyapunov = posthoc.kruskal.dunn.test(MaxLyapunov ~ group, data=dfM, p.adjust=method)
     },
     error=function(cond) {
-      #TODO : habrá que tener en cuenta si es NULL; no aquí sino donde corresponda
+      #TODO : habrÃ¡ que tener en cuenta si es NULL; no aquÃ­ sino donde corresponda
     })
   
   list (CorrelationStatistic, SampleEntropy, MaxLyapunov)
@@ -364,7 +364,7 @@ statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups, met
       }
       list$kruskal[[column]] = kruskal.test(formula, data = dfM)
     }
-
+    
   }
   
   list$dunn = dunnfreq(dfM, method)
@@ -467,7 +467,7 @@ statistical_analysisNonLinear<-function(dfM, verbose, numberOfExperimentalGroups
           list$anova[[column]] = aov(formula, data = dfM)
         },
         error=function(cond) {
-          #TODO : habrá que tener en cuenta si es NULL
+          #TODO : habrÃ¡ que tener en cuenta si es NULL
           list$anova[[column]] = NULL
         })
       
@@ -481,10 +481,10 @@ statistical_analysisNonLinear<-function(dfM, verbose, numberOfExperimentalGroups
         {      
           list$kruskal[[column]] = kruskal.test(formula, data = dfM)
         },
-      error=function(cond) {
-        #TODO : habrá que tener en cuenta si es NULL
-        list$kruskal[[column]] = NULL
-      })
+        error=function(cond) {
+          #TODO : habrÃ¡ que tener en cuenta si es NULL
+          list$kruskal[[column]] = NULL
+        })
     }
   }
   list$dunn = dunnNonLinar(dfM, method)
@@ -493,15 +493,17 @@ statistical_analysisNonLinear<-function(dfM, verbose, numberOfExperimentalGroups
 }
 
 
-correctpValues <- function(listTime, listFreq, correction, method){
+correctpValues <- function(listTime, listFreq, listNonLinear, correction, method){
   
   listpValues = list(ULF = NA, VLF = NA, LF = NA, HF = NA,
                      SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, 
-                     rMSSD = NA, IRRR = NA, MADRR = NA, TINN = NA, HRVi = NA)
+                     rMSSD = NA, IRRR = NA, MADRR = NA, TINN = NA, HRVi = NA, 
+                     CorrelationStatistic = NA, SampleEntropy = NA, MaxLyapunov = NA)
   
   listpValuesCorrected = list(ULF = NA, VLF = NA, LF = NA, HF = NA, SDNN = NA, SDANN = NA, 
                               SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
-                              MADRR = NA, TINN = NA, HRVi = NA)
+                              MADRR = NA, TINN = NA, HRVi = NA,
+                              CorrelationStatistic = NA, SampleEntropy = NA, MaxLyapunov = NA)
   
   for (column in c('ULF', 'VLF', 'LF', 'HF')){
     if(is.na(listFreq$anova[[column]])){
@@ -520,6 +522,16 @@ correctpValues <- function(listTime, listFreq, correction, method){
     }
   }
   
+  # In order for it to only be performed when there is non linear results: 
+  if(!is.na(listNonLinear)){
+    for (column in c('CorrelationStatistic', 'SampleEntropy', 'MaxLyapunov')){
+      if(is.na(listNonLinear[["anova"]][[column]])){
+        listpValues[[column]] = listNonLinear[["kruskal"]][[column]][[p.value]]
+      }else{
+        listpValues[[column]] = extract_ANOVA_pvalue(listNonLinear[["anova"]][[column]])
+      }
+    }
+  }
   
   if (correction == TRUE){
     listpValuesCorrected = p.adjust(listpValues, method)
@@ -663,8 +675,68 @@ print.RHRVEasyResult <- function(results){
     
   }
   
-  
-  
+  if(!all(is.na(results$NonLinearAnalysis))){
+    listDF = split(results$NonLinearAnalysis, results$NonLinearAnalysis$group)
+    
+    cat("\n\nNon Linear analysis:\n")
+    
+    for (column in c('CorrelationStatistic', 'SampleEntropy', 'MaxLyapunov')){
+      if(all(is.na(results$StatysticalAnalysisNonLinear$anova[[column]]))){
+        #report kruskal
+        if(results$pValues[[column]]<signif_level){#error pvalue 1
+          differencesFound = TRUE
+          cat("\nThere is a statistically significant difference in", column,  "; pvalue: ", 
+              results$StatysticalAnalysisNonLinear$kruskal[[column]]$p.value, "\n")
+          
+          for (i in 1:length(listDF)){
+            group = levels(results$TimeAnalysis$group)[i]
+            cat(column, " for the group", levels(results$TimeAnalysis$group)[i], "is",
+                mean(listDF[[group]][[column]]), "+-", sd(listDF[[group]][[column]]), "\n")
+          }
+        }
+      }
+      #report anova
+      else{
+        if(results$pValues[[column]]<signif_level){
+          differencesFound = TRUE
+          cat("\nThere is a statistically significant difference in", column, "; pvalue: ", 
+              extract_ANOVA_pvalue(results$StatysticalAnalysisNonLinear$anova[[column]]), "\n")
+          
+          for (i in 1:length(listDF)){
+            group = levels(results$TimeAnalysis$group)[i]
+            cat(column, " for the group ", levels(results$TimeAnalysis$group)[i], "is",
+                mean(listDF[[group]][[column]]), "+-", sd(listDF[[group]][[column]]), "\n")
+          }
+          
+        }
+      }
+      
+      # Two Conditions to report Dunn:
+      # 1. We have more than 2 groups, we check that by looking at the length of listDF
+      
+      if(length(listDF)>2){
+        
+        # 2. ANOVA Test is significative. We check that by comparing it to the signif_level
+        
+        variable = which(results$StatysticalAnalysisNonLinear$dunn[[column]][["p.value"]]<signif_level, 
+                         arr.ind = TRUE)
+        if(length(variable)>0){
+          cat("The groups with stastically significant differences are:")
+          for (i in 1:nrow(variable)){
+            cat('\n',results$StatysticalAnalysisNonLinear$dunn[[column]][["p.value"]][variable][i], 
+                'is the p value of',
+                row.names(results$StatysticalAnalysisNonLinear$dunn[[column]][["p.value"]])[variable[i,1]], 
+                'vs',
+                colnames(results$StatysticalAnalysisNonLinear$dunn[[column]]$p.value)[variable[i,2]], '')
+          }
+          cat('for', column, '\n')
+        }
+        
+      }
+      
+    }
+  }
+
   if(!differencesFound){
     cat("No statistically significant difference were found\n")
   }
@@ -691,8 +763,8 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
     dataFrameMTime = rbind(dataFrameMTime, dataFrameMTime = time_analysis(format,
                                                                           list.files(folder), split_path(folder)[1], folder, ...))
     if(nonLinear == TRUE){
-       dataFrameMNonLinear = rbind(dataFrameMNonLinear,non_linear_analysis(format, 
-                                                        list.files(folder), split_path(folder)[1], folder, ...))
+      dataFrameMNonLinear = rbind(dataFrameMNonLinear,non_linear_analysis(format, 
+                                                                          list.files(folder), split_path(folder)[1], folder, ...))
       
     }
   }
@@ -728,11 +800,22 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
     dataFrameMFreq = dataFrameMWavelet
   }
   
-  listpValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
-                               correction, method)
+ 
+  if(!all(is.na(dataFrameMNonLinear))){
+    listNonLinearStatisticalAnalysis = statistical_analysisNonLinear(dataFrameMNonLinear,
+                                                                     verbose, numberOfExperimentalGroups, method, signif_level)
+    listpValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
+                                 listNonLinearStatisticalAnalysis,
+                                 correction, method)
+  }else{
+    listNonLinearStatisticalAnalysis = NA
+    listpValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
+                                 listNonLinearStatisticalAnalysis,
+                                 correction, method)
+  }
+    
+    
   
-  listNonLinearStatisticalAnalysis = statistical_analysisNonLinear(dataFrameMNonLinear,
-                                                                   verbose, numberOfExperimentalGroups, method, signif_level)
   
   results = list("TimeAnalysis" = dataFrameMTime, "StatysticalAnalysisTime" = listTimeStatysticalAnalysis,
                  "FrequencyAnalysis" = dataFrameMFreq, "NonLinearAnalysis" = dataFrameMNonLinear,
