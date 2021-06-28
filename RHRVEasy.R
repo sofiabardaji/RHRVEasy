@@ -526,7 +526,7 @@ correctpValues <- function(listTime, listFreq, listNonLinear, correction, method
   if(!is.na(listNonLinear)){
     for (column in c('CorrelationStatistic', 'SampleEntropy', 'MaxLyapunov')){
       if(is.na(listNonLinear[["anova"]][[column]])){
-        listpValues[[column]] = listNonLinear[["kruskal"]][[column]][[p.value]]
+        listpValues[[column]] = listNonLinear[["kruskal"]][[column]][["p.value"]]
       }else{
         listpValues[[column]] = extract_ANOVA_pvalue(listNonLinear[["anova"]][[column]])
       }
