@@ -814,14 +814,14 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
   
  
   if(!all(is.na(dataFrameMNonLinear))){
-    cat("DF non linear NOT empty: correct p values with those values")
+    #cat("DF non linear NOT empty: correct p values with those values")
     listNonLinearStatisticalAnalysis = statistical_analysisNonLinear(dataFrameMNonLinear,
                                                                      verbose, numberOfExperimentalGroups, method, signif_level)
     listpValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
                                  listNonLinearStatisticalAnalysis,
                                  correction, method)
   }else{
-    cat("DF non linear empty")
+    #cat("DF non linear empty")
     listNonLinearStatisticalAnalysis = NA
     listpValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
                                  listNonLinearStatisticalAnalysis,
