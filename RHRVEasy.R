@@ -6,7 +6,7 @@ library(dunn.test)
 library(FSA)
 library(PMCMR)
 
-source('scaling_region_estimation.R')
+#source('scaling_region_estimation.R')
 
 file_validation<-function(path){
   # 1. Check if path really exists
@@ -94,7 +94,7 @@ wavelet_analysis<-function(format, files, class, rrs2, ...){
     hrv.data$HR[zero_indexes] = hr_median
     
     hrv.data = easy_call(hrv.data, CreateFreqAnalysis, ...)
-    hrv.data=SetVerbose(hrv.data, FALSE)
+    hrv.data=SetVerbose(hrv.data, verb)
     hrv.data = easy_call(hrv.data, CalculatePowerBand, ...)
     
     index = length (hrv.data$FreqAnalysis)
