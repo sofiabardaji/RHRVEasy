@@ -26,7 +26,7 @@ file_validation<-function(path){
 
 preparing_analysis<-function(file, rrs, format){
   hrv.data = CreateHRVData()
-  hrv.data = SetVerbose(hrv.data, TRUE)
+  hrv.data = SetVerbose(hrv.data, verb)
   
   hrv.data = LoadBeat(fileType = format, HRVData = hrv.data,  Recordname = file, RecordPath = rrs)
   
@@ -215,8 +215,10 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
           }
         },
         error=function(cond) {
-          message("There has been a problem calculating some non lineal statystic  !!!!!!!!")
-          message(cond)
+          if(verb){
+            message("There has been a problem calculating some non lineal statystic  !!!!!!!!")
+            message(cond)
+          }
           
         })
       
@@ -229,16 +231,21 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
                                           na.rm = TRUE))
     
     #as.data.frame considers that if the value of a list is NULL it does not exist. It must contain NA
-    message(c("\nresultsCS ",resultsCS["CorrelationStatistic"]))
+    if(verb){
+      message(c("\nresultsCS ",resultsCS["CorrelationStatistic"]))
+    }
     if(is.null(resultsCS["CorrelationStatistic"])){
       resultsCS["CorrelationStatistic"] = NA
     }
-    message(c("resultsSE ",resultsSE["SampleEntropy"]))
+    if(verb){
+      message(c("resultsSE ",resultsSE["SampleEntropy"]))
+    }
     if(is.null(resultsSE["SampleEntropy"])){
       resultsSE["SampleEntropy"] = NA
     }
-    
-    message(c("resultsML ",resultsML["MaxLyapunov"]))
+    if(verb){
+      message(c("resultsML ",resultsML["MaxLyapunov"]))
+    }
     if(is.null(resultsML["MaxLyapunov"])){
       resultsML["MaxLyapunov"] = NA
     }
@@ -317,13 +324,15 @@ shapiro.test.CheckAllVakuesEqual<-function(x){
       pval = shapiro.test(x)$p.value
     },
     error=function(cond) {
-      message("All values identical in shapiro.test; pvalue set to 1")
+      if(verb){
+        message("All values identical in shapiro.test; pvalue set to 1")
+      }
     }
   )
   pval
 }
 
-statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups, method, signif_level){
+statistical_analysisFreq<-function(dfM, numberOfExperimentalGroups, method, signif_level){
   anova = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
   kruskal = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
   dunn = NA
@@ -355,12 +364,12 @@ statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups, met
     formula = as.formula(formula_str)
     
     if (numberOfExperimentalGroups > 2 || all(dataFramePvalues[[p_values]] > signif_level)) {
-      if (verbose == TRUE){
+      if (verb == TRUE){
         cat(column, " Normal: Anova. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
       list$anova[[column]] = aov(formula, data = dfM, na.action = na.exclude)
     }else {
-      if (verbose == TRUE){
+      if (verb == TRUE){
         cat(column, " NOT normal: Kruskal. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
       list$kruskal[[column]] = kruskal.test(formula, data = dfM, na.action = na.exclude)
@@ -373,7 +382,7 @@ statistical_analysisFreq<-function(dfM, verbose, numberOfExperimentalGroups, met
   
 }
 
-statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups, method, signif_level){
+statistical_analysisTime<-function(dfM, numberOfExperimentalGroups, method, signif_level){
   
   anova = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
                MADRR = NA, TINN = NA, HRVi = NA)
@@ -412,12 +421,12 @@ statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups, met
     formula = as.formula(formula_str)
     
     if (numberOfExperimentalGroups > 2 || all(dataFramePvalues[[p_values]] > signif_level)) {
-      if (verbose == TRUE){
+      if (verb == TRUE){
         cat(column, " Normal: Anova. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
       list$anova[[column]] = aov(formula, data = dfM, na.action = na.exclude)
     }else {
-      if (verbose == TRUE){
+      if (verb == TRUE){
         cat(column, " NOT normal: Kruskal. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
       list$kruskal[[column]] = kruskal.test(formula, data = dfM, na.action = na.exclude)
@@ -428,7 +437,7 @@ statistical_analysisTime<-function(dfM, verbose, numberOfExperimentalGroups, met
   list
 }
 
-statistical_analysisNonLinear<-function(dfM, verbose, numberOfExperimentalGroups, method, signif_level){
+statistical_analysisNonLinear<-function(dfM, numberOfExperimentalGroups, method, signif_level){
   anova = list(CorrelationStatistic = NA, SampleEntropy = NA, MaxLyapunov = NA)
   kruskal =list(CorrelationStatistic = NA, SampleEntropy = NA, MaxLyapunov = NA)
   dunn = NA
@@ -458,7 +467,7 @@ statistical_analysisNonLinear<-function(dfM, verbose, numberOfExperimentalGroups
     formula_str = paste0(column, "~ group")
     formula = as.formula(formula_str)
     if (numberOfExperimentalGroups > 2 || all(dataFramePvalues[[p_values]] > signif_level)) {
-      if (verbose == TRUE){
+      if (verb == TRUE){
         cat(column, " Normal: Anova. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
       
@@ -468,13 +477,12 @@ statistical_analysisNonLinear<-function(dfM, verbose, numberOfExperimentalGroups
           list$anova[[column]] = aov(formula, data = dfM, na.action = na.exclude)
         },
         error=function(cond) {
-          #TODO : habrá que tener en cuenta si es NULL
           list$anova[[column]] = NA
         })
       
       
     }else {
-      if (verbose == TRUE){
+      if (verb == TRUE){
         cat(column, " NOT normal: Kruskal. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
       #Krustal will fail if the statistic could not be calculated for all recordings in a group
@@ -529,7 +537,15 @@ correctpValues <- function(listTime, listFreq, listNonLinear, correction, method
       if(is.na(listNonLinear[["anova"]][[column]])){
         listpValues[[column]] = listNonLinear[["kruskal"]][[column]][["p.value"]]
       }else{
-        listpValues[[column]] = extract_ANOVA_pvalue(listNonLinear[["anova"]][[column]])
+        p.val.tmp = extract_ANOVA_pvalue(listNonLinear[["anova"]][[column]])
+        if(is.na(p.val.tmp)){
+          #if we have not been able to calculate the statistic for all the individuals of the same population, 
+          #we cannot affirm that there are differences in the statistic
+          listpValues[[column]] = 1
+        }
+        else{
+          listpValues[[column]] = extract_ANOVA_pvalue(listNonLinear[["anova"]][[column]])
+        }
       }
     }
   }
@@ -568,7 +584,7 @@ print.RHRVEasyResult <- function(results){
                    'MADRR', 'TINN', 'HRVi')){
     if(all(is.na(results$StatysticalAnalysisTime$anova[[column]]))){
       #report kruskal
-      if(results$pValues[[column]]<signif_level){#error pvalue 1
+      if(!is.na(results$pValues[[column]]) && results$pValues[[column]]<signif_level){#error pvalue 1
         differencesFound = TRUE
         cat("\nThere is a statistically significant difference in", column,  "; pvalue: ", 
             results$pValues[[column]], "\n")
@@ -585,7 +601,7 @@ print.RHRVEasyResult <- function(results){
     }
     #report anova
     else{
-      if(results$pValues[[column]]<signif_level){
+      if(!is.na(results$pValues[[column]]) && results$pValues[[column]]<signif_level){
         differencesFound = TRUE
         cat("\nThere is a statistically significant difference in", column, "; pvalue: ", 
             results$pValues[[column]], "\n")
@@ -623,9 +639,7 @@ print.RHRVEasyResult <- function(results){
   }
   
   listDF = split(results$FrequencyAnalysis, results$FrequencyAnalysis$group)
-  
-  cat("\n\nFrequency analysis:\n")
-  
+
   for (column in c('ULF', 'VLF', 'LF', 'HF')){
     if(all(is.na(results$StatysticalAnalysisFrequency$anova[[column]]))){
       #report kruskal
@@ -686,9 +700,7 @@ print.RHRVEasyResult <- function(results){
   
   if(!all(is.na(results$NonLinearAnalysis))){
     listDF = split(results$NonLinearAnalysis, results$NonLinearAnalysis$group)
-    
-    cat("\n\nNon Linear analysis:\n")
-    
+
     for (column in c('CorrelationStatistic', 'SampleEntropy', 'MaxLyapunov')){
       if(all(is.na(results$StatysticalAnalysisNonLinear$anova[[column]]))){
         #report kruskal
@@ -756,6 +768,7 @@ print.RHRVEasyResult <- function(results){
 
 RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=FALSE, 
                    format = "RR", typeAnalysis = 'fourier', significance_level = 0.05, nonLinear=FALSE, ...) {
+  
   dataFrameMWavelet = data.frame()
   dataFrameMTime = data.frame()
   dataFrameMFreq = data.frame()
@@ -766,6 +779,8 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
   
   #We create a global variable signif_level with the level significance
   signif_level <<- significance_level
+  #We create a global variable verb with the verbose mode  
+  verb <<- verbose
   
   files = list()
   
@@ -785,7 +800,7 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
   # Statistical analysis of both
   
   listTimeStatysticalAnalysis = statistical_analysisTime(dataFrameMTime,
-                                                         verbose, numberOfExperimentalGroups, method, signif_level)
+                                                         numberOfExperimentalGroups, method, signif_level)
   
   # FREQUENCY:
   if(typeAnalysis == "fourier"){
@@ -795,7 +810,7 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
     }
     
     listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq,
-                                                           verbose, numberOfExperimentalGroups, method, signif_level)
+                                                           numberOfExperimentalGroups, method, signif_level)
   }
   
   # WAVELET
@@ -807,7 +822,7 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
     }
     
     listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMWavelet,
-                                                           verbose, numberOfExperimentalGroups, method, signif_level)
+                                                           numberOfExperimentalGroups, method, signif_level)
     
     dataFrameMFreq = dataFrameMWavelet
   }
@@ -816,7 +831,7 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
   if(!all(is.na(dataFrameMNonLinear))){
     #cat("DF non linear NOT empty: correct p values with those values")
     listNonLinearStatisticalAnalysis = statistical_analysisNonLinear(dataFrameMNonLinear,
-                                                                     verbose, numberOfExperimentalGroups, method, signif_level)
+                                                                     numberOfExperimentalGroups, method, signif_level)
     listpValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
                                  listNonLinearStatisticalAnalysis,
                                  correction, method)
