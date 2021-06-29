@@ -624,14 +624,15 @@ print.RHRVEasyResult <- function(results){
       var = which(results$StatysticalAnalysisTime$dunn[[column]][["p.value"]]<signif_level, arr.ind = TRUE)
 
       if(length(var)>0){
-        cat("The groups with stastically significant differences are:\n")
-        cat(results$pValues[[column]])
-        for (i in 1:nrow(var)){
-          cat(' is the p value of',
-              row.names(results$StatysticalAnalysisTime$dunn[[column]][["p.value"]])[var[i,1]], 'vs',
-              colnames(results$StatysticalAnalysisTime$dunn[[column]][["p.value"]])[var[i,2]], '')
-        }
-        cat('for', column, '\n')
+        cat("\nGroups with stastically significant differences in ", column, " according to the Dunn test :\n")
+        print(results$StatysticalAnalysisTime$dunn[[column]])
+#        cat(results$pValues[[column]])
+#        for (i in 1:nrow(var)){
+#          cat(' is the p value of',
+#              row.names(results$StatysticalAnalysisTime$dunn[[column]][["p.value"]])[var[i,1]], 'vs',
+#              colnames(results$StatysticalAnalysisTime$dunn[[column]][["p.value"]])[var[i,2]], '')
+#        }
+#        cat('for', column, '\n')
         
       }
     }
@@ -683,15 +684,17 @@ print.RHRVEasyResult <- function(results){
       variable = which(results$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]]<signif_level, 
                        arr.ind = TRUE)
       if(length(variable)>0){
-        cat("The groups with stastically significant differences are:\n")
-        cat(results$pValues[[column]])
-        for (i in 1:nrow(variable)){
-          cat(' is the p value of',
-              row.names(results$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]])[variable[i,1]], 
-              'vs',
-              colnames(results$StatysticalAnalysisFrequency$dunn[[column]]$p.value)[variable[i,2]], '')
-        }
-        cat('for', column, '\n')
+        cat("\nGroups with stastically significant differences in ", column, " according to the Dunn test :\n")
+        print(results$StatysticalAnalysisFrequency$dunn[[column]])
+#        cat("The groups with stastically significant differences are:\n")
+#        cat(results$pValues[[column]])
+#        for (i in 1:nrow(variable)){
+#          cat(' is the p value of',
+#              row.names(results$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]])[variable[i,1]], 
+#              'vs',
+#              colnames(results$StatysticalAnalysisFrequency$dunn[[column]]$p.value)[variable[i,2]], '')
+#        }
+#        cat('for', column, '\n')
       }
       
     }
@@ -744,15 +747,18 @@ print.RHRVEasyResult <- function(results){
         variable = which(results$StatysticalAnalysisNonLinear$dunn[[column]][["p.value"]]<signif_level, 
                          arr.ind = TRUE)
         if(length(variable)>0){
-          cat("The groups with stastically significant differences are:\n")
-          cat(results$pValues[[column]])
-          for (i in 1:nrow(variable)){
-            cat(' is the p value of',
-                row.names(results$StatysticalAnalysisNonLinear$dunn[[column]][["p.value"]])[variable[i,1]], 
-                'vs',
-                colnames(results$StatysticalAnalysisNonLinear$dunn[[column]]$p.value)[variable[i,2]], '')
-          }
-          cat('for', column, '\n')
+          
+          cat("\nGroups with stastically significant differences in ", column, " according to the Dunn test :\n")
+          print(results$StatysticalAnalysisNonLinear$dunn[[column]])
+          #          cat("The groups with stastically significant differences are:\n")
+#          cat(results$pValues[[column]])
+#          for (i in 1:nrow(variable)){
+#            cat(' is the p value of',
+#                row.names(results$StatysticalAnalysisNonLinear$dunn[[column]][["p.value"]])[variable[i,1]], 
+#                'vs',
+#                colnames(results$StatysticalAnalysisNonLinear$dunn[[column]]$p.value)[variable[i,2]], '')
+#          }
+#          cat('for', column, '\n')
         }
         
       }
