@@ -101,3 +101,56 @@ RHRVEasyPValues<-function(folders, correction = FALSE, method = "bonferroni", ve
   class(results) = "RHRVEasyResult"
   results
 }
+
+ar=array(0, dim=c(10,6,14))
+
+
+for(r in 1:10){
+c1 = list(ULF = 0, VLF = 0, LF = 0, HF = 0,
+          SDNN = 0, SDANN = 0, SDNNIDX = 0, pNN50 = 0, SDSD = 0, 
+          rMSSD = 0, IRRR = 0, MADRR = 0, TINN = 0, HRVi = 0)
+
+
+c2 = c1
+c3 = c1
+c4 = c1
+c5 = c1
+c6 = c1
+significativityCount = list("none"=c1, "fdr"=c2, "holm"=c3, "hochberg"=c4, "BY"=c5, "bonferroni"=c6)
+
+
+vec = c(significativityCount,significativityCount);
+
+columNames = c('ULF', 'SDNN', 'IRRR', 'SDANN', 'TINN', 'HRVi', 'VLF', 'SDNNIDX',
+               'LF', 'SDSD', 'rMSSD', 'MADRR', 'HF', 'pNN50')
+
+records =c("C:\\rrsc\\normal","C:\\rrsc\\chf")
+
+corrections = c("none", "fdr", "holm", "hochberg", "BY", "bonferroni")
+
+
+  for(correct in corrections){
+    for(i in 1:100){
+      a=RHRVEasyPValues(folders = records,correction = TRUE, method = correct )
+      for (column in columNames){
+        if(a$pValues[[column]] < 0.05){
+           significativityCount[[correct]][[column]] = significativityCount[[correct]][[column]] +1;
+        }
+      }
+    }
+  }
+  for(i in 1:6){
+    for(j in 1:14){
+      ar[r,i,j] = significativityCount[[i]][[j]]
+    } 
+  }
+}
+
+apply(ar, MARGIN = c(2,3), FUN=mean)
+apply(ar, MARGIN = c(2,3), FUN=sd)
+
+res =cbind(significativityCount$none, significativityCount$fdr,significativityCount$holm, 
+           significativityCount$hochberg,significativityCount$BY,significativityCount$bonferroni)
+
+res
+
