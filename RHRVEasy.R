@@ -26,7 +26,7 @@ file_validation<-function(path){
 
 preparing_analysis<-function(file, rrs, format){
   hrv.data = CreateHRVData()
-  hrv.data = SetVerbose(hrv.data, verb)
+  hrv.data = SetVerbose(hrv.data, FALSE)
   
   hrv.data = LoadBeat(fileType = format, HRVData = hrv.data,  Recordname = file, RecordPath = rrs)
   
@@ -211,7 +211,10 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
             hrv.data = EstimateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
                                            regressionRange = c(1,6),
                                            useEmbeddings = (kEmbeddingDim):(kEmbeddingDim+2),
-                                           doPlot = TRUE)   
+                                           doPlot = TRUE)  
+            hrv.data = RQA(hrv.data, indexNonLinearAnalysis = 1, embeddingDim=kEmbeddingDim, 
+                           timeLag = kTimeLag, radius = 2)
+            
           }
         },
         error=function(cond) {
@@ -222,6 +225,8 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
           
         })
       
+      hrv.data = PoincarePlot(hrv.data,  indexNonLinearAnalysis=1, timeLag=1)
+      
     }
     resultsCS = list("CorrelationStatistic" = mean(hrv.data$NonLinearAnalysis[[1]]$correlation$statistic, 
                                                    na.rm = TRUE))
@@ -229,6 +234,11 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
                                             na.rm = TRUE))
     resultsML = list("MaxLyapunov" = mean(hrv.data$NonLinearAnalysis[[1]]$lyapunov$statistic, 
                                           na.rm = TRUE))
+    resultsRQA = list("RQA" = mean(hrv.data$NonLinearAnalysis[[1]]$rqa, 
+                                          na.rm = TRUE))
+    resultsPP = list("PoincarePlot" = mean(hrv.data$NonLinearAnalysis[[1]]$PoincarePlot, 
+                                   na.rm = TRUE))
+    
     
     #as.data.frame considers that if the value of a list is NULL it does not exist. It must contain NA
     if(verb){
@@ -249,10 +259,22 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
     if(is.null(resultsML["MaxLyapunov"])){
       resultsML["MaxLyapunov"] = NA
     }
+    if(verb){
+      message(c("resultsRQA ",resultsRQA["RQA"]))
+    }
+    if(is.null(resultsRQA["RQA"])){
+      resultsRQA["RQA"] = NA
+    }
+    if(verb){
+      message(c("resultsPP ",resultsPP["PoincarePlot"]))
+    }
+    if(is.null(resultsPP["PoincarePlot"])){
+      resultsPP["PoincarePlot"] = NA
+    }
     
     name_file = list ("filename" = file)
     group = list ("group" = class)
-    row_list = c (name_file, resultsCS, resultsSE, resultsML, group)
+    row_list = c (name_file, resultsCS, resultsSE, resultsML, resultsRQA, resultsPP, group)
     df=as.data.frame(row_list)
     dataFrame=rbind(dataFrame, df)
   }
@@ -261,7 +283,7 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
 
 
 # Statistical tests application
-dunnNonLinar<-function(dfM, method){
+dunnNonLinear<-function(dfM, method){
   dfM$group = factor(dfM$group)
   CorrelationStatistic = NA
   SampleEntropy = NA
@@ -317,8 +339,9 @@ dunntime<-function(dfM, method){
         HRVi = posthoc.kruskal.dunn.test(HRVi ~ group, data = dfM, p.adjust=method))
 }
 
-shapiro.test.CheckAllVakuesEqual<-function(x){
-  pval = 1 # If we cannot do the test, I see because all the numerical values are the same, we will return 1 since there are no differences between the populations.
+shapiro.test.CheckAllValuesEqual<-function(x){
+  pval = 1 # If we cannot do the test, I see because all the numerical values are the same, 
+  # we will return 1 since there are no differences between the populations.
   tryCatch(
     {
       pval = shapiro.test(x)$p.value
@@ -350,7 +373,7 @@ statistical_analysisFreq<-function(dfM, numberOfExperimentalGroups, method, sign
     
     for (column in c('ULF', 'VLF', 'LF', 'HF')){
       destino = paste0('p-value ', column)
-      vec[[destino]] = shapiro.test.CheckAllVakuesEqual(listDF[[objeto]][[column]])
+      vec[[destino]] = shapiro.test.CheckAllValuesEqual(listDF[[objeto]][[column]])
     }
     
     df = data.frame(vec)
@@ -406,7 +429,7 @@ statistical_analysisTime<-function(dfM, numberOfExperimentalGroups, method, sign
     for (column in c('SDNN', 'SDANN', 'SDNNIDX', 'pNN50', 'SDSD', 'rMSSD', 'IRRR',
                      'MADRR', 'TINN', 'HRVi')){
       destino = paste0('p-value ', column)
-      vec[[destino]] =  shapiro.test.CheckAllVakuesEqual(listDF[[objeto]][[column]])
+      vec[[destino]] =  shapiro.test.CheckAllValuesEqual(listDF[[objeto]][[column]])
     }
     
     df = data.frame(vec)
@@ -454,7 +477,7 @@ statistical_analysisNonLinear<-function(dfM, numberOfExperimentalGroups, method,
     
     for (column in c('CorrelationStatistic', 'SampleEntropy', 'MaxLyapunov')){
       destino = paste0('p-value ', column)
-      vec[[destino]] =  shapiro.test.CheckAllVakuesEqual(listDF[[objeto]][[column]])
+      vec[[destino]] =  shapiro.test.CheckAllValuesEqual(listDF[[objeto]][[column]])
     }
     
     df = data.frame(vec)
@@ -496,7 +519,7 @@ statistical_analysisNonLinear<-function(dfM, numberOfExperimentalGroups, method,
         })
     }
   }
-  list$dunn = dunnNonLinar(dfM, method)
+  list$dunn = dunnNonLinear(dfM, method)
   list
   
 }
@@ -622,17 +645,17 @@ print.RHRVEasyResult <- function(results){
     if(length(listDF)>2){
       # 2. ANOVA Test is significative. We check that by comparing it to the signif_level
       var = which(results$StatysticalAnalysisTime$dunn[[column]][["p.value"]]<signif_level, arr.ind = TRUE)
-
+      
       if(length(var)>0){
         cat("\nGroups with stastically significant differences in ", column, " according to the Dunn test :\n")
         print(results$StatysticalAnalysisTime$dunn[[column]])
-#        cat(results$pValues[[column]])
-#        for (i in 1:nrow(var)){
-#          cat(' is the p value of',
-#              row.names(results$StatysticalAnalysisTime$dunn[[column]][["p.value"]])[var[i,1]], 'vs',
-#              colnames(results$StatysticalAnalysisTime$dunn[[column]][["p.value"]])[var[i,2]], '')
-#        }
-#        cat('for', column, '\n')
+        #        cat(results$pValues[[column]])
+        #        for (i in 1:nrow(var)){
+        #          cat(' is the p value of',
+        #              row.names(results$StatysticalAnalysisTime$dunn[[column]][["p.value"]])[var[i,1]], 'vs',
+        #              colnames(results$StatysticalAnalysisTime$dunn[[column]][["p.value"]])[var[i,2]], '')
+        #        }
+        #        cat('for', column, '\n')
         
       }
     }
@@ -640,7 +663,7 @@ print.RHRVEasyResult <- function(results){
   }
   
   listDF = split(results$FrequencyAnalysis, results$FrequencyAnalysis$group)
-
+  
   for (column in c('ULF', 'VLF', 'LF', 'HF')){
     if(all(is.na(results$StatysticalAnalysisFrequency$anova[[column]]))){
       #report kruskal
@@ -686,15 +709,15 @@ print.RHRVEasyResult <- function(results){
       if(length(variable)>0){
         cat("\nGroups with stastically significant differences in ", column, " according to the Dunn test :\n")
         print(results$StatysticalAnalysisFrequency$dunn[[column]])
-#        cat("The groups with stastically significant differences are:\n")
-#        cat(results$pValues[[column]])
-#        for (i in 1:nrow(variable)){
-#          cat(' is the p value of',
-#              row.names(results$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]])[variable[i,1]], 
-#              'vs',
-#              colnames(results$StatysticalAnalysisFrequency$dunn[[column]]$p.value)[variable[i,2]], '')
-#        }
-#        cat('for', column, '\n')
+        #        cat("The groups with stastically significant differences are:\n")
+        #        cat(results$pValues[[column]])
+        #        for (i in 1:nrow(variable)){
+        #          cat(' is the p value of',
+        #              row.names(results$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]])[variable[i,1]], 
+        #              'vs',
+        #              colnames(results$StatysticalAnalysisFrequency$dunn[[column]]$p.value)[variable[i,2]], '')
+        #        }
+        #        cat('for', column, '\n')
       }
       
     }
@@ -703,7 +726,7 @@ print.RHRVEasyResult <- function(results){
   
   if(!all(is.na(results$NonLinearAnalysis))){
     listDF = split(results$NonLinearAnalysis, results$NonLinearAnalysis$group)
-
+    
     for (column in c('CorrelationStatistic', 'SampleEntropy', 'MaxLyapunov')){
       if(all(is.na(results$StatysticalAnalysisNonLinear$anova[[column]]))){
         #report kruskal
@@ -751,21 +774,21 @@ print.RHRVEasyResult <- function(results){
           cat("\nGroups with stastically significant differences in ", column, " according to the Dunn test :\n")
           print(results$StatysticalAnalysisNonLinear$dunn[[column]])
           #          cat("The groups with stastically significant differences are:\n")
-#          cat(results$pValues[[column]])
-#          for (i in 1:nrow(variable)){
-#            cat(' is the p value of',
-#                row.names(results$StatysticalAnalysisNonLinear$dunn[[column]][["p.value"]])[variable[i,1]], 
-#                'vs',
-#                colnames(results$StatysticalAnalysisNonLinear$dunn[[column]]$p.value)[variable[i,2]], '')
-#          }
-#          cat('for', column, '\n')
+          #          cat(results$pValues[[column]])
+          #          for (i in 1:nrow(variable)){
+          #            cat(' is the p value of',
+          #                row.names(results$StatysticalAnalysisNonLinear$dunn[[column]][["p.value"]])[variable[i,1]], 
+          #                'vs',
+          #                colnames(results$StatysticalAnalysisNonLinear$dunn[[column]]$p.value)[variable[i,2]], '')
+          #          }
+          #          cat('for', column, '\n')
         }
         
       }
       
     }
   }
-
+  
   if(!differencesFound){
     cat("No statistically significant difference were found\n")
   }
@@ -833,7 +856,7 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
     dataFrameMFreq = dataFrameMWavelet
   }
   
- 
+  
   if(!all(is.na(dataFrameMNonLinear))){
     #cat("DF non linear NOT empty: correct p values with those values")
     listNonLinearStatisticalAnalysis = statistical_analysisNonLinear(dataFrameMNonLinear,
@@ -848,14 +871,16 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
                                  listNonLinearStatisticalAnalysis,
                                  correction, method)
   }
-    
-    
+  
+  
   
   
   results = list("TimeAnalysis" = dataFrameMTime, "StatysticalAnalysisTime" = listTimeStatysticalAnalysis,
-                 "FrequencyAnalysis" = dataFrameMFreq, "NonLinearAnalysis" = dataFrameMNonLinear,
+                 "FrequencyAnalysis" = dataFrameMFreq, 
+                 "StatysticalAnalysisFrequency" = listFreqStatysticalAnalysis,
+                 "NonLinearAnalysis" = dataFrameMNonLinear,
                  "StatysticalAnalysisNonLinear" = listNonLinearStatisticalAnalysis,
-                 "StatysticalAnalysisFrequency" = listFreqStatysticalAnalysis, "pValues" = listpValues)
+                 "pValues" = listpValues)
   
   class(results) = "RHRVEasyResult"
   results
