@@ -119,32 +119,49 @@ wavelet_analysis<-function(format, files, class, rrs2, ...){
 
 attempToCalculateTimeLag <- function(hrv.data) {
   kTimeLag = NA
+  lag = 50
   tryCatch(
     {
-      kTimeLag=CalculateTimeLag(hrv.data,technique = "acf", method = "first.minimum",
-                                lagMax = 20, doPlot=FALSE)
+      message(c("acf min kTimeLag ", kTimeLag))
+      kTimeLag=CalculateTimeLag(hrv.data, technique = "acf", method = "first.minimum",
+                                lagMax = lag, doPlot=FALSE)
+      
+      message(c("FIN acf min kTimeLag ", kTimeLag))
     },
     error=function(cond) {
       tryCatch(
         {
-          kTimeLag=CalculateTimeLag(hrv.data,technique = "acf", method = "first.e.decay",
-                                    lagMax = 20, doPlot=FALSE)
+          
+          message(c("acf decay kTimeLag ", kTimeLag))
+          kTimeLag=CalculateTimeLag(hrv.data, technique = "acf", method = "first.e.decay",
+                                    lagMax = lag, doPlot=FALSE)
+          
+          message(c("FIN acf decay kTimeLag ", kTimeLag))
         },
         error=function(cond) {
           
           tryCatch(
             {
-              kTimeLag=CalculateTimeLag(hrv.data,technique = "ami", method = "first.minimum",
-                                        lagMax = 20, doPlot=FALSE)
+              
+              message(c("ami min kTimeLag ", kTimeLag))
+              kTimeLag=CalculateTimeLag(hrv.data, technique = "ami", method = "first.minimum",
+                                        lagMax = lag, doPlot=FALSE)
+              
+              message(c("FIN ami min kTimeLag ", kTimeLag))
             },
             error=function(cond) {
               tryCatch(
                 {
-                  kTimeLag=CalculateTimeLag(hrv.data,technique = "ami", method = "first.e.decay",
-                                            lagMax = 20, doPlot=FALSE)
+                  
+                  message(c("aMI decay kTimeLag ", kTimeLag))
+                  kTimeLag=CalculateTimeLag(hrv.data, technique = "ami", method = "first.e.decay",
+                                            lagMax = lag, doPlot=FALSE)
+                  message(c("FIN AMI decay kTimeLag ", kTimeLag))
                 },
                 error=function(cond) {
-                  kTimeLag=NA
+                  
+                  message(c("dEFAULT kTimeLag ", kTimeLag))
+                kTimeLag=30
                 }
               )
             }
@@ -153,7 +170,24 @@ attempToCalculateTimeLag <- function(hrv.data) {
       )
     }
   )
+  message(c("********FINAL kTimeLag ", kTimeLag))
   kTimeLag
+}
+
+extractRqaStatistics <- function(rqa){
+  resultsRQA = list("REC" = rqa$REC, 
+                    "RATIO" = rqa$RATIO, 
+                    "DET" = rqa$DET, 
+                    "DIV" = rqa$DIV, 
+                    "Lmax" = rqa$Lmax, 
+                    "Lmean" = rqa$Lmean, 
+                    "LmeanWithoutMain"= rqa$LmeanWithoutMain, 
+                    "ENTR"= rqa$ENTR, 
+                    "TREND"= rqa$TREND, 
+                    "LAM"= rqa$LAM, 
+                    "Vmax" = rqa$Vmax, 
+                    "Vmean" = rqa$Vmean)
+  resultsRQA
 }
 
 # Non Linear analysis
@@ -163,18 +197,13 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
     hrv.data = preparing_analysis(format, file = file, rrs = rrs2)
     hrv.data = CreateNonLinearAnalysis(hrv.data)
     kTimeLag=attempToCalculateTimeLag(hrv.data)
-    
-    if(is.na(kTimeLag)){
-      hrv.data$NonLinearAnalysis[[1]]$correlation$statistic = NA
-      hrv.data$NonLinearAnalysis[[1]]$sampleEntropy$statistic = NA
-      hrv.data$NonLinearAnalysis[[1]]$lyapunov$statistic = NA   
-    }
-    else{
-      
       tryCatch(
         {
+          message(c("satar", kTimeLag))
+          kTimeLag=5
           kEmbeddingDim = CalculateEmbeddingDim(hrv.data, numberPoints = 10000,
                                                 timeLag = kTimeLag, maxEmbeddingDim = 15, doPlot=FALSE)
+          message("end")
           if(kEmbeddingDim == 0){
             hrv.data$NonLinearAnalysis[[1]]$correlation$statistic = NA
             hrv.data$NonLinearAnalysis[[1]]$sampleEntropy$statistic = NA
@@ -182,8 +211,12 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
           }
           else{
             
+            hrv.data = RQA(hrv.data, indexNonLinearAnalysis = 1, embeddingDim=kEmbeddingDim, 
+                           timeLag = kTimeLag, radius = 2)
+            hrv.data = PoincarePlot(hrv.data,  indexNonLinearAnalysis=1, timeLag=1)
+            
             hrv.data = CalculateCorrDim(hrv.data, indexNonLinearAnalysis = 1, minEmbeddingDim=kEmbeddingDim,
-                                        maxEmbeddingDim = kEmbeddingDim + 2, timeLag = 1, minRadius = 1, maxRadius = 50,
+                                        maxEmbeddingDim = kEmbeddingDim + 2, timeLag = kTimeLag, minRadius = 1, maxRadius = 50,
                                         pointsRadius = 100, theilerWindow =10, corrOrder = 2, doPlot = FALSE)
             
             cd = hrv.data$NonLinearAnalysis[[1]]$correlation$computations
@@ -212,8 +245,6 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
                                            regressionRange = c(1,6),
                                            useEmbeddings = (kEmbeddingDim):(kEmbeddingDim+2),
                                            doPlot = TRUE)  
-            hrv.data = RQA(hrv.data, indexNonLinearAnalysis = 1, embeddingDim=kEmbeddingDim, 
-                           timeLag = kTimeLag, radius = 2)
             
           }
         },
@@ -225,19 +256,17 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
           
         })
       
-      hrv.data = PoincarePlot(hrv.data,  indexNonLinearAnalysis=1, timeLag=1)
-      
-    }
     resultsCS = list("CorrelationStatistic" = mean(hrv.data$NonLinearAnalysis[[1]]$correlation$statistic, 
                                                    na.rm = TRUE))
     resultsSE = list("SampleEntropy" = mean(hrv.data$NonLinearAnalysis[[1]]$sampleEntropy$statistic, 
                                             na.rm = TRUE))
     resultsML = list("MaxLyapunov" = mean(hrv.data$NonLinearAnalysis[[1]]$lyapunov$statistic, 
                                           na.rm = TRUE))
-    resultsRQA = list("RQA" = mean(hrv.data$NonLinearAnalysis[[1]]$rqa, 
-                                          na.rm = TRUE))
-    resultsPP = list("PoincarePlot" = mean(hrv.data$NonLinearAnalysis[[1]]$PoincarePlot, 
-                                   na.rm = TRUE))
+    
+    resultsRQA = extractRqaStatistics (hrv.data$NonLinearAnalysis[[1]]$rqa)
+
+    resultsPP = list("PoincareSD1" = hrv.data$NonLinearAnalysis[[1]]$PoincarePlot$SD1, 
+                     "PoincareSD2" = hrv.data$NonLinearAnalysis[[1]]$PoincarePlot$SD2)
     
     
     #as.data.frame considers that if the value of a list is NULL it does not exist. It must contain NA
@@ -260,16 +289,12 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
       resultsML["MaxLyapunov"] = NA
     }
     if(verb){
-      message(c("resultsRQA ",resultsRQA["RQA"]))
-    }
-    if(is.null(resultsRQA["RQA"])){
-      resultsRQA["RQA"] = NA
+      message("results of RQA: ")
+      print(resultsRQA)
     }
     if(verb){
-      message(c("resultsPP ",resultsPP["PoincarePlot"]))
-    }
-    if(is.null(resultsPP["PoincarePlot"])){
-      resultsPP["PoincarePlot"] = NA
+      message(c("results of Poincare "))
+      print(resultsPP)
     }
     
     name_file = list ("filename" = file)
@@ -470,12 +495,18 @@ statistical_analysisNonLinear<-function(dfM, numberOfExperimentalGroups, method,
   
   dataFramePvalues = data.frame()
   vec = c("group" = NA, "p-value CorrelationStatistic" = NA, "p-value SampleEntropy" = NA,  
-          "p-value MaxLyapunov" = NA)
+          "p-value MaxLyapunov" = NA, "p-value REC" = NA, "p-value RATIO" = NA, 
+          "p-value DET" = NA, "p-value DIV" = NA, "p-value Lmax" = NA, "p-value Lmean" = NA, 
+          "p-value LmeanWithoutMain" = NA, "p-value ENTR" = NA, "p-value TREND" = NA, 
+          "p-value LAM" = NA, "p-value Vmax" = NA, "p-value Vmean" = NA, 
+          "p-value PoincareSD1" = NA, "p-value PoincareSD2" = NA )
   
   for(objeto in names(listDF)){
     vec$group = objeto
     
-    for (column in c('CorrelationStatistic', 'SampleEntropy', 'MaxLyapunov')){
+    for (column in c('CorrelationStatistic', 'SampleEntropy', 'MaxLyapunov',
+                     'REC', 'RATIO', 'DET', 'DIV', 'Lmax', 'Lmean', 'LmeanWithoutMain', 
+                     'ENTR', 'TREND', 'LAM', 'Vmax', 'Vmean', 'PoincareSD1',  'PoincareSD2')){
       destino = paste0('p-value ', column)
       vec[[destino]] =  shapiro.test.CheckAllValuesEqual(listDF[[objeto]][[column]])
     }
@@ -485,7 +516,9 @@ statistical_analysisNonLinear<-function(dfM, numberOfExperimentalGroups, method,
     dataFramePvalues = rbind(dataFramePvalues, df)
   }
   
-  for (column in c('CorrelationStatistic', 'SampleEntropy', 'MaxLyapunov')){
+  for (column in c('CorrelationStatistic', 'SampleEntropy', 'MaxLyapunov',
+                   'REC', 'RATIO', 'DET', 'DIV', 'Lmax', 'Lmean', 'LmeanWithoutMain',
+                   'ENTR', 'TREND', 'LAM', 'Vmax', 'Vmean', 'PoincareSD1',  'PoincareSD2')){
     p_values = formula_str = paste0("p.value.", column)
     formula_str = paste0(column, "~ group")
     formula = as.formula(formula_str)
@@ -514,7 +547,7 @@ statistical_analysisNonLinear<-function(dfM, numberOfExperimentalGroups, method,
           list$kruskal[[column]] = kruskal.test(formula, data = dfM, na.action = na.exclude)
         },
         error=function(cond) {
-          #TODO : habrá que tener en cuenta si es NULL
+          #TODO : habria que tener en cuenta si es NULL
           list$kruskal[[column]] = NA
         })
     }
@@ -556,9 +589,13 @@ correctpValues <- function(listTime, listFreq, listNonLinear, correction, method
   
   # In order for it to only be performed when there is non linear results: 
   if(!all(is.na(listNonLinear))){
-    for (column in c('CorrelationStatistic', 'SampleEntropy', 'MaxLyapunov')){
+    for (column in c('CorrelationStatistic', 'SampleEntropy', 'MaxLyapunov',
+                     'REC', 'RATIO', 'DET', 'DIV', 'Lmax', 'Lmean', 'LmeanWithoutMain', 
+                     'ENTR', 'TREND', 'LAM', 'Vmax', 'Vmean', 'PoincareSD1',  'PoincareSD2')){
       if(is.na(listNonLinear[["anova"]][[column]])){
-        listpValues[[column]] = listNonLinear[["kruskal"]][[column]]$p.value
+        if(!is.na(listNonLinear[["kruskal"]][[column]])){
+          listpValues[[column]] = listNonLinear[["kruskal"]][[column]]$p.value
+        }
       }else{
         p.val.tmp = extract_ANOVA_pvalue(listNonLinear[["anova"]][[column]])
         if(is.na(p.val.tmp)){
