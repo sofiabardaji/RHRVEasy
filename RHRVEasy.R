@@ -118,50 +118,45 @@ wavelet_analysis<-function(format, files, class, rrs2, ...){
 }
 
 attempToCalculateTimeLag <- function(hrv.data) {
-  kTimeLag = NA
   lag = 50
-  tryCatch(
+  kTimeLag = tryCatch(
     {
-      message(c("acf min kTimeLag ", kTimeLag))
-      kTimeLag=CalculateTimeLag(hrv.data, technique = "acf", method = "first.minimum",
+      kTimeLag <- CalculateTimeLag(hrv.data, technique = "acf", method = "first.minimum",
                                 lagMax = lag, doPlot=FALSE)
-      
+    
       message(c("FIN acf min kTimeLag ", kTimeLag))
+      kTimeLag 
     },
     error=function(cond) {
       tryCatch(
         {
-          
-          message(c("acf decay kTimeLag ", kTimeLag))
-          kTimeLag=CalculateTimeLag(hrv.data, technique = "acf", method = "first.e.decay",
+          kTimeLag <- CalculateTimeLag(hrv.data, technique = "acf", method = "first.e.decay",
                                     lagMax = lag, doPlot=FALSE)
           
           message(c("FIN acf decay kTimeLag ", kTimeLag))
+          kTimeLag 
         },
         error=function(cond) {
           
           tryCatch(
             {
-              
-              message(c("ami min kTimeLag ", kTimeLag))
-              kTimeLag=CalculateTimeLag(hrv.data, technique = "ami", method = "first.minimum",
+              kTimeLag <- CalculateTimeLag(hrv.data, technique = "ami", method = "first.minimum",
                                         lagMax = lag, doPlot=FALSE)
               
               message(c("FIN ami min kTimeLag ", kTimeLag))
+              kTimeLag 
             },
             error=function(cond) {
               tryCatch(
                 {
-                  
-                  message(c("aMI decay kTimeLag ", kTimeLag))
-                  kTimeLag=CalculateTimeLag(hrv.data, technique = "ami", method = "first.e.decay",
+                  kTimeLag <- CalculateTimeLag(hrv.data, technique = "ami", method = "first.e.decay",
                                             lagMax = lag, doPlot=FALSE)
                   message(c("FIN AMI decay kTimeLag ", kTimeLag))
+                  kTimeLag 
                 },
                 error=function(cond) {
-                  
                   message(c("dEFAULT kTimeLag ", kTimeLag))
-                kTimeLag=30
+                  30
                 }
               )
             }
@@ -187,6 +182,10 @@ extractRqaStatistics <- function(rqa){
                     "LAM"= rqa$LAM, 
                     "Vmax" = rqa$Vmax, 
                     "Vmean" = rqa$Vmean)
+  
+  resultsRQA[sapply(resultsRQA, is.infinite)] <- NA
+  resultsRQA[sapply(resultsRQA, is.nan)] <- NA
+  
   resultsRQA
 }
 
