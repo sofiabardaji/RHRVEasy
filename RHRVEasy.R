@@ -1,10 +1,9 @@
-#install.packages("RHRV")
 library(RHRV)
-
 # Post hoc Dunn test
 library(dunn.test)
 library(FSA)
 library(PMCMR)
+library(writexl)
 
 #source('scaling_region_estimation.R')
 
@@ -29,7 +28,9 @@ preparing_analysis<-function(file, rrs, format){
   hrv.data = SetVerbose(hrv.data, FALSE)
   
   hrv.data = LoadBeat(fileType = format, HRVData = hrv.data,  Recordname = file, RecordPath = rrs)
-  
+  if(verb){
+    message(c("Loading recording ", file))
+  }
   hrv.data=BuildNIHR(hrv.data)
   hrv.data=FilterNIHR(hrv.data)
   hrv.data$Beat = hrv.data$Beat[2: nrow(hrv.data$Beat),]
@@ -118,12 +119,12 @@ wavelet_analysis<-function(format, files, class, rrs2, ...){
 }
 
 attempToCalculateTimeLag <- function(hrv.data) {
-  lag = 50
+  lag = 30
   kTimeLag = tryCatch(
     {
       kTimeLag <- CalculateTimeLag(hrv.data, technique = "acf", method = "first.minimum",
-                                lagMax = lag, doPlot=FALSE)
-    
+                                   lagMax = lag, doPlot=FALSE)
+      
       message(c("FIN acf min kTimeLag ", kTimeLag))
       kTimeLag 
     },
@@ -131,7 +132,7 @@ attempToCalculateTimeLag <- function(hrv.data) {
       tryCatch(
         {
           kTimeLag <- CalculateTimeLag(hrv.data, technique = "acf", method = "first.e.decay",
-                                    lagMax = lag, doPlot=FALSE)
+                                       lagMax = lag, doPlot=FALSE)
           
           message(c("FIN acf decay kTimeLag ", kTimeLag))
           kTimeLag 
@@ -141,7 +142,7 @@ attempToCalculateTimeLag <- function(hrv.data) {
           tryCatch(
             {
               kTimeLag <- CalculateTimeLag(hrv.data, technique = "ami", method = "first.minimum",
-                                        lagMax = lag, doPlot=FALSE)
+                                           lagMax = lag, doPlot=FALSE)
               
               message(c("FIN ami min kTimeLag ", kTimeLag))
               kTimeLag 
@@ -150,12 +151,14 @@ attempToCalculateTimeLag <- function(hrv.data) {
               tryCatch(
                 {
                   kTimeLag <- CalculateTimeLag(hrv.data, technique = "ami", method = "first.e.decay",
-                                            lagMax = lag, doPlot=FALSE)
+                                               lagMax = lag, doPlot=FALSE)
                   message(c("FIN AMI decay kTimeLag ", kTimeLag))
                   kTimeLag 
                 },
                 error=function(cond) {
-                  message(c("dEFAULT kTimeLag ", kTimeLag))
+                  if(verb){
+                    message("Using default timeLag for current recording...")
+                  }
                   30
                 }
               )
@@ -196,65 +199,64 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
     hrv.data = preparing_analysis(format, file = file, rrs = rrs2)
     hrv.data = CreateNonLinearAnalysis(hrv.data)
     kTimeLag=attempToCalculateTimeLag(hrv.data)
-      tryCatch(
-        {
-          message(c("satar", kTimeLag))
-          kTimeLag=5
-          kEmbeddingDim = CalculateEmbeddingDim(hrv.data, numberPoints = 10000,
-                                                timeLag = kTimeLag, maxEmbeddingDim = 15, doPlot=FALSE)
-          message("end")
-          if(kEmbeddingDim == 0){
-            hrv.data$NonLinearAnalysis[[1]]$correlation$statistic = NA
-            hrv.data$NonLinearAnalysis[[1]]$sampleEntropy$statistic = NA
-            hrv.data$NonLinearAnalysis[[1]]$lyapunov$statistic = NA   
-          }
-          else{
-            
-            hrv.data = RQA(hrv.data, indexNonLinearAnalysis = 1, embeddingDim=kEmbeddingDim, 
-                           timeLag = kTimeLag, radius = 2)
-            hrv.data = PoincarePlot(hrv.data,  indexNonLinearAnalysis=1, timeLag=1)
-            
-            hrv.data = CalculateCorrDim(hrv.data, indexNonLinearAnalysis = 1, minEmbeddingDim=kEmbeddingDim,
-                                        maxEmbeddingDim = kEmbeddingDim + 2, timeLag = kTimeLag, minRadius = 1, maxRadius = 50,
-                                        pointsRadius = 100, theilerWindow =10, corrOrder = 2, doPlot = FALSE)
-            
-            cd = hrv.data$NonLinearAnalysis[[1]]$correlation$computations
-            
-            filteredCd = nltsFilter(cd, threshold = 0.99)
-            
-            cdScalingRegion = 
-              estimate_scaling_region(filteredCd, numberOfLinearRegions = 3, doPlot = FALSE)
-            
-            
-            hrv.data = EstimateCorrDim(hrv.data, indexNonLinearAnalysis=1, regressionRange=cdScalingRegion, # ahi va variable
-                                       useEmbeddings=(kEmbeddingDim):(kEmbeddingDim+2), 
-                                       doPlot=FALSE)
-            
-            hrv.data = CalculateSampleEntropy(hrv.data, indexNonLinearAnalysis= 1, doPlot = FALSE)
-            
-            hrv.data = EstimateSampleEntropy(hrv.data, indexNonLinearAnalysis=1, doPlot = FALSE)
-            
-            hrv.data = CalculateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
-                                            minEmbeddingDim= kEmbeddingDim, 
-                                            maxEmbeddingDim= kEmbeddingDim+2,
-                                            timeLag = kTimeLag,radius = 3, theilerWindow = 20,
-                                            doPlot = TRUE)
-            
-            hrv.data = EstimateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
-                                           regressionRange = c(1,6),
-                                           useEmbeddings = (kEmbeddingDim):(kEmbeddingDim+2),
-                                           doPlot = TRUE)  
-            
-          }
-        },
-        error=function(cond) {
-          if(verb){
-            message("There has been a problem calculating some non lineal statystic  !!!!!!!!")
-            message(cond)
-          }
+    tryCatch(
+      {
+        message(c("satar", kTimeLag))
+        kTimeLag=5
+        kEmbeddingDim = CalculateEmbeddingDim(hrv.data, numberPoints = 10000,
+                                              timeLag = kTimeLag, maxEmbeddingDim = 15, doPlot=FALSE)
+        message("end")
+        if(kEmbeddingDim == 0){
+          hrv.data$NonLinearAnalysis[[1]]$correlation$statistic = NA
+          hrv.data$NonLinearAnalysis[[1]]$sampleEntropy$statistic = NA
+          hrv.data$NonLinearAnalysis[[1]]$lyapunov$statistic = NA   
+        }
+        else{
           
-        })
-      
+          hrv.data = RQA(hrv.data, indexNonLinearAnalysis = 1, embeddingDim=kEmbeddingDim, 
+                         timeLag = kTimeLag, radius = 2)
+          hrv.data = PoincarePlot(hrv.data,  indexNonLinearAnalysis=1, timeLag=1)
+          
+          hrv.data = CalculateCorrDim(hrv.data, indexNonLinearAnalysis = 1, minEmbeddingDim=kEmbeddingDim,
+                                      maxEmbeddingDim = kEmbeddingDim + 2, timeLag = kTimeLag, minRadius = 1, maxRadius = 50,
+                                      pointsRadius = 100, theilerWindow =10, corrOrder = 2, doPlot = FALSE)
+          
+          cd = hrv.data$NonLinearAnalysis[[1]]$correlation$computations
+          
+          filteredCd = nltsFilter(cd, threshold = 0.99)
+          
+          cdScalingRegion = 
+            estimate_scaling_region(filteredCd, numberOfLinearRegions = 3, doPlot = FALSE)
+          
+          
+          hrv.data = EstimateCorrDim(hrv.data, indexNonLinearAnalysis=1, regressionRange=cdScalingRegion, # ahi va variable
+                                     useEmbeddings=(kEmbeddingDim):(kEmbeddingDim+2), 
+                                     doPlot=FALSE)
+          
+          hrv.data = CalculateSampleEntropy(hrv.data, indexNonLinearAnalysis= 1, doPlot = FALSE)
+          
+          hrv.data = EstimateSampleEntropy(hrv.data, indexNonLinearAnalysis=1, doPlot = FALSE)
+          
+          hrv.data = CalculateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
+                                          minEmbeddingDim= kEmbeddingDim, 
+                                          maxEmbeddingDim= kEmbeddingDim+2,
+                                          timeLag = kTimeLag,radius = 3, theilerWindow = 20,
+                                          doPlot = TRUE)
+          
+          hrv.data = EstimateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
+                                         regressionRange = c(1,6),
+                                         useEmbeddings = (kEmbeddingDim):(kEmbeddingDim+2),
+                                         doPlot = TRUE)  
+        }
+      },
+      error=function(cond) {
+        if(verb){
+          message("There has been a problem calculating some non lineal statystic  !!!!!!!!")
+          message(cond)
+        }
+        
+      })
+    
     resultsCS = list("CorrelationStatistic" = mean(hrv.data$NonLinearAnalysis[[1]]$correlation$statistic, 
                                                    na.rm = TRUE))
     resultsSE = list("SampleEntropy" = mean(hrv.data$NonLinearAnalysis[[1]]$sampleEntropy$statistic, 
@@ -263,7 +265,7 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
                                           na.rm = TRUE))
     
     resultsRQA = extractRqaStatistics (hrv.data$NonLinearAnalysis[[1]]$rqa)
-
+    
     resultsPP = list("PoincareSD1" = hrv.data$NonLinearAnalysis[[1]]$PoincarePlot$SD1, 
                      "PoincareSD2" = hrv.data$NonLinearAnalysis[[1]]$PoincarePlot$SD2)
     
@@ -305,7 +307,7 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
   dataFrame
 }
 
-
+#@todo 
 # Statistical tests application
 dunnNonLinear<-function(dfM, method){
   dfM$group = factor(dfM$group)
@@ -368,7 +370,12 @@ shapiro.test.CheckAllValuesEqual<-function(x){
   # we will return 1 since there are no differences between the populations.
   tryCatch(
     {
-      pval = shapiro.test(x)$p.value
+      p.val = shapiro.test(x)$p.value
+      if(is.na(p.val)){
+        message("NAAAAAAAAAAAAAAAAA !!!!!")
+        p.val = 1
+      }
+      p.val
     },
     error=function(cond) {
       if(verb){
@@ -485,8 +492,14 @@ statistical_analysisTime<-function(dfM, numberOfExperimentalGroups, method, sign
 }
 
 statistical_analysisNonLinear<-function(dfM, numberOfExperimentalGroups, method, signif_level){
-  anova = list(CorrelationStatistic = NA, SampleEntropy = NA, MaxLyapunov = NA)
-  kruskal =list(CorrelationStatistic = NA, SampleEntropy = NA, MaxLyapunov = NA)
+  anova = list(CorrelationStatistic = NA, SampleEntropy = NA, MaxLyapunov = NA,
+               REC = NA, RATIO = NA, DET = NA, DIV = NA, Lmax = NA, Lmean = NA,
+               LmeanWithoutMain = NA, ENTR = NA, TREND = NA, LAM = NA, Vmax = NA,
+               Vmean = NA, PoincareSD1 = NA,  PoincareSD2 = NA)
+  kruskal =list(CorrelationStatistic = NA, SampleEntropy = NA, MaxLyapunov = NA,
+                REC = NA, RATIO = NA, DET = NA, DIV = NA, Lmax = NA, Lmean = NA,
+                LmeanWithoutMain = NA, ENTR = NA, TREND = NA, LAM = NA, Vmax = NA,
+                Vmean = NA, PoincareSD1 = NA,  PoincareSD2 = NA)
   dunn = NA
   list = list(anova = anova, kruskal = kruskal, dunn = dunn)
   
@@ -562,12 +575,18 @@ correctpValues <- function(listTime, listFreq, listNonLinear, correction, method
   listpValues = list(ULF = NA, VLF = NA, LF = NA, HF = NA,
                      SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, 
                      rMSSD = NA, IRRR = NA, MADRR = NA, TINN = NA, HRVi = NA, 
-                     CorrelationStatistic = NA, SampleEntropy = NA, MaxLyapunov = NA)
+                     CorrelationStatistic = NA, SampleEntropy = NA, MaxLyapunov = NA,
+                     REC = NA, RATIO = NA, DET = NA, DIV = NA, Lmax = NA, Lmean = NA,
+                     LmeanWithoutMain = NA, ENTR = NA, TREND = NA, LAM = NA, Vmax = NA,
+                     Vmean = NA, PoincareSD1 = NA,  PoincareSD2 = NA)
   
   listpValuesCorrected = list(ULF = NA, VLF = NA, LF = NA, HF = NA, SDNN = NA, SDANN = NA, 
                               SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
                               MADRR = NA, TINN = NA, HRVi = NA,
-                              CorrelationStatistic = NA, SampleEntropy = NA, MaxLyapunov = NA)
+                              CorrelationStatistic = NA, SampleEntropy = NA, MaxLyapunov = NA,
+                              REC = NA, RATIO = NA, DET = NA, DIV = NA, Lmax = NA, Lmean = NA,
+                              LmeanWithoutMain = NA, ENTR = NA, TREND = NA, LAM = NA, Vmax = NA,
+                              Vmean = NA, PoincareSD1 = NA,  PoincareSD2 = NA)
   
   for (column in c('ULF', 'VLF', 'LF', 'HF')){
     if(is.na(listFreq$anova[[column]])){
@@ -630,6 +649,9 @@ extract_ANOVA_pvalue<-function(anovaObject){
 }
 
 print.RHRVEasyResult <- function(results){
+  
+  #@todo
+  results$pValues[sapply(results$pValues, is.na)] <- 1
   
   listDF = split(results$TimeAnalysis, results$TimeAnalysis$group)
   
@@ -832,7 +854,8 @@ print.RHRVEasyResult <- function(results){
 
 
 RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=FALSE, 
-                   format = "RR", typeAnalysis = 'fourier', significance_level = 0.05, nonLinear=FALSE, ...) {
+                   format = "RR", typeAnalysis = 'fourier', significance_level = 0.05, 
+                   nonLinear=FALSE, ...) {
   
   dataFrameMWavelet = data.frame()
   dataFrameMTime = data.frame()
