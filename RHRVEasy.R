@@ -124,8 +124,6 @@ attempToCalculateTimeLag <- function(hrv.data) {
     {
       kTimeLag <- CalculateTimeLag(hrv.data, technique = "acf", method = "first.minimum",
                                    lagMax = lag, doPlot=FALSE)
-      
-      message(c("FIN acf min kTimeLag ", kTimeLag))
       kTimeLag 
     },
     error=function(cond) {
@@ -133,8 +131,6 @@ attempToCalculateTimeLag <- function(hrv.data) {
         {
           kTimeLag <- CalculateTimeLag(hrv.data, technique = "acf", method = "first.e.decay",
                                        lagMax = lag, doPlot=FALSE)
-          
-          message(c("FIN acf decay kTimeLag ", kTimeLag))
           kTimeLag 
         },
         error=function(cond) {
@@ -143,8 +139,6 @@ attempToCalculateTimeLag <- function(hrv.data) {
             {
               kTimeLag <- CalculateTimeLag(hrv.data, technique = "ami", method = "first.minimum",
                                            lagMax = lag, doPlot=FALSE)
-              
-              message(c("FIN ami min kTimeLag ", kTimeLag))
               kTimeLag 
             },
             error=function(cond) {
@@ -152,7 +146,6 @@ attempToCalculateTimeLag <- function(hrv.data) {
                 {
                   kTimeLag <- CalculateTimeLag(hrv.data, technique = "ami", method = "first.e.decay",
                                                lagMax = lag, doPlot=FALSE)
-                  message(c("FIN AMI decay kTimeLag ", kTimeLag))
                   kTimeLag 
                 },
                 error=function(cond) {
@@ -168,7 +161,9 @@ attempToCalculateTimeLag <- function(hrv.data) {
       )
     }
   )
-  message(c("********FINAL kTimeLag ", kTimeLag))
+  if(verb){
+    message(c("Time Lag for takens reconstruction: ", kTimeLag))
+  }
   kTimeLag
 }
 
@@ -201,11 +196,9 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
     kTimeLag=attempToCalculateTimeLag(hrv.data)
     tryCatch(
       {
-        message(c("satar", kTimeLag))
         kTimeLag=5
         kEmbeddingDim = CalculateEmbeddingDim(hrv.data, numberPoints = 10000,
                                               timeLag = kTimeLag, maxEmbeddingDim = 15, doPlot=FALSE)
-        message("end")
         if(kEmbeddingDim == 0){
           hrv.data$NonLinearAnalysis[[1]]$correlation$statistic = NA
           hrv.data$NonLinearAnalysis[[1]]$sampleEntropy$statistic = NA
@@ -314,55 +307,122 @@ dunnNonLinear<-function(dfM, method){
   CorrelationStatistic = NA
   SampleEntropy = NA
   MaxLyapunov  = NA
+  REC = NA 
+  RATIO = NA 
+  DET = NA 
+  DIV = NA 
+  Lmax = NA 
+  Lmean = NA 
+  LmeanWithoutMain = NA 
+  ENTR = NA 
+  TREND = NA 
+  LAM = NA 
+  Vmax = NA 
+  Vmean = NA 
+  PoincareSD1 = NA  
+  PoincareSD2  = NA
   
-  tryCatch(
-    {
-      CorrelationStatistic = posthoc.kruskal.dunn.test(CorrelationStatistic ~ group, data=dfM, p.adjust=method)
-    },
-    error=function(cond) {
-      #TODO : habrá que tener en cuenta si es NULL; no aquí sino donde corresponda
-      
-    })
+  CorrelationStatistic = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+    CorrelationStatistic ~ group, data=dfM, p.adjt=method)
+  SampleEntropy = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+    SampleEntropy ~ group, data=dfM, p.adjt=method)
+  MaxLyapunov = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+    MaxLyapunov ~ group, data=dfM, p.adjt=method)
+  REC = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+    REC ~ group, data=dfM, p.adjt=method) 
+  RATIO = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+    RATIO ~ group, data=dfM, p.adjt=method) 
+  DET = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+    DET ~ group, data=dfM, p.adjt=method) 
+  DIV = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+    DIV ~ group, data=dfM, p.adjt=method) 
+  Lmax = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+    Lmax ~ group, data=dfM, p.adjt=method) 
+  Lmean = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+    Lmean ~ group, data=dfM, p.adjt=method) 
+  LmeanWithoutMain = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+    LmeanWithoutMain ~ group, data=dfM, p.adjt=method) 
+  ENTR = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+    ENTR ~ group, data=dfM, p.adjt=method) 
+  TREND = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+    TREND ~ group, data=dfM, p.adjt=method) 
+  LAM = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+    LAM ~ group, data=dfM, p.adjt=method) 
+  Vmax = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+    Vmax ~ group, data=dfM, p.adjt=method) 
+  Vmean = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+    Vmean ~ group, data=dfM, p.adjt=method) 
+  PoincareSD1 = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+    PoincareSD1 ~ group, data=dfM, p.adjt=method)  
+  PoincareSD2  = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+    PoincareSD2 ~ group, data=dfM, p.adjt=method)
   
-  tryCatch(
-    {
-      SampleEntropy = posthoc.kruskal.dunn.test(SampleEntropy ~ group, data=dfM, p.adjust=method)
-    },
-    error=function(cond) {
-      #TODO : habrá que tener en cuenta si es NULL; no aquí sino donde corresponda
-    })
-  
-  tryCatch(
-    {
-      MaxLyapunov = posthoc.kruskal.dunn.test(MaxLyapunov ~ group, data=dfM, p.adjust=method)
-    },
-    error=function(cond) {
-      #TODO : habrá que tener en cuenta si es NULL; no aquí sino donde corresponda
-    })
-  
-  list (CorrelationStatistic, SampleEntropy, MaxLyapunov)
+  list (CorrelationStatistic, SampleEntropy, MaxLyapunov, REC, RATIO, DET, DIV, 
+        Lmax, Lmean, LmeanWithoutMain, ENTR, TREND, LAM, Vmax, Vmean, PoincareSD1,  
+        PoincareSD2 )
 }
 
 dunnfreq<-function(dfM, method){
   dfM$group = factor(dfM$group)
-  list (ULF = posthoc.kruskal.dunn.test(ULF ~ group, data=dfM, p.adjust=method),
-        VLF = posthoc.kruskal.dunn.test(VLF ~ group, data=dfM, p.adjust=method),
-        LF = posthoc.kruskal.dunn.test(LF ~ group, data=dfM, p.adjust=method),
-        HF = posthoc.kruskal.dunn.test(HF ~ group, data=dfM, p.adjust=method) )
+  list (
+    ULF = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+      ULF ~ group, data=dfM, p.adjt=method),
+    VLF = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+      VLF ~ group, data=dfM, p.adjt=method),
+    LF = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+      LF ~ group, data=dfM, p.adjt=method),
+    HF = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+      HF ~ group, data=dfM, p.adjt=method) )
 }
 
 dunntime<-function(dfM, method){
   dfM$group = factor(dfM$group)
-  list (SDNN= posthoc.kruskal.dunn.test(SDNN ~ group, data = dfM, p.adjust=method),
-        SDANN = posthoc.kruskal.dunn.test(SDANN ~ group, data = dfM, p.adjust=method),
-        SDNNIDX = posthoc.kruskal.dunn.test(SDNNIDX ~ group, data = dfM, p.adjust=method),
-        pNN50 = posthoc.kruskal.dunn.test(pNN50 ~ group, data = dfM, p.adjust=method),
-        SDSD = posthoc.kruskal.dunn.test(SDSD ~ group, data = dfM, p.adjust=method),
-        rMSSD = posthoc.kruskal.dunn.test(rMSSD ~ group, data = dfM, p.adjust=method),
-        IRRR = posthoc.kruskal.dunn.test(IRRR ~ group, data = dfM, p.adjust=method),
-        MADRR = posthoc.kruskal.dunn.test(MADRR ~ group, data = dfM, p.adjust=method),
-        TINN = posthoc.kruskal.dunn.test(TINN ~ group, data = dfM, p.adjust=method),
-        HRVi = posthoc.kruskal.dunn.test(HRVi ~ group, data = dfM, p.adjust=method))
+  list (
+    SDNN= posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+      SDNN ~ group, data = dfM, p.adjt=method),
+    SDANN = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+      SDANN ~ group, data = dfM, p.adjt=method),
+    SDNNIDX = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+      SDNNIDX ~ group, data = dfM, p.adjt=method),
+    pNN50 = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+      pNN50 ~ group, data = dfM, p.adjt=method),
+    SDSD = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+      SDSD ~ group, data = dfM, p.adjt=method),
+    rMSSD = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+      rMSSD ~ group, data = dfM, p.adjt=method),
+    IRRR = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+      IRRR ~ group, data = dfM, p.adjt=method),
+    MADRR = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+      MADRR ~ group, data = dfM, p.adjt=method),
+    TINN = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+      TINN ~ group, data = dfM, p.adjt=method),
+    HRVi = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
+      HRVi ~ group, data = dfM, p.adjt=method))
+}
+
+
+posthoc.kruskal.dunn.test.CheckAllValuesEqual<-function(formula, data, p.adjt){
+  dunn = NULL # If we cannot do the test, I see because all the numerical values are the same, 
+  # we will return NULL since there are no differences between the populations.
+  tryCatch(
+    {
+      dunn = posthoc.kruskal.dunn.test(formula, data, p.adjust.method =  p.adjt, na.action=na.omit)
+      if(is.null(dunn)){
+        message("NAAAAAAAAAAAAAAAAA en DUNNN !!!!!")
+        dunn = NULL
+      }
+      dunn
+    },
+    error=function(cond) {
+      message(c("NAAAAAAAAAAAAAAAAA en DUNNN !!!!! " , formula, p.adjt))
+      print(data)
+      
+      if(verb){
+        message("All values identical in kruskal.dunn.test; pvalue set to 1")
+      }
+    }
+  )
+  dunn
 }
 
 shapiro.test.CheckAllValuesEqual<-function(x){
@@ -372,7 +432,7 @@ shapiro.test.CheckAllValuesEqual<-function(x){
     {
       p.val = shapiro.test(x)$p.value
       if(is.na(p.val)){
-        message("NAAAAAAAAAAAAAAAAA !!!!!")
+        message("NAAAAAAAAAAAAAAAAA en SHAPIROOOO!!!!!")
         p.val = 1
       }
       p.val
@@ -560,6 +620,7 @@ statistical_analysisNonLinear<-function(dfM, numberOfExperimentalGroups, method,
         },
         error=function(cond) {
           #TODO : habria que tener en cuenta si es NULL
+          message("Falla   list$kruskal[[column]] = NA")
           list$kruskal[[column]] = NA
         })
     }
@@ -785,7 +846,10 @@ print.RHRVEasyResult <- function(results){
   if(!all(is.na(results$NonLinearAnalysis))){
     listDF = split(results$NonLinearAnalysis, results$NonLinearAnalysis$group)
     
-    for (column in c('CorrelationStatistic', 'SampleEntropy', 'MaxLyapunov')){
+    for (column in c('CorrelationStatistic', 'SampleEntropy', 'MaxLyapunov',
+                     'REC', 'RATIO', 'DET', 'DIV', 'Lmax', 'Lmean', 'LmeanWithoutMain',
+                     'ENTR', 'TREND', 'LAM', 'Vmax', 'Vmean', 'PoincareSD1',
+                     'PoincareSD2' )){
       if(all(is.na(results$StatysticalAnalysisNonLinear$anova[[column]]))){
         #report kruskal
         if(results$pValues[[column]]<signif_level){#error pvalue 1
@@ -854,7 +918,7 @@ print.RHRVEasyResult <- function(results){
 
 
 RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=FALSE, 
-                   format = "RR", typeAnalysis = 'fourier', significance_level = 0.05, 
+                   format = "RR", typeAnalysis = 'fourier', significance_level = 0.25, 
                    nonLinear=FALSE, ...) {
   
   dataFrameMWavelet = data.frame()
