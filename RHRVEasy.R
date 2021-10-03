@@ -300,8 +300,8 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
   dataFrame
 }
 
-#@todo 
-# Statistical tests application
+
+# Dunn Statistical tests for non-linear statistics
 dunnNonLinear<-function(dfM, method){
   dfM$group = factor(dfM$group)
   CorrelationStatistic = NA
@@ -358,8 +358,8 @@ dunnNonLinear<-function(dfM, method){
     PoincareSD2 ~ group, data=dfM, p.adjt=method)
   
   list (CorrelationStatistic, SampleEntropy, MaxLyapunov, REC, RATIO, DET, DIV, 
-        Lmax, Lmean, LmeanWithoutMain, ENTR, TREND, LAM, Vmax, Vmean, PoincareSD1,  
-        PoincareSD2 )
+        Lmax, Lmean, LmeanWithoutMain, ENTR, TREND, LAM, Vmax, Vmean, 
+        PoincareSD1, PoincareSD2 )
 }
 
 dunnfreq<-function(dfM, method){
@@ -402,45 +402,39 @@ dunntime<-function(dfM, method){
 
 
 posthoc.kruskal.dunn.test.CheckAllValuesEqual<-function(formula, data, p.adjt){
-  dunn = NULL # If we cannot do the test, I see because all the numerical values are the same, 
+  # If we cannot do the test, I see because all the numerical values are the same, 
   # we will return NULL since there are no differences between the populations.
-  tryCatch(
+  dunn =tryCatch(
     {
-      dunn = posthoc.kruskal.dunn.test(formula, data, p.adjust.method =  p.adjt, na.action=na.omit)
-      if(is.null(dunn)){
-        message("NAAAAAAAAAAAAAAAAA en DUNNN !!!!!")
-        dunn = NULL
-      }
-      dunn
+      posthoc.kruskal.dunn.test(formula, data, p.adjust.method =  p.adjt, na.action=na.omit)
     },
     error=function(cond) {
+      #@todoborrar
       message(c("NAAAAAAAAAAAAAAAAA en DUNNN !!!!! " , formula, p.adjt))
-      print(data)
-      
       if(verb){
-        message("All values identical in kruskal.dunn.test; pvalue set to 1")
+        message(c("All values identical in kruskal.dunn.test; pvalue set to 1 for ", formula))
       }
+      NULL
     }
   )
   dunn
 }
 
+
 shapiro.test.CheckAllValuesEqual<-function(x){
-  pval = 1 # If we cannot do the test, I see because all the numerical values are the same, 
+  # If we cannot do the test, I see because all the numerical values are the same, 
   # we will return 1 since there are no differences between the populations.
-  tryCatch(
+  pval = tryCatch(
     {
-      p.val = shapiro.test(x)$p.value
-      if(is.na(p.val)){
-        message("NAAAAAAAAAAAAAAAAA en SHAPIROOOO!!!!!")
-        p.val = 1
-      }
-      p.val
+      shapiro.test(x)$p.value
     },
     error=function(cond) {
+      message("Problema en SHAPIROOOO!!!!!")
+      message(x)
       if(verb){
         message("All values identical in shapiro.test; pvalue set to 1")
       }
+      1
     }
   )
   pval
@@ -479,12 +473,12 @@ statistical_analysisFreq<-function(dfM, numberOfExperimentalGroups, method, sign
     
     if (numberOfExperimentalGroups > 2 || all(dataFramePvalues[[p_values]] > signif_level)) {
       if (verb == TRUE){
-        cat(column, " Normal: Anova. P-values = ", dataFramePvalues[[p_values]], "\n")
+        message(column, " Normal: Anova. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
       list$anova[[column]] = aov(formula, data = dfM, na.action = na.exclude)
     }else {
       if (verb == TRUE){
-        cat(column, " NOT normal: Kruskal. P-values = ", dataFramePvalues[[p_values]], "\n")
+        message(column, " NOT normal: Kruskal. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
       list$kruskal[[column]] = kruskal.test(formula, data = dfM, na.action = na.exclude)
     }
@@ -498,10 +492,10 @@ statistical_analysisFreq<-function(dfM, numberOfExperimentalGroups, method, sign
 
 statistical_analysisTime<-function(dfM, numberOfExperimentalGroups, method, signif_level){
   
-  anova = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
-               MADRR = NA, TINN = NA, HRVi = NA)
-  kruskal = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
-                 MADRR = NA, TINN = NA, HRVi = NA)
+  anova = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, 
+               rMSSD = NA, IRRR = NA, MADRR = NA, TINN = NA, HRVi = NA)
+  kruskal = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, 
+                 rMSSD = NA, IRRR = NA, MADRR = NA, TINN = NA, HRVi = NA)
   dunn = NA
   list = list(anova = anova, kruskal = kruskal, dunn = dunn)
   
@@ -599,13 +593,13 @@ statistical_analysisNonLinear<-function(dfM, numberOfExperimentalGroups, method,
         cat(column, " Normal: Anova. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
       
-      #ANOVA will fail if the statistic could not be calculated for all recordings in a group
-      tryCatch(
+      #ANOVA will fail if the hrv statistic could not be calculated for all recordings in a group
+      list$anova[[column]] = tryCatch(
         {
-          list$anova[[column]] = aov(formula, data = dfM, na.action = na.exclude)
+           aov(formula, data = dfM, na.action = na.exclude)
         },
         error=function(cond) {
-          list$anova[[column]] = NA
+           NA
         })
       
       
@@ -614,14 +608,14 @@ statistical_analysisNonLinear<-function(dfM, numberOfExperimentalGroups, method,
         cat(column, " NOT normal: Kruskal. P-values = ", dataFramePvalues[[p_values]], "\n")
       }
       #Krustal will fail if the statistic could not be calculated for all recordings in a group
-      tryCatch(
+      list$kruskal[[column]] = tryCatch(
         {      
-          list$kruskal[[column]] = kruskal.test(formula, data = dfM, na.action = na.exclude)
+          kruskal.test(formula, data = dfM, na.action = na.exclude)
         },
         error=function(cond) {
-          #TODO : habria que tener en cuenta si es NULL
+          #@borrar
           message("Falla   list$kruskal[[column]] = NA")
-          list$kruskal[[column]] = NA
+          NA
         })
     }
   }
@@ -730,8 +724,6 @@ print.RHRVEasyResult <- function(results){
         differencesFound = TRUE
         cat("\nThere is a statistically significant difference in", column,  "; pvalue: ", 
             results$pValues[[column]], "\n")
-        
-        
         
         for (i in 1:length(listDF)){
           group = levels(results$TimeAnalysis$group)[i]
@@ -916,10 +908,25 @@ print.RHRVEasyResult <- function(results){
   }
 }
 
+saveHRVindexes<-function(results, saveHRVindexesInPath){
+  if(!is.null(saveHRVindexesInPath)){
+    me=merge(results$TimeAnalysis, results$FrequencyAnalysis)
+    frameTosave=merge(me, results$NonLinearAnalysis)
+    fileName=""
+    for(lev in levels(as.factor(a21$TimeAnalysis$group))){
+      fileName = paste(fileName,lev, " vs ",sep = "")
+    }
+    fileName = substr(fileName,1,nchar(fileName)-4)
+    
+    fileName = paste(saveHRVindexesInPath, "/",fileName, ".xlsx", sep="")
+    write_xlsx(frameTosave, fileName)
+  }
+}
+
 
 RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=FALSE, 
                    format = "RR", typeAnalysis = 'fourier', significance_level = 0.25, 
-                   nonLinear=FALSE, ...) {
+                   nonLinear=FALSE, saveHRVindexesInPath = NULL, ...) {
   
   dataFrameMWavelet = data.frame()
   dataFrameMTime = data.frame()
@@ -941,7 +948,9 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
     dataFrameMTime = rbind(dataFrameMTime, dataFrameMTime = time_analysis(format,
                                                                           list.files(folder), split_path(folder)[1], folder, ...))
     if(nonLinear == TRUE){
-      cat("Performing non linear analysis...")
+      if(verb){
+        message("Performing non linear analysis...")
+      }
       dataFrameMNonLinear = rbind(dataFrameMNonLinear,non_linear_analysis(format, 
                                                                           list.files(folder), split_path(folder)[1], folder, ...))
       
@@ -995,9 +1004,6 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
                                  correction, method)
   }
   
-  
-  
-  
   results = list("TimeAnalysis" = dataFrameMTime, "StatysticalAnalysisTime" = listTimeStatysticalAnalysis,
                  "FrequencyAnalysis" = dataFrameMFreq, 
                  "StatysticalAnalysisFrequency" = listFreqStatysticalAnalysis,
@@ -1006,5 +1012,7 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
                  "pValues" = listpValues)
   
   class(results) = "RHRVEasyResult"
+  saveHRVindexes(results, saveHRVindexesInPath)
   results
+  
 }
