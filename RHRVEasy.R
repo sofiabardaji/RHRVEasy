@@ -181,7 +181,11 @@ extractRqaStatistics <- function(rqa){
                     "Vmax" = rqa$Vmax, 
                     "Vmean" = rqa$Vmean)
   
+  #If RQA failed completly due to crashes when rebuilding phase space
+  resultsRQA[sapply(resultsRQA, is.null)] <- NA
+  #If if any of the indices could not be calculated
   resultsRQA[sapply(resultsRQA, is.infinite)] <- NA
+  #safe check to make uniform the format of non-computed indices
   resultsRQA[sapply(resultsRQA, is.nan)] <- NA
   
   resultsRQA
@@ -194,6 +198,11 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
     hrv.data = preparing_analysis(format, file = file, rrs = rrs2)
     hrv.data = CreateNonLinearAnalysis(hrv.data)
     kTimeLag=attempToCalculateTimeLag(hrv.data)
+    
+    #Poincare does not depend on the calculation of time lag or correlation dimension
+    #unlike the rest of the nonlinear statistics, its calculation should never fail
+    hrv.data = PoincarePlot(hrv.data,  indexNonLinearAnalysis=1, timeLag=1)
+    
     tryCatch(
       {
         kTimeLag=5
@@ -208,7 +217,6 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
           
           hrv.data = RQA(hrv.data, indexNonLinearAnalysis = 1, embeddingDim=kEmbeddingDim, 
                          timeLag = kTimeLag, radius = 2)
-          hrv.data = PoincarePlot(hrv.data,  indexNonLinearAnalysis=1, timeLag=1)
           
           hrv.data = CalculateCorrDim(hrv.data, indexNonLinearAnalysis = 1, minEmbeddingDim=kEmbeddingDim,
                                       maxEmbeddingDim = kEmbeddingDim + 2, timeLag = kTimeLag, minRadius = 1, maxRadius = 50,
@@ -244,7 +252,7 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
       },
       error=function(cond) {
         if(verb){
-          message("There has been a problem calculating some non lineal statystic  !!!!!!!!")
+          message("There has been a problem calculating some non lineal statystic.")
           message(cond)
         }
         
@@ -409,8 +417,6 @@ posthoc.kruskal.dunn.test.CheckAllValuesEqual<-function(formula, data, p.adjt){
       posthoc.kruskal.dunn.test(formula, data, p.adjust.method =  p.adjt, na.action=na.omit)
     },
     error=function(cond) {
-      #@todoborrar
-      message(c("NAAAAAAAAAAAAAAAAA en DUNNN !!!!! " , formula, p.adjt))
       if(verb){
         message(c("All values identical in kruskal.dunn.test; pvalue set to 1 for ", formula))
       }
@@ -432,9 +438,9 @@ shapiro.test.CheckAllValuesEqual<-function(x){
       message("Problema en SHAPIROOOO!!!!!")
       message(x)
       if(verb){
-        message("All values identical in shapiro.test; pvalue set to 1")
+        message("All indice's values identical in shapiro.test; non normality assumed and pvalue set to 0")
       }
-      1
+      0
     }
   )
   pval
@@ -669,10 +675,15 @@ correctpValues <- function(listTime, listFreq, listNonLinear, correction, method
         if(!is.na(listNonLinear[["kruskal"]][[column]])){
           listpValues[[column]] = listNonLinear[["kruskal"]][[column]]$p.value
         }
+        else{
+          #if we have not been able to calculate the statistic, 
+          #we cannot affirm that there are differences in the statistic
+          listpValues[[column]] = 1
+        }
       }else{
         p.val.tmp = extract_ANOVA_pvalue(listNonLinear[["anova"]][[column]])
         if(is.na(p.val.tmp)){
-          #if we have not been able to calculate the statistic for all the individuals of the same population, 
+          #if we have not been able to calculate the statistic, 
           #we cannot affirm that there are differences in the statistic
           listpValues[[column]] = 1
         }
@@ -706,7 +717,7 @@ extract_ANOVA_pvalue<-function(anovaObject){
 print.RHRVEasyResult <- function(results){
   
   #@todo
-  results$pValues[sapply(results$pValues, is.na)] <- 1
+  #results$pValues[sapply(results$pValues, is.na)] <- 1
   
   listDF = split(results$TimeAnalysis, results$TimeAnalysis$group)
   
@@ -913,7 +924,7 @@ saveHRVindexes<-function(results, saveHRVindexesInPath){
     me=merge(results$TimeAnalysis, results$FrequencyAnalysis)
     frameTosave=merge(me, results$NonLinearAnalysis)
     fileName=""
-    for(lev in levels(as.factor(a21$TimeAnalysis$group))){
+    for(lev in levels(as.factor(results$TimeAnalysis$group))){
       fileName = paste(fileName,lev, " vs ",sep = "")
     }
     fileName = substr(fileName,1,nchar(fileName)-4)
