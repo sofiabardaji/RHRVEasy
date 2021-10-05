@@ -619,8 +619,6 @@ statistical_analysisNonLinear<-function(dfM, numberOfExperimentalGroups, method,
           kruskal.test(formula, data = dfM, na.action = na.exclude)
         },
         error=function(cond) {
-          #@borrar
-          message("Falla   list$kruskal[[column]] = NA")
           NA
         })
     }
@@ -715,9 +713,6 @@ extract_ANOVA_pvalue<-function(anovaObject){
 }
 
 print.RHRVEasyResult <- function(results){
-  
-  #@todo
-  #results$pValues[sapply(results$pValues, is.na)] <- 1
   
   listDF = split(results$TimeAnalysis, results$TimeAnalysis$group)
   
@@ -921,16 +916,24 @@ print.RHRVEasyResult <- function(results){
 
 saveHRVindexes<-function(results, saveHRVindexesInPath){
   if(!is.null(saveHRVindexesInPath)){
-    me=merge(results$TimeAnalysis, results$FrequencyAnalysis)
-    frameTosave=merge(me, results$NonLinearAnalysis)
-    fileName=""
-    for(lev in levels(as.factor(results$TimeAnalysis$group))){
-      fileName = paste(fileName,lev, " vs ",sep = "")
-    }
-    fileName = substr(fileName,1,nchar(fileName)-4)
-    
-    fileName = paste(saveHRVindexesInPath, "/",fileName, ".xlsx", sep="")
-    write_xlsx(frameTosave, fileName)
+    tryCatch(
+      {
+        me=merge(results$TimeAnalysis, results$FrequencyAnalysis)
+        frameTosave=merge(me, results$NonLinearAnalysis)
+        fileName=""
+        for(lev in levels(as.factor(results$TimeAnalysis$group))){
+          fileName = paste(fileName,lev, " vs ",sep = "")
+        }
+        fileName = substr(fileName,1,nchar(fileName)-4)
+        
+        fileName = paste(saveHRVindexesInPath, "/",fileName, ".xlsx", sep="")
+        write_xlsx(frameTosave, fileName)
+        },
+      error=function(cond) {
+        message("There was an error when trying to save the results to the Ecel file")
+        message(cond)
+      }
+    )
   }
 }
 
