@@ -27,7 +27,8 @@ preparing_analysis<-function(file, rrs, format){
   hrv.data = CreateHRVData()
   hrv.data = SetVerbose(hrv.data, FALSE)
   
-  hrv.data = LoadBeat(fileType = format, HRVData = hrv.data,  Recordname = file, RecordPath = rrs)
+  hrv.data = LoadBeat(fileType = format, HRVData = hrv.data,  Recordname = file, 
+                      RecordPath = rrs)
   if(verb){
     message(c("Loading recording ", file))
   }
@@ -205,9 +206,8 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
     
     tryCatch(
       {
-        kTimeLag=5
         kEmbeddingDim = CalculateEmbeddingDim(hrv.data, numberPoints = 10000,
-                                              timeLag = kTimeLag, maxEmbeddingDim = 15, doPlot=FALSE)
+                            timeLag = kTimeLag, maxEmbeddingDim = 15, doPlot=FALSE)
         if(kEmbeddingDim == 0){
           hrv.data$NonLinearAnalysis[[1]]$correlation$statistic = NA
           hrv.data$NonLinearAnalysis[[1]]$sampleEntropy$statistic = NA
@@ -215,12 +215,15 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
         }
         else{
           
-          hrv.data = RQA(hrv.data, indexNonLinearAnalysis = 1, embeddingDim=kEmbeddingDim, 
-                         timeLag = kTimeLag, radius = 2)
+          hrv.data = RQA(hrv.data, indexNonLinearAnalysis = 1, 
+                         embeddingDim=kEmbeddingDim, timeLag = kTimeLag, radius = 2)
           
-          hrv.data = CalculateCorrDim(hrv.data, indexNonLinearAnalysis = 1, minEmbeddingDim=kEmbeddingDim,
-                                      maxEmbeddingDim = kEmbeddingDim + 2, timeLag = kTimeLag, minRadius = 1, maxRadius = 50,
-                                      pointsRadius = 100, theilerWindow =10, corrOrder = 2, doPlot = FALSE)
+          hrv.data = CalculateCorrDim(hrv.data, indexNonLinearAnalysis = 1, 
+                                      minEmbeddingDim=kEmbeddingDim,
+                                      maxEmbeddingDim = kEmbeddingDim + 2, 
+                                      timeLag = kTimeLag, minRadius = 1, maxRadius = 50,
+                                      pointsRadius = 100, theilerWindow =10, 
+                                      corrOrder = 2, doPlot = FALSE)
           
           cd = hrv.data$NonLinearAnalysis[[1]]$correlation$computations
           
@@ -230,18 +233,22 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
             estimate_scaling_region(filteredCd, numberOfLinearRegions = 3, doPlot = FALSE)
           
           
-          hrv.data = EstimateCorrDim(hrv.data, indexNonLinearAnalysis=1, regressionRange=cdScalingRegion, # ahi va variable
+          hrv.data = EstimateCorrDim(hrv.data, indexNonLinearAnalysis=1, 
+                                     regressionRange=cdScalingRegion,
                                      useEmbeddings=(kEmbeddingDim):(kEmbeddingDim+2), 
                                      doPlot=FALSE)
           
-          hrv.data = CalculateSampleEntropy(hrv.data, indexNonLinearAnalysis= 1, doPlot = FALSE)
+          hrv.data = CalculateSampleEntropy(hrv.data, indexNonLinearAnalysis= 1, 
+                                            doPlot = FALSE)
           
-          hrv.data = EstimateSampleEntropy(hrv.data, indexNonLinearAnalysis=1, doPlot = FALSE)
+          hrv.data = EstimateSampleEntropy(hrv.data, indexNonLinearAnalysis=1, 
+                                           doPlot = FALSE)
           
           hrv.data = CalculateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
                                           minEmbeddingDim= kEmbeddingDim, 
                                           maxEmbeddingDim= kEmbeddingDim+2,
-                                          timeLag = kTimeLag,radius = 3, theilerWindow = 20,
+                                          timeLag = kTimeLag,radius = 3, 
+                                          theilerWindow = 20,
                                           doPlot = TRUE)
           
           hrv.data = EstimateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
@@ -258,20 +265,22 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
         
       })
     
-    resultsCS = list("CorrelationStatistic" = mean(hrv.data$NonLinearAnalysis[[1]]$correlation$statistic, 
-                                                   na.rm = TRUE))
-    resultsSE = list("SampleEntropy" = mean(hrv.data$NonLinearAnalysis[[1]]$sampleEntropy$statistic, 
-                                            na.rm = TRUE))
-    resultsML = list("MaxLyapunov" = mean(hrv.data$NonLinearAnalysis[[1]]$lyapunov$statistic, 
-                                          na.rm = TRUE))
+    resultsCS = list("CorrelationStatistic" = mean(hrv.data$NonLinearAnalysis[[1]]
+                                              $correlation$statistic, na.rm = TRUE))
+    resultsSE = list("SampleEntropy" = mean(hrv.data$NonLinearAnalysis[[1]]
+                                            $sampleEntropy$statistic, na.rm = TRUE))
+    resultsML = list("MaxLyapunov" = mean(hrv.data$NonLinearAnalysis[[1]]$
+                                            lyapunov$statistic, na.rm = TRUE))
     
     resultsRQA = extractRqaStatistics (hrv.data$NonLinearAnalysis[[1]]$rqa)
     
     resultsPP = list("PoincareSD1" = hrv.data$NonLinearAnalysis[[1]]$PoincarePlot$SD1, 
                      "PoincareSD2" = hrv.data$NonLinearAnalysis[[1]]$PoincarePlot$SD2)
+    resultsTimeDim = list("EmbeddingDim" = kEmbeddingDim, "TimeLag" = kTimeLag)
     
     
-    #as.data.frame considers that if the value of a list is NULL it does not exist. It must contain NA
+    #as.data.frame considers that if the value of a list is NULL it does not exist. 
+    #It must contain NA
     if(verb){
       message(c("\nresultsCS ",resultsCS["CorrelationStatistic"]))
     }
@@ -301,7 +310,8 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
     
     name_file = list ("filename" = file)
     group = list ("group" = class)
-    row_list = c (name_file, resultsCS, resultsSE, resultsML, resultsRQA, resultsPP, group)
+    row_list = c (name_file, resultsCS, resultsSE, resultsML, resultsRQA, 
+                  resultsPP, resultsTimeDim, group)
     df=as.data.frame(row_list)
     dataFrame=rbind(dataFrame, df)
   }
@@ -329,6 +339,7 @@ dunnNonLinear<-function(dfM, method){
   Vmean = NA 
   PoincareSD1 = NA  
   PoincareSD2  = NA
+  
   
   CorrelationStatistic = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
     CorrelationStatistic ~ group, data=dfM, p.adjt=method)
@@ -761,19 +772,13 @@ print.RHRVEasyResult <- function(results){
     # 1. We have more than 2 groups, we check that by looking at the length of listDF
     if(length(listDF)>2){
       # 2. ANOVA Test is significative. We check that by comparing it to the signif_level
-      var = which(results$StatysticalAnalysisTime$dunn[[column]][["p.value"]]<signif_level, arr.ind = TRUE)
+      var = which(results$StatysticalAnalysisTime$dunn[[column]][["p.value"]] < 
+                    signif_level, arr.ind = TRUE)
       
       if(length(var)>0){
-        cat("\nGroups with stastically significant differences in ", column, " according to the Dunn test :\n")
+        cat("\nGroups with stastically significant differences in ", column, 
+            " according to the Dunn test :\n")
         print(results$StatysticalAnalysisTime$dunn[[column]])
-        #        cat(results$pValues[[column]])
-        #        for (i in 1:nrow(var)){
-        #          cat(' is the p value of',
-        #              row.names(results$StatysticalAnalysisTime$dunn[[column]][["p.value"]])[var[i,1]], 'vs',
-        #              colnames(results$StatysticalAnalysisTime$dunn[[column]][["p.value"]])[var[i,2]], '')
-        #        }
-        #        cat('for', column, '\n')
-        
       }
     }
     
@@ -821,20 +826,13 @@ print.RHRVEasyResult <- function(results){
       
       # 2. ANOVA Test is significative. We check that by comparing it to the signif_level
       
-      variable = which(results$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]]<signif_level, 
+      variable = which(
+        results$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]]<signif_level, 
                        arr.ind = TRUE)
       if(length(variable)>0){
-        cat("\nGroups with stastically significant differences in ", column, " according to the Dunn test :\n")
+        cat("\nGroups with stastically significant differences in ", column, 
+            " according to the Dunn test :\n")
         print(results$StatysticalAnalysisFrequency$dunn[[column]])
-        #        cat("The groups with stastically significant differences are:\n")
-        #        cat(results$pValues[[column]])
-        #        for (i in 1:nrow(variable)){
-        #          cat(' is the p value of',
-        #              row.names(results$StatysticalAnalysisFrequency$dunn[[column]][["p.value"]])[variable[i,1]], 
-        #              'vs',
-        #              colnames(results$StatysticalAnalysisFrequency$dunn[[column]]$p.value)[variable[i,2]], '')
-        #        }
-        #        cat('for', column, '\n')
       }
       
     }
@@ -852,8 +850,8 @@ print.RHRVEasyResult <- function(results){
         #report kruskal
         if(results$pValues[[column]]<signif_level){#error pvalue 1
           differencesFound = TRUE
-          cat("\nThere is a statistically significant difference in", column,  "; pvalue: ", 
-              results$pValues[[column]], "\n")
+          cat("\nThere is a statistically significant difference in", column,  
+              "; pvalue: ", results$pValues[[column]], "\n")
           
           for (i in 1:length(listDF)){
             group = levels(results$TimeAnalysis$group)[i]
@@ -867,8 +865,8 @@ print.RHRVEasyResult <- function(results){
       else{
         if(results$pValues[[column]]<signif_level){
           differencesFound = TRUE
-          cat("\nThere is a statistically significant difference in", column, "; pvalue: ", 
-              results$pValues[[column]], "\n")
+          cat("\nThere is a statistically significant difference in", column, 
+              "; pvalue: ", results$pValues[[column]], "\n")
           
           for (i in 1:length(listDF)){
             group = levels(results$TimeAnalysis$group)[i]
@@ -887,21 +885,14 @@ print.RHRVEasyResult <- function(results){
         
         # 2. ANOVA Test is significative. We check that by comparing it to the signif_level
         
-        variable = which(results$StatysticalAnalysisNonLinear$dunn[[column]][["p.value"]]<signif_level, 
+        variable = which(
+          results$StatysticalAnalysisNonLinear$dunn[[column]][["p.value"]]<signif_level, 
                          arr.ind = TRUE)
         if(length(variable)>0){
           
-          cat("\nGroups with stastically significant differences in ", column, " according to the Dunn test :\n")
+          cat("\nGroups with stastically significant differences in ", column, 
+              " according to the Dunn test :\n")
           print(results$StatysticalAnalysisNonLinear$dunn[[column]])
-          #          cat("The groups with stastically significant differences are:\n")
-          #          cat(results$pValues[[column]])
-          #          for (i in 1:nrow(variable)){
-          #            cat(' is the p value of',
-          #                row.names(results$StatysticalAnalysisNonLinear$dunn[[column]][["p.value"]])[variable[i,1]], 
-          #                'vs',
-          #                colnames(results$StatysticalAnalysisNonLinear$dunn[[column]]$p.value)[variable[i,2]], '')
-          #          }
-          #          cat('for', column, '\n')
         }
         
       }
@@ -960,13 +951,13 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
   for (folder in folders){
     file_validation(folder)
     dataFrameMTime = rbind(dataFrameMTime, dataFrameMTime = time_analysis(format,
-                                                                          list.files(folder), split_path(folder)[1], folder, ...))
+                              list.files(folder), split_path(folder)[1], folder, ...))
     if(nonLinear == TRUE){
       if(verb){
         message("Performing non linear analysis...")
       }
       dataFrameMNonLinear = rbind(dataFrameMNonLinear,non_linear_analysis(format, 
-                                                                          list.files(folder), split_path(folder)[1], folder, ...))
+                              list.files(folder), split_path(folder)[1], folder, ...))
       
     }
   }
@@ -975,43 +966,42 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
   # Statistical analysis of both
   
   listTimeStatysticalAnalysis = statistical_analysisTime(dataFrameMTime,
-                                                         numberOfExperimentalGroups, method, signif_level)
+                               numberOfExperimentalGroups, method, signif_level)
   
   # FREQUENCY:
   if(typeAnalysis == "fourier"){
     for (folder in folders){
       dataFrameMFreq = rbind(dataFrameMFreq, dataFrameMFreq = freq_analysis(format,
-                                                                            list.files(folder), split_path(folder)[1], folder, ...))
+                               list.files(folder), split_path(folder)[1], folder, ...))
     }
     
     listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq,
-                                                           numberOfExperimentalGroups, method, signif_level)
+                               numberOfExperimentalGroups, method, signif_level)
   }
   
   # WAVELET
   if(typeAnalysis == "wavelet"){
     for (folder in folders){
-      dataFrameMWavelet = rbind(dataFrameMWavelet, dataFrameMWavelet = wavelet_analysis(format,
-                                                                                        list.files(folder), split_path(folder)[1], folder,
-                                                                                        type = typeAnalysis, ...))
+      dataFrameMWavelet = rbind(dataFrameMWavelet, dataFrameMWavelet = 
+                               wavelet_analysis(format,
+                               list.files(folder), split_path(folder)[1], folder,
+                               type = typeAnalysis, ...))
     }
     
     listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMWavelet,
-                                                           numberOfExperimentalGroups, method, signif_level)
+                                    numberOfExperimentalGroups, method, signif_level)
     
     dataFrameMFreq = dataFrameMWavelet
   }
   
   
   if(!all(is.na(dataFrameMNonLinear))){
-    #cat("DF non linear NOT empty: correct p values with those values")
     listNonLinearStatisticalAnalysis = statistical_analysisNonLinear(dataFrameMNonLinear,
-                                                                     numberOfExperimentalGroups, method, signif_level)
+                                         numberOfExperimentalGroups, method, signif_level)
     listpValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
                                  listNonLinearStatisticalAnalysis,
                                  correction, method)
   }else{
-    #cat("DF non linear empty")
     listNonLinearStatisticalAnalysis = NA
     listpValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
                                  listNonLinearStatisticalAnalysis,
