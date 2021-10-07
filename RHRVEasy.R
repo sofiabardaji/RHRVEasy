@@ -640,7 +640,7 @@ statistical_analysisNonLinear<-function(dfM, numberOfExperimentalGroups, method,
 }
 
 
-correctpValues <- function(listTime, listFreq, listNonLinear, correction, method){
+colectpValues <- function(listTime, listFreq, listNonLinear, correction, method){
   
   listpValues = list(ULF = NA, VLF = NA, LF = NA, HF = NA,
                      SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, 
@@ -649,14 +649,6 @@ correctpValues <- function(listTime, listFreq, listNonLinear, correction, method
                      REC = NA, RATIO = NA, DET = NA, DIV = NA, Lmax = NA, Lmean = NA,
                      LmeanWithoutMain = NA, ENTR = NA, TREND = NA, LAM = NA, Vmax = NA,
                      Vmean = NA, PoincareSD1 = NA,  PoincareSD2 = NA)
-  
-  listpValuesCorrected = list(ULF = NA, VLF = NA, LF = NA, HF = NA, SDNN = NA, SDANN = NA, 
-                              SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
-                              MADRR = NA, TINN = NA, HRVi = NA,
-                              CorrelationStatistic = NA, SampleEntropy = NA, MaxLyapunov = NA,
-                              REC = NA, RATIO = NA, DET = NA, DIV = NA, Lmax = NA, Lmean = NA,
-                              LmeanWithoutMain = NA, ENTR = NA, TREND = NA, LAM = NA, Vmax = NA,
-                              Vmean = NA, PoincareSD1 = NA,  PoincareSD2 = NA)
   
   for (column in c('ULF', 'VLF', 'LF', 'HF')){
     if(is.na(listFreq$anova[[column]])){
@@ -702,12 +694,24 @@ correctpValues <- function(listTime, listFreq, listNonLinear, correction, method
       }
     }
   }
+  listpValues
+}
+
+correctpValues <- function(listpValues, correction, method){
+  
+  listpValuesCorrected = list(ULF = NA, VLF = NA, LF = NA, HF = NA, SDNN = NA, SDANN = NA, 
+                              SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
+                              MADRR = NA, TINN = NA, HRVi = NA,
+                              CorrelationStatistic = NA, SampleEntropy = NA, MaxLyapunov = NA,
+                              REC = NA, RATIO = NA, DET = NA, DIV = NA, Lmax = NA, Lmean = NA,
+                              LmeanWithoutMain = NA, ENTR = NA, TREND = NA, LAM = NA, Vmax = NA,
+                              Vmean = NA, PoincareSD1 = NA,  PoincareSD2 = NA)
   
   if (correction == TRUE){
     listpValuesCorrected = p.adjust(listpValues, method)
     listpValuesCorrected <- as.list(listpValuesCorrected)
     
-  }else if (correction == FALSE){
+  }else{
     listpValuesCorrected = listpValues
   }
   listpValuesCorrected
@@ -998,22 +1002,21 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
   if(!all(is.na(dataFrameMNonLinear))){
     listNonLinearStatisticalAnalysis = statistical_analysisNonLinear(dataFrameMNonLinear,
                                          numberOfExperimentalGroups, method, signif_level)
-    listpValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
-                                 listNonLinearStatisticalAnalysis,
-                                 correction, method)
   }else{
     listNonLinearStatisticalAnalysis = NA
-    listpValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
-                                 listNonLinearStatisticalAnalysis,
-                                 correction, method)
   }
   
-  results = list("TimeAnalysis" = dataFrameMTime, "StatysticalAnalysisTime" = listTimeStatysticalAnalysis,
+  listpUncorrectedValues = colectpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
+                               listNonLinearStatisticalAnalysis)
+  listpValues = correctpValues(listpUncorrectedValues, correction, method)
+  
+  results = list("TimeAnalysis" = dataFrameMTime, 
+                 "StatysticalAnalysisTime" = listTimeStatysticalAnalysis,
                  "FrequencyAnalysis" = dataFrameMFreq, 
                  "StatysticalAnalysisFrequency" = listFreqStatysticalAnalysis,
                  "NonLinearAnalysis" = dataFrameMNonLinear,
                  "StatysticalAnalysisNonLinear" = listNonLinearStatisticalAnalysis,
-                 "pValues" = listpValues)
+                 "pValues" = listpValues, "listpUncorrectedValues" = listpUncorrectedValues)
   
   class(results) = "RHRVEasyResult"
   saveHRVindexes(results, saveHRVindexesInPath)
