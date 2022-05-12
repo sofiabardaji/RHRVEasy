@@ -5,7 +5,7 @@ library(FSA)
 library(PMCMR)
 library(writexl)
 
-#source('scaling_region_estimation.R')
+#source('ScalingRegionEstimation.R')
 
 file_validation<-function(path){
   # 1. Check if path really exists
@@ -27,8 +27,16 @@ preparing_analysis<-function(file, rrs, format){
   hrv.data = CreateHRVData()
   hrv.data = SetVerbose(hrv.data, FALSE)
   
-  hrv.data = LoadBeat(fileType = format, HRVData = hrv.data,  Recordname = file, 
-                      RecordPath = rrs)
+  hrv.data = tryCatch(
+    {
+      hrv.data = LoadBeat(fileType = format, HRVData = hrv.data,  Recordname = file, 
+                          RecordPath = rrs)
+      hrv.data
+    },
+    error=function(cond) {
+      stop(paste("The file \"", file, "\" could not be loaded. Check if the file is in the correct format; the specified format was \"", format,"\".",sep=""))
+    })
+ 
   if(verb){
     message(c("Loading recording ", file))
   }
@@ -436,7 +444,6 @@ posthoc.kruskal.dunn.test.CheckAllValuesEqual<-function(formula, data, p.adjt){
   )
   dunn
 }
-
 
 shapiro.test.CheckAllValuesEqual<-function(x){
   # If we cannot do the test, I see because all the numerical values are the same, 
