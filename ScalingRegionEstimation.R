@@ -75,7 +75,7 @@ estimate_local_slopes = function(y, x, bandwidth,
   if (doPlot) {
     try({
       # plot to check the local slopes
-      plot(smoothDiffRadius, smoothDiff[i,], ylim = range(smoothDiff),
+      plot(smoothDiffRadius, smoothDiff[1,], ylim = range(smoothDiff),
            type = "l", main = "Smoothed local slopes")
       for (i in 2:nrow(smoothDiff)) {
         lines(smoothDiffRadius, smoothDiff[i,],col = i)
@@ -190,7 +190,7 @@ estimate_scaling_region.corrDim = function(x, numberOfLinearRegions = 4,
     estimate_local_slopes(y = log10(cd$corr.matrix), 
                         x = (cd$corr.order - 1) * log10(cd$radius),
                         bandwidth = bandwidth, kernel = kernel,
-                        doPlot = TRUE)
+                        doPlot = FALSE)
   scalingRegionMatrix = estimate_all_scaling_regions(localSlopes$y, localSlopes$x,
                                                      numberOfLinearRegions, initialValues, 
                                                      criterion = "min")

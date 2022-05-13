@@ -460,7 +460,7 @@ shapiro.test.CheckAllValuesEqual<-function(x){
       message("Problema en SHAPIROOOO!!!!!")
       message(x)
       if(verb){
-        message("All indice's values identical in shapiro.test; non normality assumed and pvalue set to 0")
+        message("All indice's values identical in shapiro.test, or less than three values are different from NA; non normality assumed and pvalue set to 0")
       }
       0
     }
@@ -920,12 +920,18 @@ print.RHRVEasyResult <- function(results){
   }
 }
 
-saveHRVindexes<-function(results, saveHRVindexesInPath){
+saveHRVindexes<-function(results, saveHRVindexesInPath = "."){
+  #if called directly by RHRVEasy witout an explicit value for saveHRVindexesInPath
+  #then saveHRVindexesInPath is null ans nothing hapens
   if(!is.null(saveHRVindexesInPath)){
     tryCatch(
       {
         me=merge(results$TimeAnalysis, results$FrequencyAnalysis)
-        frameTosave=merge(me, results$NonLinearAnalysis)
+        if(ncol(results$NonLinearAnalysis) == 0){ #no linear analysis
+          frameTosave = me
+        }else{
+          frameTosave=merge(me, results$NonLinearAnalysis)
+        }
         fileName=""
         for(lev in levels(as.factor(results$TimeAnalysis$group))){
           fileName = paste(fileName,lev, " vs ",sep = "")
