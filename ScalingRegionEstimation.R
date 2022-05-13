@@ -190,7 +190,7 @@ estimate_scaling_region.corrDim = function(x, numberOfLinearRegions = 4,
     estimate_local_slopes(y = log10(cd$corr.matrix), 
                         x = (cd$corr.order - 1) * log10(cd$radius),
                         bandwidth = bandwidth, kernel = kernel,
-                        doPlot = FALSE)
+                        doPlot = TRUE)
   scalingRegionMatrix = estimate_all_scaling_regions(localSlopes$y, localSlopes$x,
                                                      numberOfLinearRegions, initialValues, 
                                                      criterion = "min")

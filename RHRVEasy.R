@@ -226,43 +226,47 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
           hrv.data = RQA(hrv.data, indexNonLinearAnalysis = 1, 
                          embeddingDim=kEmbeddingDim, timeLag = kTimeLag, radius = 2)
           
+          #Set to TRUE to display correlation dimension calculation and lyapunov related plots
+          showNonLinerPlots = FALSE
+          
           hrv.data = CalculateCorrDim(hrv.data, indexNonLinearAnalysis = 1, 
                                       minEmbeddingDim=kEmbeddingDim,
                                       maxEmbeddingDim = kEmbeddingDim + 2, 
                                       timeLag = kTimeLag, minRadius = 1, maxRadius = 50,
                                       pointsRadius = 100, theilerWindow =10, 
-                                      corrOrder = 2, doPlot = FALSE)
+                                      corrOrder = 2, doPlot = showNonLinerPlots)
           
           cd = hrv.data$NonLinearAnalysis[[1]]$correlation$computations
           
           filteredCd = nltsFilter(cd, threshold = 0.99)
           
           cdScalingRegion = 
-            estimate_scaling_region(filteredCd, numberOfLinearRegions = 3, doPlot = FALSE)
+            estimate_scaling_region(filteredCd, numberOfLinearRegions = 3, 
+                                    doPlot = showNonLinerPlots)
           
           
           hrv.data = EstimateCorrDim(hrv.data, indexNonLinearAnalysis=1, 
                                      regressionRange=cdScalingRegion,
                                      useEmbeddings=(kEmbeddingDim):(kEmbeddingDim+2), 
-                                     doPlot=FALSE)
+                                     doPlot = showNonLinerPlots)
           
           hrv.data = CalculateSampleEntropy(hrv.data, indexNonLinearAnalysis= 1, 
-                                            doPlot = FALSE)
+                                            doPlot = showNonLinerPlots)
           
           hrv.data = EstimateSampleEntropy(hrv.data, indexNonLinearAnalysis=1, 
-                                           doPlot = FALSE)
+                                           doPlot = showNonLinerPlots)
           
           hrv.data = CalculateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
                                           minEmbeddingDim= kEmbeddingDim, 
                                           maxEmbeddingDim= kEmbeddingDim+2,
                                           timeLag = kTimeLag,radius = 3, 
                                           theilerWindow = 20,
-                                          doPlot = TRUE)
+                                          doPlot = showNonLinerPlots)
           
           hrv.data = EstimateMaxLyapunov(hrv.data, indexNonLinearAnalysis = 1,
                                          regressionRange = c(1,6),
                                          useEmbeddings = (kEmbeddingDim):(kEmbeddingDim+2),
-                                         doPlot = TRUE)  
+                                         doPlot = showNonLinerPlots)  
         }
       },
       error=function(cond) {
@@ -328,7 +332,7 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
 
 
 # Dunn Statistical tests for non-linear statistics
-dunnNonLinear<-function(dfM, method){
+dunnNonLinear<-function(dfM, correctionMethod){
   dfM$group = factor(dfM$group)
   CorrelationStatistic = NA
   SampleEntropy = NA
@@ -350,81 +354,81 @@ dunnNonLinear<-function(dfM, method){
   
   
   CorrelationStatistic = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-    CorrelationStatistic ~ group, data=dfM, p.adjt=method)
+    CorrelationStatistic ~ group, data=dfM, p.adjt=correctionMethod)
   SampleEntropy = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-    SampleEntropy ~ group, data=dfM, p.adjt=method)
+    SampleEntropy ~ group, data=dfM, p.adjt=correctionMethod)
   MaxLyapunov = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-    MaxLyapunov ~ group, data=dfM, p.adjt=method)
+    MaxLyapunov ~ group, data=dfM, p.adjt=correctionMethod)
   REC = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-    REC ~ group, data=dfM, p.adjt=method) 
+    REC ~ group, data=dfM, p.adjt=correctionMethod) 
   RATIO = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-    RATIO ~ group, data=dfM, p.adjt=method) 
+    RATIO ~ group, data=dfM, p.adjt=correctionMethod) 
   DET = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-    DET ~ group, data=dfM, p.adjt=method) 
+    DET ~ group, data=dfM, p.adjt=correctionMethod) 
   DIV = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-    DIV ~ group, data=dfM, p.adjt=method) 
+    DIV ~ group, data=dfM, p.adjt=correctionMethod) 
   Lmax = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-    Lmax ~ group, data=dfM, p.adjt=method) 
+    Lmax ~ group, data=dfM, p.adjt=correctionMethod) 
   Lmean = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-    Lmean ~ group, data=dfM, p.adjt=method) 
+    Lmean ~ group, data=dfM, p.adjt=correctionMethod) 
   LmeanWithoutMain = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-    LmeanWithoutMain ~ group, data=dfM, p.adjt=method) 
+    LmeanWithoutMain ~ group, data=dfM, p.adjt=correctionMethod) 
   ENTR = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-    ENTR ~ group, data=dfM, p.adjt=method) 
+    ENTR ~ group, data=dfM, p.adjt=correctionMethod) 
   TREND = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-    TREND ~ group, data=dfM, p.adjt=method) 
+    TREND ~ group, data=dfM, p.adjt=correctionMethod) 
   LAM = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-    LAM ~ group, data=dfM, p.adjt=method) 
+    LAM ~ group, data=dfM, p.adjt=correctionMethod) 
   Vmax = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-    Vmax ~ group, data=dfM, p.adjt=method) 
+    Vmax ~ group, data=dfM, p.adjt=correctionMethod) 
   Vmean = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-    Vmean ~ group, data=dfM, p.adjt=method) 
+    Vmean ~ group, data=dfM, p.adjt=correctionMethod) 
   PoincareSD1 = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-    PoincareSD1 ~ group, data=dfM, p.adjt=method)  
+    PoincareSD1 ~ group, data=dfM, p.adjt=correctionMethod)  
   PoincareSD2  = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-    PoincareSD2 ~ group, data=dfM, p.adjt=method)
+    PoincareSD2 ~ group, data=dfM, p.adjt=correctionMethod)
   
   list (CorrelationStatistic, SampleEntropy, MaxLyapunov, REC, RATIO, DET, DIV, 
         Lmax, Lmean, LmeanWithoutMain, ENTR, TREND, LAM, Vmax, Vmean, 
         PoincareSD1, PoincareSD2 )
 }
 
-dunnfreq<-function(dfM, method){
+dunnfreq<-function(dfM, correctionMethod){
   dfM$group = factor(dfM$group)
   list (
     ULF = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-      ULF ~ group, data=dfM, p.adjt=method),
+      ULF ~ group, data=dfM, p.adjt=correctionMethod),
     VLF = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-      VLF ~ group, data=dfM, p.adjt=method),
+      VLF ~ group, data=dfM, p.adjt=correctionMethod),
     LF = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-      LF ~ group, data=dfM, p.adjt=method),
+      LF ~ group, data=dfM, p.adjt=correctionMethod),
     HF = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-      HF ~ group, data=dfM, p.adjt=method) )
+      HF ~ group, data=dfM, p.adjt=correctionMethod) )
 }
 
-dunntime<-function(dfM, method){
+dunntime<-function(dfM, correctionMethod){
   dfM$group = factor(dfM$group)
   list (
     SDNN= posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-      SDNN ~ group, data = dfM, p.adjt=method),
+      SDNN ~ group, data = dfM, p.adjt=correctionMethod),
     SDANN = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-      SDANN ~ group, data = dfM, p.adjt=method),
+      SDANN ~ group, data = dfM, p.adjt=correctionMethod),
     SDNNIDX = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-      SDNNIDX ~ group, data = dfM, p.adjt=method),
+      SDNNIDX ~ group, data = dfM, p.adjt=correctionMethod),
     pNN50 = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-      pNN50 ~ group, data = dfM, p.adjt=method),
+      pNN50 ~ group, data = dfM, p.adjt=correctionMethod),
     SDSD = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-      SDSD ~ group, data = dfM, p.adjt=method),
+      SDSD ~ group, data = dfM, p.adjt=correctionMethod),
     rMSSD = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-      rMSSD ~ group, data = dfM, p.adjt=method),
+      rMSSD ~ group, data = dfM, p.adjt=correctionMethod),
     IRRR = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-      IRRR ~ group, data = dfM, p.adjt=method),
+      IRRR ~ group, data = dfM, p.adjt=correctionMethod),
     MADRR = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-      MADRR ~ group, data = dfM, p.adjt=method),
+      MADRR ~ group, data = dfM, p.adjt=correctionMethod),
     TINN = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-      TINN ~ group, data = dfM, p.adjt=method),
+      TINN ~ group, data = dfM, p.adjt=correctionMethod),
     HRVi = posthoc.kruskal.dunn.test.CheckAllValuesEqual(
-      HRVi ~ group, data = dfM, p.adjt=method))
+      HRVi ~ group, data = dfM, p.adjt=correctionMethod))
 }
 
 
@@ -464,7 +468,7 @@ shapiro.test.CheckAllValuesEqual<-function(x){
   pval
 }
 
-statistical_analysisFreq<-function(dfM, numberOfExperimentalGroups, method, signif_level){
+statistical_analysisFreq<-function(dfM, numberOfExperimentalGroups, correctionMethod, signif_level){
   anova = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
   kruskal = list(ULF = NA, VLF = NA, LF = NA, HF = NA)
   dunn = NA
@@ -509,12 +513,12 @@ statistical_analysisFreq<-function(dfM, numberOfExperimentalGroups, method, sign
     
   }
   
-  list$dunn = dunnfreq(dfM, method)
+  list$dunn = dunnfreq(dfM, correctionMethod)
   list
   
 }
 
-statistical_analysisTime<-function(dfM, numberOfExperimentalGroups, method, signif_level){
+statistical_analysisTime<-function(dfM, numberOfExperimentalGroups, correctionMethod, signif_level){
   
   anova = list(SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, 
                rMSSD = NA, IRRR = NA, MADRR = NA, TINN = NA, HRVi = NA)
@@ -565,11 +569,11 @@ statistical_analysisTime<-function(dfM, numberOfExperimentalGroups, method, sign
     }
   }
   
-  list$dunn = dunntime(dfM, method)
+  list$dunn = dunntime(dfM, correctionMethod)
   list
 }
 
-statistical_analysisNonLinear<-function(dfM, numberOfExperimentalGroups, method, signif_level){
+statistical_analysisNonLinear<-function(dfM, numberOfExperimentalGroups, correctionMethod, signif_level){
   anova = list(CorrelationStatistic = NA, SampleEntropy = NA, MaxLyapunov = NA,
                REC = NA, RATIO = NA, DET = NA, DIV = NA, Lmax = NA, Lmean = NA,
                LmeanWithoutMain = NA, ENTR = NA, TREND = NA, LAM = NA, Vmax = NA,
@@ -641,13 +645,13 @@ statistical_analysisNonLinear<-function(dfM, numberOfExperimentalGroups, method,
         })
     }
   }
-  list$dunn = dunnNonLinear(dfM, method)
+  list$dunn = dunnNonLinear(dfM, correctionMethod)
   list
   
 }
 
 
-colectpValues <- function(listTime, listFreq, listNonLinear, correction, method){
+colectpValues <- function(listTime, listFreq, listNonLinear, correction, correctionMethod){
   
   listpValues = list(ULF = NA, VLF = NA, LF = NA, HF = NA,
                      SDNN = NA, SDANN = NA, SDNNIDX = NA, pNN50 = NA, SDSD = NA, 
@@ -704,7 +708,7 @@ colectpValues <- function(listTime, listFreq, listNonLinear, correction, method)
   listpValues
 }
 
-correctpValues <- function(listpValues, correction, method){
+correctpValues <- function(listpValues, correction, correctionMethod){
   
   listpValuesCorrected = list(ULF = NA, VLF = NA, LF = NA, HF = NA, SDNN = NA, SDANN = NA, 
                               SDNNIDX = NA, pNN50 = NA, SDSD = NA, rMSSD = NA, IRRR = NA,
@@ -715,7 +719,7 @@ correctpValues <- function(listpValues, correction, method){
                               Vmean = NA, PoincareSD1 = NA,  PoincareSD2 = NA)
   
   if (correction == TRUE){
-    listpValuesCorrected = p.adjust(listpValues, method)
+    listpValuesCorrected = p.adjust(listpValues, correctionMethod)
     listpValuesCorrected <- as.list(listpValuesCorrected)
     
   }else{
@@ -940,7 +944,7 @@ saveHRVindexes<-function(results, saveHRVindexesInPath){
 }
 
 
-RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=FALSE, 
+RHRVEasy<-function(folders, correction = FALSE, correctionMethod = "bonferroni", verbose=FALSE, 
                    format = "RR", typeAnalysis = 'fourier', significance_level = 0.25, 
                    nonLinear=FALSE, saveHRVindexesInPath = NULL, ...) {
   
@@ -977,7 +981,7 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
   # Statistical analysis of both
   
   listTimeStatysticalAnalysis = statistical_analysisTime(dataFrameMTime,
-                               numberOfExperimentalGroups, method, signif_level)
+                               numberOfExperimentalGroups, correctionMethod, signif_level)
   
   # FREQUENCY:
   if(typeAnalysis == "fourier"){
@@ -987,7 +991,7 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
     }
     
     listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq,
-                               numberOfExperimentalGroups, method, signif_level)
+                               numberOfExperimentalGroups, correctionMethod, signif_level)
   }
   
   # WAVELET
@@ -1000,7 +1004,7 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
     }
     
     listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMWavelet,
-                                    numberOfExperimentalGroups, method, signif_level)
+                                    numberOfExperimentalGroups, correctionMethod, signif_level)
     
     dataFrameMFreq = dataFrameMWavelet
   }
@@ -1008,14 +1012,14 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
   
   if(!all(is.na(dataFrameMNonLinear))){
     listNonLinearStatisticalAnalysis = statistical_analysisNonLinear(dataFrameMNonLinear,
-                                         numberOfExperimentalGroups, method, signif_level)
+                                         numberOfExperimentalGroups, correctionMethod, signif_level)
   }else{
     listNonLinearStatisticalAnalysis = NA
   }
   
-  listpUncorrectedValues = colectpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
+  uncorrectedPvalues = colectpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
                                listNonLinearStatisticalAnalysis)
-  listpValues = correctpValues(listpUncorrectedValues, correction, method)
+  listpValues = correctpValues(uncorrectedPvalues, correction, correctionMethod)
   
   results = list("TimeAnalysis" = dataFrameMTime, 
                  "StatysticalAnalysisTime" = listTimeStatysticalAnalysis,
@@ -1023,7 +1027,7 @@ RHRVEasy<-function(folders, correction = FALSE, method = "bonferroni", verbose=F
                  "StatysticalAnalysisFrequency" = listFreqStatysticalAnalysis,
                  "NonLinearAnalysis" = dataFrameMNonLinear,
                  "StatysticalAnalysisNonLinear" = listNonLinearStatisticalAnalysis,
-                 "pValues" = listpValues, "listpUncorrectedValues" = listpUncorrectedValues)
+                 "pValues" = listpValues, "uncorrectedPvalues" = uncorrectedPvalues)
   
   class(results) = "RHRVEasyResult"
   saveHRVindexes(results, saveHRVindexesInPath)
