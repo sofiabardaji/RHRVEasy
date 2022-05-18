@@ -1,6 +1,6 @@
 
 
-RHRVEasyPValues<-function(folders, correction = FALSE, method = "bonferroni", verbose=FALSE, 
+RHRVEasyPValues<-function(folders, correction = FALSE, correctionMethod = "bonferroni", verbose=FALSE, 
                    format = "RR", typeAnalysis = 'fourier', significance_level = 0.05, nonLinear=FALSE, ...) {
   
   dataFrameMWavelet = data.frame()
@@ -43,7 +43,7 @@ RHRVEasyPValues<-function(folders, correction = FALSE, method = "bonferroni", ve
   # Statistical analysis of both
   
   listTimeStatysticalAnalysis = statistical_analysisTime(dataFrameMTime,
-                                                         numberOfExperimentalGroups, method, signif_level)
+                                                         numberOfExperimentalGroups, correctionMethod, signif_level)
   
   # FREQUENCY:
   if(typeAnalysis == "fourier"){
@@ -55,7 +55,7 @@ RHRVEasyPValues<-function(folders, correction = FALSE, method = "bonferroni", ve
     }
     
     listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMFreq,
-                                                           numberOfExperimentalGroups, method, signif_level)
+                                                           numberOfExperimentalGroups, correctionMethod, signif_level)
   }
   
   # WAVELET
@@ -69,7 +69,7 @@ RHRVEasyPValues<-function(folders, correction = FALSE, method = "bonferroni", ve
     }
     
     listFreqStatysticalAnalysis = statistical_analysisFreq(dataFrameMWavelet,
-                                                           numberOfExperimentalGroups, method, signif_level)
+                                                           numberOfExperimentalGroups, correctionMethod, signif_level)
     
     dataFrameMFreq = dataFrameMWavelet
   }
@@ -78,25 +78,24 @@ RHRVEasyPValues<-function(folders, correction = FALSE, method = "bonferroni", ve
   if(!all(is.na(dataFrameMNonLinear))){
     #cat("DF non linear NOT empty: correct p values with those values")
     listNonLinearStatisticalAnalysis = statistical_analysisNonLinear(dataFrameMNonLinear,
-                                                                     numberOfExperimentalGroups, method, signif_level)
-    listpValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
-                                 listNonLinearStatisticalAnalysis,
-                                 correction, method)
+                                                                     numberOfExperimentalGroups, correctionMethod, signif_level)
   }else{
     #cat("DF non linear empty")
     listNonLinearStatisticalAnalysis = NA
-    listpValues = correctpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
-                                 listNonLinearStatisticalAnalysis,
-                                 correction, method)
   }
   
   
+  uncorrectedPvalues = colectpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
+                                     listNonLinearStatisticalAnalysis)
+  listpValues = correctpValues(uncorrectedPvalues, correction, correctionMethod)
   
-  
-  results = list("TimeAnalysis" = dataFrameMTime, "StatysticalAnalysisTime" = listTimeStatysticalAnalysis,
-                 "FrequencyAnalysis" = dataFrameMFreq, "NonLinearAnalysis" = dataFrameMNonLinear,
+  results = list("TimeAnalysis" = dataFrameMTime, 
+                 "StatysticalAnalysisTime" = listTimeStatysticalAnalysis,
+                 "FrequencyAnalysis" = dataFrameMFreq, 
+                 "StatysticalAnalysisFrequency" = listFreqStatysticalAnalysis,
+                 "NonLinearAnalysis" = dataFrameMNonLinear,
                  "StatysticalAnalysisNonLinear" = listNonLinearStatisticalAnalysis,
-                 "StatysticalAnalysisFrequency" = listFreqStatysticalAnalysis, "pValues" = listpValues)
+                 "pValues" = listpValues, "uncorrectedPvalues" = uncorrectedPvalues)
   
   class(results) = "RHRVEasyResult"
   results
@@ -131,7 +130,7 @@ corrections = c("none", "fdr", "holm", "hochberg", "BY", "bonferroni")
 
   for(correct in corrections){
     for(i in 1:100){
-      a=RHRVEasyPValues(folders = records,correction = TRUE, method = correct )
+      a=RHRVEasyPValues(folders = records,correction = TRUE, correctionMethod = correct )
       for (column in columNames){
         if(a$pValues[[column]] < 0.05){
            significativityCount[[correct]][[column]] = significativityCount[[correct]][[column]] +1;

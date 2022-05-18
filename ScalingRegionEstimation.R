@@ -46,7 +46,7 @@ nltsFilter.maxLyapunov = function(x, kernel = "normal", bandwidth = 2) {
 
 # Estimate local slopes using kernels -----------------------------------------
 estimate_local_slopes = function(y, x, bandwidth,
-                                 kernel, doPlot = FALSE) {
+                                 kernel, doPlot = TRUE) {
   
   check_segment_arguments(y, x)
   # ksmooth requires x to be in increasing order
@@ -105,7 +105,7 @@ differentiate = function(y, x, kernel = c("normal","box"), bandwidth = 0.5){
 #  estimate the scaling regions  --------------------------------------
 
 segment_and_select_by_slope = function(y, x, initialValues, criterion = c("max", "min"),
-                                   doPlot = FALSE) {
+                                   doPlot = TRUE) {
   criterion = match.arg(criterion)
   data = data.frame(y = y, x = x)
   fit = lm(y ~ x, data = data)
@@ -148,7 +148,7 @@ estimate_all_scaling_regions = function(y, x, numberOfLinearRegions, initialValu
   scalingRegion = t(apply(y, MARGIN = 1, FUN = segment_and_select_by_slope,
                           x = x, initialValues = initialValues,
                           criterion = criterion,
-                          doPlot = FALSE))
+                          doPlot = TRUE))
   colnames(scalingRegion) = c("scalingRegionStart","scalingRegionEnd")
   scalingRegion
 }
@@ -170,7 +170,7 @@ estimate_scaling_region = function(y, numberOfLinearRegions,
 # If they are not specified, the method selects them automatically.
 # It must be noted that 'length(initialValues) + 1 = numberOfLinearRegions'.
 estimate_scaling_region.corrDim = function(x, numberOfLinearRegions = 4,
-                                           initialValues = NULL, doPlot = FALSE,
+                                           initialValues = NULL, doPlot = TRUE,
                                            bandwidth = NULL, 
                                            kernel = c("normal", "box")) {
   # rename for convenience
@@ -190,7 +190,7 @@ estimate_scaling_region.corrDim = function(x, numberOfLinearRegions = 4,
     estimate_local_slopes(y = log10(cd$corr.matrix), 
                         x = (cd$corr.order - 1) * log10(cd$radius),
                         bandwidth = bandwidth, kernel = kernel,
-                        doPlot = FALSE)
+                        doPlot = TRUE)
   scalingRegionMatrix = estimate_all_scaling_regions(localSlopes$y, localSlopes$x,
                                                      numberOfLinearRegions, initialValues, 
                                                      criterion = "min")
@@ -206,7 +206,7 @@ estimate_scaling_region.corrDim = function(x, numberOfLinearRegions = 4,
     try({
       # don't add legend since it avoid the correct placement of the scaling
       # region
-      plotLocalScalingExp(cd, add.legend = FALSE, 
+      plotLocalScalingExp(cd, add.legend = TRUE, 
                           main = 'estimate of the scaling region')
       abline(v = meanScalingRegionRadius, col = "black", lwd = 3, lty = 2)
     })
@@ -222,7 +222,7 @@ estimate_scaling_region.corrDim = function(x, numberOfLinearRegions = 4,
 # If they are not specified, the method selects them automatically.
 # It must be noted that 'length(initialValues) + 1 = numberOfLinearRegion'.
 estimate_scaling_region.maxLyapunov = function(x, numberOfLinearRegions = 2,
-                                               initialValues = NULL, doPlot = FALSE) {
+                                               initialValues = NULL, doPlot = TRUE) {
   # find scaling regions per embedding dimension
   scalingRegionMatrix = estimate_all_scaling_regions(x$s.function, x$time,
                                       numberOfLinearRegions, initialValues,
@@ -232,7 +232,7 @@ estimate_scaling_region.maxLyapunov = function(x, numberOfLinearRegions = 2,
   
   if (doPlot) {
     try({
-      plot(x, type = "l", add.legend = FALSE, main = "Estimate scaling region")
+      plot(x, type = "l", add.legend = TRUE, main = "Estimate scaling region")
       abline(v = meanScalingRegionRadius, col = "black", lwd = 3, lty = 2)
     })
   }
