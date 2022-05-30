@@ -131,7 +131,7 @@ corrections = c("none", "fdr", "holm", "hochberg", "BY", "bonferroni")
   for(correct in corrections){
     for(i in 1:100){
       a=RHRVEasyPValues(folders = records,correction = TRUE, correctionMethod = correct )
-      for (column in columNames){
+      for (column in columNames){ 
         if(a$pValues[[column]] < 0.05){
            significativityCount[[correct]][[column]] = significativityCount[[correct]][[column]] +1;
         }
