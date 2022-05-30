@@ -23,7 +23,7 @@ nltsFilter.corrDim = function(x, threshold = 0.95) {
 
 nltsFilter.maxLyapunov = function(x, kernel = "normal", bandwidth = 2) {
   smoothedS = apply(x$s.function, 1, function(sf, time, kernel, bandwidth) {
-    ksmooth(time, sf, kernel, bandwidth) 
+    ksmooth(time, sf, kernel, bandwidth)
   }, time = x$time, kernel = kernel, bandwidth = bandwidth)
   smoothedS = t(sapply(smoothedS, FUN = function(x) x$y))
   # plot(x$time, smoothedS[1,],type="l")
@@ -47,7 +47,7 @@ nltsFilter.maxLyapunov = function(x, kernel = "normal", bandwidth = 2) {
 # Estimate local slopes using kernels -----------------------------------------
 estimate_local_slopes = function(y, x, bandwidth,
                                  kernel, doPlot = TRUE) {
-  
+
   check_segment_arguments(y, x)
   # ksmooth requires x to be in increasing order
   indx = order(x)
@@ -57,7 +57,7 @@ estimate_local_slopes = function(y, x, bandwidth,
   # stored in the matrix y. Each slot corresponds to a different embedding dimension,
   # and it contains the 'x' variable and 'y' (which is an
   # estimate of the derivative of each row of the matrix y with respect to x).
-  smoothDiff = apply(y, MARGIN = 1, 
+  smoothDiff = apply(y, MARGIN = 1,
                      FUN = differentiate,
                      x = x,
                      bandwidth = bandwidth, kernel = kernel)
@@ -101,6 +101,21 @@ differentiate = function(y, x, kernel = c("normal","box"), bandwidth = 0.5){
   }
 }
 
+# Run segmented but filtering the warning "No breakpoint estimated"
+do_segmentation = function(data, initialValues) {
+  handler = function(w) {
+    if(any(grepl("No breakpoint estimated", w))) {
+      # "muffleWarning" implements a simple recovery strategy: “Suppress the warning”
+      invokeRestart("muffleWarning")
+    }
+  }
+  withCallingHandlers({
+    fit = lm(y ~ x, data = data)
+    segmented(fit, psi = initialValues)
+  },
+  warning = handler
+  )
+}
 
 #  estimate the scaling regions  --------------------------------------
 
@@ -108,26 +123,38 @@ segment_and_select_by_slope = function(y, x, initialValues, criterion = c("max",
                                    doPlot = TRUE) {
   criterion = match.arg(criterion)
   data = data.frame(y = y, x = x)
-  fit = lm(y ~ x, data = data)
-  segmentedFit = segmented(fit, seg.Z = ~x, psi = initialValues)
-  # identify the scaling_region as the region with the minimum slope (in abs value)
-  absSlopes = lapply(split(data, segmentedFit$id.group),
-                     function(data){
-                       # calculate the slope of the corresponding group
-                       abs(coef(lm(y ~ x, data = data))[[2]])
-                     })
-  # use for debugging
-  if (doPlot) {
-    plot(y ~ x, data)
-    plot(segmentedFit, add = TRUE, col = 2)
-    breakPoints = sapply(segmentedFit$psi[,2], function(point) which.min(abs(data$x - point)))
-    points(data$x[breakPoints], segmentedFit$fitted.values[breakPoints], col = 2, bg = 2, pch = 22)
+
+  segmentedFit = do_segmentation(data, initialValues)
+  # segmentedFit = segmented(fit, seg.Z = ~x, psi = initialValues)
+
+  if (is.null(segmentedFit$id.group)) {
+    # Single slope found. The whole x is the scaling region
+    scalingRegion = x
+    if (doPlot) {
+      plot(y ~ x, data)
+      abline(lm(y ~ x, data), col = 2)
+    }
+  } else {
+    absSlopes = lapply(split(data, segmentedFit$id.group),
+                       function(data){
+                         # calculate the slope of the corresponding group
+                         abs(coef(lm(y ~ x, data = data))[[2]])
+                       })
+    # use for debugging
+    if (doPlot) {
+      plot(y ~ x, data)
+      plot(segmentedFit, add = TRUE, col = 2)
+      breakPoints = sapply(segmentedFit$psi[,2], function(point) which.min(abs(data$x - point)))
+      points(data$x[breakPoints], segmentedFit$fitted.values[breakPoints], col = 2, bg = 2, pch = 22)
+    }
+    # identify the scaling_region as the region with the minimum/maximum slope (in abs value)
+    criterionFun = switch(criterion,
+                          "max" = which.max,
+                          "min" = which.min)
+    scalingRegionGroup = names(absSlopes)[[criterionFun(absSlopes)]]
+    scalingRegion = x[scalingRegionGroup == segmentedFit$id.group]
   }
-  criterionFun = switch(criterion,
-                        "max" = which.max,
-                        "min" = which.min)
-  scalingRegionGroup = names(absSlopes)[[criterionFun(absSlopes)]]
-  scalingRegion = x[scalingRegionGroup == segmentedFit$id.group]
+
   range(scalingRegion)
 }
 
@@ -140,11 +167,11 @@ estimate_all_scaling_regions = function(y, x, numberOfLinearRegions, initialValu
     # TODO: It may be a good idea to select the initial points depending on the curvature.
     probs = seq(0, 1, len = numberOfLinearRegions + 1)[-c(1,numberOfLinearRegions + 1)]
     initialValues = quantile(x,  probs = probs)
-  } 
+  }
   if ((length(initialValues) + 1) != numberOfLinearRegions) {
     stop("numberOfLinearRegions should be equal to length(initialValues") - 1
   }
-  
+
   scalingRegion = t(apply(y, MARGIN = 1, FUN = segment_and_select_by_slope,
                           x = x, initialValues = initialValues,
                           criterion = criterion,
@@ -161,7 +188,7 @@ estimate_scaling_region = function(y, numberOfLinearRegions,
 }
 
 # estimates the scaling region of a corrDim object by:
-# 1.- calculating smooth local slopes (using the 'ksmooth' with the  kernel 
+# 1.- calculating smooth local slopes (using the 'ksmooth' with the  kernel
 # specified by 'kernel' and the bandwidth 'bandwidth'. If they are not specified,
 # a gaussian kernel and a proper bandwidth will be used.)
 # 2.- segmentating in straight lines the smooth local slopes. The number of
@@ -171,8 +198,9 @@ estimate_scaling_region = function(y, numberOfLinearRegions,
 # It must be noted that 'length(initialValues) + 1 = numberOfLinearRegions'.
 estimate_scaling_region.corrDim = function(x, numberOfLinearRegions = 4,
                                            initialValues = NULL, doPlot = TRUE,
-                                           bandwidth = NULL, 
+                                           bandwidth = NULL,
                                            kernel = c("normal", "box")) {
+  TRUST_THRESHOLD = 0.5
   # rename for convenience
   cd = x
   kernel = match.arg(kernel)
@@ -186,32 +214,43 @@ estimate_scaling_region.corrDim = function(x, numberOfLinearRegions = 4,
     bandwidth = 10 * meanLogDistance
   }
   # find local slopes per embedding dimension
-  localSlopes = 
-    estimate_local_slopes(y = log10(cd$corr.matrix), 
+  localSlopes =
+    estimate_local_slopes(y = log10(cd$corr.matrix),
                         x = (cd$corr.order - 1) * log10(cd$radius),
                         bandwidth = bandwidth, kernel = kernel,
                         doPlot = TRUE)
   scalingRegionMatrix = estimate_all_scaling_regions(localSlopes$y, localSlopes$x,
-                                                     numberOfLinearRegions, initialValues, 
+                                                     numberOfLinearRegions, initialValues,
                                                      criterion = "min")
   # scalingRegionMatrix has an estimate per embedding dimension of the scalingRegion region in
   # terms of the '(cd$corr.order - 1) * log10(cd$radius)' variable. Solve for
   # 'radius'
-  scalingRegionRadius = apply(scalingRegionMatrix, MARGIN = 1, 
+  scalingRegionRadius = apply(scalingRegionMatrix, MARGIN = 1,
                               function(x) { 10 ^ (x / (cd$corr.order - 1)) })
   # calculate the mean of the different estimations from the different embeddings
   meanScalingRegionRadius = rowMeans(scalingRegionRadius)
-  
+  meanScalingRegionTransformedRadius = colMeans(scalingRegionMatrix)
+
   if (doPlot) {
     try({
       # don't add legend since it avoid the correct placement of the scaling
       # region
-      plotLocalScalingExp(cd, add.legend = TRUE, 
+      plotLocalScalingExp(cd, add.legend = FALSE,
                           main = 'estimate of the scaling region')
       abline(v = meanScalingRegionRadius, col = "black", lwd = 3, lty = 2)
     })
   }
-  meanScalingRegionRadius
+
+  scalingRegionIndicator = (
+    (localSlopes$x >= meanScalingRegionTransformedRadius[1]) &
+    (localSlopes$x <= meanScalingRegionTransformedRadius[2])
+  )
+
+  reliableScalingRegion =  (
+    sd(localSlopes$y[, scalingRegionIndicator]) > TRUST_THRESHOLD
+  )
+
+  list("scalingRegion" = meanScalingRegionRadius, "reliable" = reliableScalingRegion)
 }
 
 # estimates the scaling region of a maxLyapunov object by:
@@ -224,15 +263,15 @@ estimate_scaling_region.corrDim = function(x, numberOfLinearRegions = 4,
 estimate_scaling_region.maxLyapunov = function(x, numberOfLinearRegions = 2,
                                                initialValues = NULL, doPlot = TRUE) {
   # find scaling regions per embedding dimension
-  scalingRegionMatrix = estimate_all_scaling_regions(x$s.function, x$time,
+  scalingRegionMatrix = estimate_all_scaling_regions(x$s.function[, -1], x$time[-1],
                                       numberOfLinearRegions, initialValues,
                                       criterion = "max")
   # calculate the mean of the different estimations from the different embeddings
   meanScalingRegionRadius = colMeans(scalingRegionMatrix)
-  
+
   if (doPlot) {
     try({
-      plot(x, type = "l", add.legend = TRUE, main = "Estimate scaling region")
+      plot(x, type = "l", add.legend = FALSE, main = "Estimate scaling region")
       abline(v = meanScalingRegionRadius, col = "black", lwd = 3, lty = 2)
     })
   }
