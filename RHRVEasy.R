@@ -205,6 +205,10 @@ extractRqaStatistics <- function(rqa){
 non_linear_analysis <- function(format, files, class, rrs2, ...){
   dataFrame = data.frame()
   for (file in files){
+    #TODO
+    start_time <- Sys.time()
+    print(paste(file, start_time))
+    
     hrv.data = preparing_analysis(format, file = file, rrs = rrs2)
     hrv.data = CreateNonLinearAnalysis(hrv.data)
     kTimeLag=attempToCalculateTimeLag(hrv.data)
@@ -359,6 +363,11 @@ non_linear_analysis <- function(format, files, class, rrs2, ...){
                   resultsPP, resultsTimeDim, group)
     df=as.data.frame(row_list)
     dataFrame=rbind(dataFrame, df)
+    
+    #TODO
+    end_time <- Sys.time()
+    print(paste("FIN:",difftime(end_time,start_time,units="secs")))
+    
   }
   dataFrame
 }
