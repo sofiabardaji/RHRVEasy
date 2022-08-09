@@ -833,8 +833,8 @@ print.RHRVEasyResult <- function(results){
                     signif_level, arr.ind = TRUE)
 
       if(length(var)>0){
-        cat("\nGroups with stastically significant differences in ", column,
-            " according to the Dunn test :\n")
+        cat("\nGroups with statically significant differences in ", column,
+            " according to the Dunn test:\n")
         print(results$StatysticalAnalysisTime$dunn[[column]])
       }
     }
@@ -880,6 +880,15 @@ print.RHRVEasyResult <- function(results){
     # 1. We have more than 2 groups, we check that by looking at the length of listDF
 
     if(length(listDF)>2){
+      
+      #@todo creo que deberíamos cambiar la condición para reportar Dunn por
+      #  if(results$pValues[[column]]<signif_level). Si no en alguna ocasión (LF en la siguiente prueba)
+      #reporta Dunn sin haber reportado ANOVA
+      #a2b=RHRVEasy(folders =c("C:\\rrs\\RHRVEasy\\rrs\\normal",
+      #                        "C:\\rrs\\RHRVEasy\\rrs\\chf",
+      #                        "C:\\rrs\\RHRVEasy\\rrs\\normal_half", 
+      #                        "C:\\rrs\\RHRVEasy\\rrs\\chf_half"), significance_level = 0.05)
+      
 
       # 2. ANOVA Test is significative. We check that by comparing it to the signif_level
 
@@ -993,7 +1002,7 @@ saveHRVindexes<-function(results, saveHRVindexesInPath = "."){
 
 
 RHRVEasy<-function(folders, correction = FALSE, correctionMethod = "bonferroni", verbose=FALSE,
-                   format = "RR", typeAnalysis = 'fourier', significance_level = 0.25,
+                   format = "RR", typeAnalysis = 'fourier', significance_level = 0.05,
                    nonLinear=FALSE, saveHRVindexesInPath = NULL, ...) {
 
   dataFrameMWavelet = data.frame()
