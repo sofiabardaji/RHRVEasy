@@ -67,6 +67,7 @@ time_analysis<-function(format, files, class, rrs2, ...){
     df=as.data.frame(row_list)
     dataFrame=rbind(dataFrame, df)
   }
+  #@todo  ¿Remove size column???
   dataFrame
 }
 
@@ -1001,7 +1002,7 @@ saveHRVindexes<-function(results, saveHRVindexesInPath = "."){
 }
 
 
-RHRVEasy<-function(folders, correction = FALSE, correctionMethod = "bonferroni", verbose=FALSE,
+RHRVEasy<-function(folders, correction = TRUE, correctionMethod = "bonferroni", verbose=FALSE,
                    format = "RR", typeAnalysis = 'fourier', significance_level = 0.05,
                    nonLinear=FALSE, saveHRVindexesInPath = NULL, ...) {
 
@@ -1076,6 +1077,9 @@ RHRVEasy<-function(folders, correction = FALSE, correctionMethod = "bonferroni",
 
   uncorrectedPvalues = colectpValues(listTimeStatysticalAnalysis, listFreqStatysticalAnalysis,
                                listNonLinearStatisticalAnalysis)
+  
+  #@todo Hacer consistentes los valores de correction y correctionMethod. Ahora mismo
+  #El primero toma preferencia
   listpValues = correctpValues(uncorrectedPvalues, correction, correctionMethod)
 
   results = list("TimeAnalysis" = dataFrameMTime,
