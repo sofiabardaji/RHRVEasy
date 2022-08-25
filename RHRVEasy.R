@@ -882,7 +882,7 @@ print.RHRVEasyResult <- function(results){
 
     if(length(listDF)>2){
       
-      #@todo creo que deberíamos cambiar la condición para reportar Dunn por
+      #@TODO creo que deberíamos cambiar la condición para reportar Dunn por
       #  if(results$pValues[[column]]<signif_level). Si no en alguna ocasión (LF en la siguiente prueba)
       #reporta Dunn sin haber reportado ANOVA
       #a2b=RHRVEasy(folders =c("C:\\rrs\\RHRVEasy\\rrs\\normal",
@@ -890,6 +890,7 @@ print.RHRVEasyResult <- function(results){
       #                        "C:\\rrs\\RHRVEasy\\rrs\\normal_half", 
       #                        "C:\\rrs\\RHRVEasy\\rrs\\chf_half"), significance_level = 0.05)
       
+      #@TODO Lo mismo en otros sitios
 
       # 2. ANOVA Test is significative. We check that by comparing it to the signif_level
 
